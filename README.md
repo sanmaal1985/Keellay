@@ -15,9 +15,6 @@ it: role skills generated for the project's stack and needs, documents, indexes 
 
 Research and design. Nothing to install yet.
 
-- [SDD landscape](docs/research/sdd-landscape.md) — what Keellay takes from Spec Kit, OpenSpec, BMAD, Agent OS,
-  Keelson, Kiro and two real project setups, and what it leaves out.
-
 ## Principles (draft)
 
 - **Method, not templates.** The framework is versioned in one place; each project gets a small adapter and its own
