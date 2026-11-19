@@ -1,0 +1,7 @@
+# All text files are LF in the repository and in the working copy, whatever core.autocrlf says.
+* text=auto eol=lf
+
+# Windows scripts need CRLF.
+*.bat text eol=crlf
+*.cmd text eol=crlf
+*.ps1 text eol=crlf
