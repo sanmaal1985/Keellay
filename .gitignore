@@ -1,0 +1,6 @@
+# Development workspace: tasks, handoff notes and Keellay's own SDD artifacts.
+# A separate private git repository (keellay-dev); never part of the public repo or a release.
+.dev/
+
+# Personal agent instructions for working on this repo.
+CLAUDE.local.md
