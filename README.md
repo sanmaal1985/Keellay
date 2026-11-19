@@ -13,13 +13,36 @@ it: role skills generated for the project's stack and needs, documents, indexes 
 
 ## Status
 
-Research and design. Nothing to install yet.
+Design decided, skeleton in place. The CLI starts and reports its version; `init`, `check` and `paths` are not
+implemented yet. Nothing is published.
+
+## Repository layout
+
+| Path | What it holds |
+|---|---|
+| [method/](method/) | The method in plain Markdown: layout, strictness levels, role contracts, artifact formats, procedures |
+| [src/keellay/](src/keellay/) | The `keellay` CLI (Python); it ships a copy of `method/` inside the package. Per-agent wiring lives in [src/keellay/agents/](src/keellay/agents/) |
+| [tests/](tests/) | CLI tests and a smoke test for the built wheel |
+
+## Development
+
+Requires [uv](https://docs.astral.sh/uv/).
+
+```
+uv sync            # create the environment
+uv run pytest      # run the tests
+uv run keellay info
+uv build           # build the sdist and wheel into dist/
+```
+
+CI runs the tests, builds the package and smoke-tests the wheel on Linux, macOS and Windows.
 
 ## Principles (draft)
 
 - **Method, not templates.** The framework is versioned in one place; each project gets a small adapter and its own
   generated roles, checked against a contract.
-- **Vendor-agnostic.** Plain Markdown and scripts at the core; thin adapters per agent. Checks run in git hooks and
+- **Vendor-agnostic.** Plain Markdown and scripts at the core; role skills follow the open Agent Skills
+  format, and connecting them to each agent is a thin layer of wiring. Checks run in git hooks and
   CI, so they hold whatever agent wrote the change.
 - **The owner decides.** Agents restate the request, show options with a recommendation, and act after a yes.
 - **Mechanisms over memory.** A lesson that repeats becomes a hook, a checklist item or a rule.
