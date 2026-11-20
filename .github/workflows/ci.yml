@@ -1,8 +1,8 @@
 name: CI
 
+# Pull requests only: main requires the branch to be up to date before a merge, so the squash commit has the tree
+# that was tested; a run after the merge would test it again.
 on:
-  push:
-    branches: [main]
   pull_request:
     # `edited` re-checks the title and description when someone changes them; the whole run repeats, so ci-ok
     # never reports success without the tests of that run.
@@ -52,7 +52,6 @@ jobs:
   # Edits made with GITHUB_TOKEN start no new workflow run, so this does not loop.
   pr-message:
     name: PR title and description
-    if: github.event_name == 'pull_request'
     runs-on: ubuntu-latest
     permissions:
       contents: read
@@ -68,7 +67,7 @@ jobs:
 
   # The one required status check for main: it passes only when every matrix job passed and the PR message is fine,
   # so jobs can change without editing the ruleset. `always()` makes it run (and fail) when a job fails, instead of
-  # being skipped. pr-message is skipped on pushes to main.
+  # being skipped.
   ci-ok:
     name: ci-ok
     if: always()
@@ -78,4 +77,4 @@ jobs:
       - name: All jobs passed
         run: |
           test "${{ needs.test-and-build.result }}" = "success"
-          case "${{ needs.pr-message.result }}" in success|skipped) ;; *) exit 1 ;; esac
+          test "${{ needs.pr-message.result }}" = "success"
