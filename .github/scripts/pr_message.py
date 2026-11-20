@@ -4,8 +4,10 @@ The repository squash-merges with the PR title as the commit title and the PR de
 this script fixes both before the merge:
 
 - the title is `<type>: <summary>`, with the type of the branch (`docs/13-architecture` -> `docs`); a title that
-  already has that form is kept, otherwise it becomes the only commit's subject or, for several commits, the branch
-  topic (`docs/3-artifact-formats` -> `docs: artifact formats`);
+  already has that form is kept, otherwise it becomes the subject of the branch's first commit when that has the
+  form, else the branch topic (`docs/3-artifact-formats` -> `docs: artifact formats`);
+- an empty description is built from the commits: the body of a single commit, or a list of several commits'
+  subjects, each with its body indented below it; a description someone wrote is kept;
 - AI attribution lines are removed from the description;
 - on a `fix/` branch the description must have the Current, Expected and Unchanged lines (method/formats/bugfix.md);
   they cannot be made up, so their absence is an error.
@@ -44,31 +46,57 @@ def _valid_title(title: str, branch_type: str) -> bool:
     return bool(match) and match["type"] == branch_type
 
 
-def fix_message(title: str, body: str | None, branch: str, commit_subjects: list[str]) -> Result:
-    """Return the title and description the PR should have, and what cannot be fixed automatically."""
+def _without_attribution(text: str) -> str:
+    return "\n".join(line for line in text.splitlines() if not ATTRIBUTION.search(line)).strip()
+
+
+def _split(message: str) -> tuple[str, str]:
+    """A commit message -> (subject, body without attribution lines)."""
+    subject, _, body = message.strip().partition("\n")
+    return subject.strip(), _without_attribution(body)
+
+
+def _body_from_commits(commits: list[tuple[str, str]]) -> str:
+    if len(commits) == 1:
+        return commits[0][1]
+    items = []
+    for subject, body in commits:
+        indented = "\n".join(f"  {line}" if line else "" for line in body.splitlines())
+        items.append(f"- {subject}" + (f"\n{indented}" if indented else ""))
+    return "\n".join(items)
+
+
+def fix_message(title: str, body: str | None, branch: str, commit_messages: list[str]) -> Result:
+    """Return the title and description the PR should have, and what cannot be fixed automatically.
+
+    `commit_messages` are the full messages of the branch's commits, oldest first.
+    """
     body = body or ""
     branch_match = BRANCH.match(branch)
     if not branch_match or branch_match["type"] not in TYPES:
         # Not a branch named by the convention (e.g. a bot's branch): leave it alone.
         return Result(title, body)
     branch_type = branch_match["type"]
+    commits = [_split(message) for message in commit_messages]
     result = Result(title.strip(), body)
 
     if not _valid_title(result.title, branch_type):
-        if len(commit_subjects) == 1 and _valid_title(commit_subjects[0].strip(), branch_type):
-            result.title = commit_subjects[0].strip()
+        if commits and _valid_title(commits[0][0], branch_type):
+            result.title = commits[0][0]
         elif topic := _topic(branch_match["rest"]):
             result.title = f"{branch_type}: {topic}"
         else:
             result.errors.append(f"cannot derive a title from branch '{branch}'; set it to '{branch_type}: <summary>'")
 
-    lines = [line for line in body.splitlines() if not ATTRIBUTION.search(line)]
-    if len(lines) != len(body.splitlines()):
-        result.body = "\n".join(lines).strip()
+    cleaned = _without_attribution(body)
+    if not cleaned:
+        result.body = _body_from_commits(commits)
+    elif cleaned != body.replace("\r\n", "\n").strip():  # descriptions written on github.com come with CRLF
+        result.body = cleaned
 
     if branch_type == "fix":
         missing = [name for name in TRIPLE
-                   if not re.search(rf"^{name}:\s*\S", result.body, re.MULTILINE)]
+                   if not re.search(rf"^\s*{name}:\s*\S", result.body, re.MULTILINE)]
         if missing:
             result.errors.append("a fix needs the lines " + ", ".join(f"'{name}: ...'" for name in missing)
                                  + " in the PR description (method/formats/bugfix.md)")
@@ -83,9 +111,9 @@ def main() -> int:
     repo, number = os.environ["GITHUB_REPOSITORY"], os.environ["PR_NUMBER"]
     pr = json.loads(_gh("api", f"repos/{repo}/pulls/{number}"))
     commits = json.loads(_gh("api", "--paginate", "--slurp", f"repos/{repo}/pulls/{number}/commits"))
-    subjects = [c["commit"]["message"].splitlines()[0] for page in commits for c in page]
+    messages = [c["commit"]["message"] for page in commits for c in page]
 
-    result = fix_message(pr["title"], pr["body"], pr["head"]["ref"], subjects)
+    result = fix_message(pr["title"], pr["body"], pr["head"]["ref"], messages)
     changes = {}
     if result.title != pr["title"]:
         changes["title"] = result.title
@@ -95,7 +123,7 @@ def main() -> int:
     if changes:
         if pr["head"]["repo"]["full_name"] != repo:
             # A fork's token cannot edit the PR; say what to change instead.
-            result.errors.append(f"set the title to '{result.title}' and remove AI attribution lines")
+            result.errors.append(f"set the title to '{result.title}'; write a description without AI attribution lines")
         else:
             _gh("api", "-X", "PATCH", f"repos/{repo}/pulls/{number}", "--input", "-", stdin=json.dumps(changes))
             print(f"updated the PR ({', '.join(changes)}): title '{result.title}'")
