@@ -43,3 +43,14 @@ jobs:
         with:
           name: dist
           path: dist/
+
+  # The one required status check for main: it passes only when every matrix job passed, so the matrix can change
+  # without editing the ruleset. `always()` makes it run (and fail) when a matrix job fails, instead of being skipped.
+  ci-ok:
+    name: ci-ok
+    if: always()
+    needs: [test-and-build]
+    runs-on: ubuntu-latest
+    steps:
+      - name: All matrix jobs passed
+        run: test "${{ needs.test-and-build.result }}" = "success"
