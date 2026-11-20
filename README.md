@@ -11,6 +11,8 @@ it: role skills generated for the project's stack and needs, documents, indexes 
 - **Brownfield** — an existing project is analysed first (its structure, existing skills, agent instructions and
   documents), and Keellay proposes how to move it onto the method instead of overwriting what is there.
 
+How the parts fit together and how a project runs on Keellay: [docs/architecture.md](docs/architecture.md).
+
 ## Status
 
 Design decided, skeleton in place. The CLI starts and reports its version; `init`, `check` and `paths` are not
@@ -23,6 +25,7 @@ implemented yet. Nothing is published.
 | [method/](method/) | The method in plain Markdown: layout, strictness levels, role contracts, artifact formats, procedures |
 | [src/keellay/](src/keellay/) | The `keellay` CLI (Python); it ships a copy of `method/` inside the package. Per-agent wiring lives in [src/keellay/agents/](src/keellay/agents/) |
 | [tests/](tests/) | CLI tests and a smoke test for the built wheel |
+| [docs/architecture.md](docs/architecture.md) | How Keellay is meant to work: parts, flows and what is built so far |
 | [docs/specs/](docs/specs/) | Keellay's own living specs: what the CLI does now |
 
 ## Development
