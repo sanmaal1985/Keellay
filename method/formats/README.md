@@ -15,6 +15,7 @@ Common rules:
 | [spec.md](spec.md) | Living spec: requirements with IDs, EARS statements, scenarios | draft |
 | [delta.md](delta.md) | Spec delta inside a change and how it is merged at close | draft |
 | [bugfix.md](bugfix.md) | Fix path: current / expected / unchanged | draft |
+| [adr.md](adr.md) | ADR: append-only decision, supersede rule, index of what is in force | draft |
+| [lesson.md](lesson.md) | Lesson: occurrences, gap, rule, mechanism; repeats force a mechanism | draft |
 
-Planned: ADR and its index, lesson and its index, PRD section, idea and the ideas register, constitution
-(`AGENTS.md` block).
+Planned: PRD section, idea and the ideas register, constitution (`AGENTS.md` block).
