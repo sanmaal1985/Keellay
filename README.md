@@ -23,6 +23,7 @@ implemented yet. Nothing is published.
 | [method/](method/) | The method in plain Markdown: layout, strictness levels, role contracts, artifact formats, procedures |
 | [src/keellay/](src/keellay/) | The `keellay` CLI (Python); it ships a copy of `method/` inside the package. Per-agent wiring lives in [src/keellay/agents/](src/keellay/agents/) |
 | [tests/](tests/) | CLI tests and a smoke test for the built wheel |
+| [docs/specs/](docs/specs/) | Keellay's own living specs: what the CLI does now |
 
 ## Development
 
