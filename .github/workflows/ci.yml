@@ -1,9 +1,12 @@
 name: CI
 
+# Pull requests only: main requires the branch to be up to date before a merge, so the squash commit has the tree
+# that was tested; a run after the merge would test it again.
 on:
-  push:
-    branches: [main]
   pull_request:
+    # `edited` re-checks the title and description when someone changes them; the whole run repeats, so ci-ok
+    # never reports success without the tests of that run.
+    types: [opened, edited, synchronize, reopened]
 
 permissions:
   contents: read
@@ -44,13 +47,34 @@ jobs:
           name: dist
           path: dist/
 
-  # The one required status check for main: it passes only when every matrix job passed, so the matrix can change
-  # without editing the ruleset. `always()` makes it run (and fail) when a matrix job fails, instead of being skipped.
+  # Main is squash-merged with the PR title and description as the commit message: fix the title to
+  # `<type>: <summary>`, drop AI attribution lines, require the bugfix triple on fix/ branches.
+  # Edits made with GITHUB_TOKEN start no new workflow run, so this does not loop.
+  pr-message:
+    name: PR title and description
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      pull-requests: write
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+
+      - name: Fix the title and description
+        env:
+          GH_TOKEN: ${{ github.token }}
+          PR_NUMBER: ${{ github.event.pull_request.number }}
+        run: python3 .github/scripts/pr_message.py
+
+  # The one required status check for main: it passes only when every matrix job passed and the PR message is fine,
+  # so jobs can change without editing the ruleset. `always()` makes it run (and fail) when a job fails, instead of
+  # being skipped.
   ci-ok:
     name: ci-ok
     if: always()
-    needs: [test-and-build]
+    needs: [test-and-build, pr-message]
     runs-on: ubuntu-latest
     steps:
-      - name: All matrix jobs passed
-        run: test "${{ needs.test-and-build.result }}" = "success"
+      - name: All jobs passed
+        run: |
+          test "${{ needs.test-and-build.result }}" = "success"
+          test "${{ needs.pr-message.result }}" = "success"

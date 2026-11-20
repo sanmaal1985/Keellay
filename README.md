@@ -41,6 +41,12 @@ uv build           # build the sdist and wheel into dist/
 
 CI runs the tests, builds the package and smoke-tests the wheel on Linux, macOS and Windows.
 
+Pull requests are squash-merged: the PR title becomes the commit title and the description becomes its body. Branches
+are named `<type>/<task>-<topic>`, or `<type>/<topic>` without a task, with the types `feat`, `fix`, `docs`, `ci`, `chore`, `refactor`, `test`. CI makes
+the title `<type>: <summary>` when it is not (the only commit's subject, or the branch topic), removes AI attribution
+lines from the description and, on `fix/` branches, requires the `Current:`, `Expected:` and `Unchanged:` lines of
+[the bugfix format](method/formats/bugfix.md).
+
 ## Principles (draft)
 
 - **Method, not templates.** The framework is versioned in one place; each project gets a small adapter and its own
