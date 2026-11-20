@@ -9,6 +9,9 @@ this script fixes both before the merge:
 - an empty description is built from the commits: the body of a single commit, or a list of several commits'
   subjects, each with its body indented below it; a description someone wrote is kept;
 - AI attribution lines are removed from the description;
+- lines longer than 72 characters are wrapped, list items with a hanging indent: GitHub wraps the squash commit body
+  at 72 itself, without regard to lists or to lines already wrapped at another width; code blocks, tables and
+  headings are left as they are;
 - on a `fix/` branch the description must have the Current, Expected and Unchanged lines (method/formats/bugfix.md);
   they cannot be made up, so their absence is an error.
 
@@ -20,6 +23,7 @@ import os
 import re
 import subprocess
 import sys
+import textwrap
 from dataclasses import dataclass, field
 
 TYPES = ("feat", "fix", "docs", "ci", "chore", "refactor", "test")
@@ -27,6 +31,8 @@ BRANCH = re.compile(r"^(?P<type>[a-z]+)/(?P<rest>.+)$")
 TITLE = re.compile(r"^(?P<type>[a-z]+): \S")
 ATTRIBUTION = re.compile(r"^\s*Co-Authored-By:\s*Claude|Generated with \[?Claude Code", re.IGNORECASE)
 TRIPLE = ("Current", "Expected", "Unchanged")
+WIDTH = 72  # GitHub wraps the squash commit body at this width
+LIST_ITEM = re.compile(r"^\s*(?:[-*+]|\d+[.)])\s+")
 
 
 @dataclass
@@ -66,6 +72,28 @@ def _body_from_commits(commits: list[tuple[str, str]]) -> str:
     return "\n".join(items)
 
 
+def _wrap(text: str) -> str:
+    """Wrap lines longer than WIDTH; a list item's continuation lines are indented under its text."""
+    lines, in_code = [], False
+    for line in text.split("\n"):
+        stripped = line.lstrip()
+        if stripped.startswith(("```", "~~~")):
+            in_code = not in_code
+        item = LIST_ITEM.match(line)
+        if (in_code or stripped.startswith(("```", "~~~", "|", "#")) or len(line) <= WIDTH
+                or (line.startswith(("    ", "\t")) and not item)):
+            lines.append(line)
+            continue
+        if item:
+            first, rest, content = item.group(0), " " * len(item.group(0)), line[item.end():]
+        else:
+            first = rest = line[:len(line) - len(stripped)]
+            content = stripped
+        lines += textwrap.wrap(content, WIDTH, initial_indent=first, subsequent_indent=rest,
+                               break_long_words=False, break_on_hyphens=False)
+    return "\n".join(lines)
+
+
 def fix_message(title: str, body: str | None, branch: str, commit_messages: list[str]) -> Result:
     """Return the title and description the PR should have, and what cannot be fixed automatically.
 
@@ -88,11 +116,10 @@ def fix_message(title: str, body: str | None, branch: str, commit_messages: list
         else:
             result.errors.append(f"cannot derive a title from branch '{branch}'; set it to '{branch_type}: <summary>'")
 
-    cleaned = _without_attribution(body)
-    if not cleaned:
-        result.body = _body_from_commits(commits)
-    elif cleaned != body.replace("\r\n", "\n").strip():  # descriptions written on github.com come with CRLF
-        result.body = cleaned
+    written = body.replace("\r\n", "\n")  # descriptions written on github.com come with CRLF
+    new_body = _wrap(_without_attribution(written) or _body_from_commits(commits))
+    if new_body != written.strip():
+        result.body = new_body
 
     if branch_type == "fix":
         missing = [name for name in TRIPLE

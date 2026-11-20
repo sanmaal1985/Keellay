@@ -90,6 +90,49 @@ def test_other_mentions_of_claude_stay():
     assert fix_message("feat: wiring", body, "feat/8-wiring", []).body == body
 
 
+# Wrapping at 72: GitHub wraps the squash commit body there itself
+
+def _wrapped(body: str) -> str:
+    return fix_message("docs: a", body, "docs/13-architecture", []).body
+
+
+def test_long_paragraph_is_wrapped():
+    body = "Every squash commit in main should have a meaningful title and a body, also when a PR is opened by hand."
+    assert _wrapped(body) == ("Every squash commit in main should have a meaningful title and a body,\n"
+                              "also when a PR is opened by hand.")
+
+
+def test_list_item_gets_a_hanging_indent():
+    body = "- Title: a title that is not `<type>: <summary>` now comes from the branch's first commit; the branch topic"
+    assert _wrapped(body) == ("- Title: a title that is not `<type>: <summary>` now comes from the\n"
+                              "  branch's first commit; the branch topic")
+
+
+def test_numbered_and_indented_lines_keep_their_indent():
+    body = ("1. " + "word " * 20).rstrip() + "\n" + ("  continued " * 8).rstrip()
+    for line in _wrapped(body).split("\n")[1:]:
+        assert line.startswith("   ") or line.startswith("  continued")
+    assert all(len(line) <= 72 for line in _wrapped(body).split("\n"))
+
+
+def test_short_lines_code_tables_and_long_urls_are_left_alone():
+    url = "https://github.com/sanmaal1985/Keellay/actions/runs/44693064120/job/136143239307/and/more"
+    code = "    " + "x = 1; " * 15
+    body = "\n".join(["Short line.", "```", "y = 2; " * 15, "```", "| a | " + "b " * 40 + "|", code, url])
+    assert _wrapped(body) == body
+
+
+def test_wrapped_description_is_not_rewritten_again():
+    body = "- Title: a title that is not `<type>: <summary>` now comes from the\r\n  branch's first commit"
+    assert _wrapped(body) == body
+
+
+def test_body_built_from_commits_is_wrapped():
+    message = "ci: a\n\n" + "A commit body line wrapped at seventy-two characters by its author ok.\nNext."
+    result = fix_message("ci: a", "", "ci/12-wrap", [message, "ci: b"])
+    assert all(len(line) <= 72 for line in result.body.split("\n"))
+
+
 # Fix triple
 
 def test_fix_needs_the_triple():
