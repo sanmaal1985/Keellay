@@ -48,7 +48,8 @@ jobs:
           path: dist/
 
   # Main is squash-merged with the PR title and description as the commit message: fix the title to
-  # `<type>: <summary>`, drop AI attribution lines, require the bugfix triple on fix/ branches.
+  # `<type>: <summary>`, build an empty description from the commits, drop AI attribution lines, require the bugfix
+  # triple on fix/ branches.
   # Edits made with GITHUB_TOKEN start no new workflow run, so this does not loop.
   pr-message:
     name: PR title and description
