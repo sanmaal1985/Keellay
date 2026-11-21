@@ -42,6 +42,8 @@ releases, store listings, pushes to protected branches. Agents bring options wit
 ## Rules
 
 - Claims about files, configs, tools and prices are made after reading or checking them, never from memory.
+- Choices of product and technology go to the owner as options with one recommendation.
+- Every open question to the owner is listed at the end of the message; work that depends on one waits.
 - Code and commits are in English; the owner is answered in Russian.
 - Stage files by name; LF line endings.
 ```
@@ -51,15 +53,16 @@ releases, store listings, pushes to protected branches. Agents bring options wit
 - **Project:** what it is and its stack, in a few lines; the PRD has the rest.
 - **Owner:** who decides what, and what needs the owner's yes. At level light this may be the only rule set.
 - **Read first:** the indexes an agent reads at session start, in order. Active lessons come first.
-- **Rules:** project-wide rules as short imperatives, each one an agent can follow and someone can check. A rule that
-  comes from an ADR or a lesson links to it. Rules for one role belong in that role's contract, rules for one change
-  in its plan.
+- **Rules:** project-wide rules as short imperatives, each one an agent can follow and someone can check. It always
+  holds the three rules every role follows: claims only after reading or checking, choices go to the owner as options
+  with one recommendation, open questions are listed at the end of the message. A rule that comes from an ADR or a
+  lesson links to it. Rules for one role belong in that role's contract, rules for one change in its plan.
 
 ## Rules
 
 - **Minimal.** A line goes in only if an agent would otherwise get it wrong or spend long finding it out. Layout,
   commands and conventions visible in the repo are linked or left out.
-- **The owner decides.** An edit to Owner or Rules needs the owner's yes; the commit updates `updated`.
+- **The owner decides.** An edit to any section needs the owner's yes; the commit updates `updated`.
 - **A rule is the weakest mechanism.** A lesson whose mechanism is a constitution rule may still need a check or a
   hook; see [lesson.md](lesson.md).
 - **Brownfield:** rules are taken from evidence in the project (existing agent files, CI, hooks, review comments) and
@@ -73,5 +76,5 @@ Agents that can import a file load the constitution directly, so it does not dep
 
 ## Checked by
 
-`keellay check` (planned): the file exists at the resolved path; front matter; the four sections are present; links
-resolve; `AGENTS.md` links to the constitution.
+`keellay check` (planned): the file exists at the resolved path; front matter; the four sections are present; Rules
+holds the three rules every role follows; links resolve; `AGENTS.md` links to the constitution.
