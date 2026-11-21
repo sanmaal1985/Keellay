@@ -17,5 +17,7 @@ Common rules:
 | [bugfix.md](bugfix.md) | Fix path: current / expected / unchanged | draft |
 | [adr.md](adr.md) | ADR: append-only decision, supersede rule, index of what is in force | draft |
 | [lesson.md](lesson.md) | Lesson: occurrences, gap, rule, mechanism; repeats force a mechanism | draft |
+| [prd.md](prd.md) | PRD: purpose, users, non-goals, areas with stable IDs that changes and ideas link to | draft |
+| [idea.md](idea.md) | Idea: proposal, assessment with a verdict, owner's outcome; the ideas register | draft |
 
-Planned: PRD section, idea and the ideas register, constitution (`AGENTS.md` block).
+Planned: constitution.
