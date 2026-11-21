@@ -4,3 +4,7 @@ constitution = false
 product = false
 adr = false
 lessons = false
+
+[check]
+# The method and the documents around the code link to each other outside the sections.
+links = ["method", "docs/architecture.md", "README.md"]

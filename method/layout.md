@@ -12,7 +12,7 @@ docs/
   adr/               append-only ADRs, index of what is in force
   lessons/           one file per lesson, active-lessons index
 .keellay/
-  config.toml        method version, level, section paths, adapters
+  config.toml        method version, level, section paths, check settings, adapters
   manifest.json      generated files with contract version and content hash
 ```
 

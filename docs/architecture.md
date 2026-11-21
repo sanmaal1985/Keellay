@@ -69,6 +69,7 @@ and agents that read `AGENTS.md`.
 Scripts behind `keellay check`, run from git hooks and from CI: an index changes in the same commit as its section,
 links in documents resolve, a branch matches its change, and project-specific code rules hold. Agent hooks only call
 the same command. Because the checks live in git and CI, they apply to every change, whichever agent or human made it.
+What is built so far is in the living specs under `docs/specs/`; the rest is named under "Checked by" in each format.
 
 ## What a project gets
 

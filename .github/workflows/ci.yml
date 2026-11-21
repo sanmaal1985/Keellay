@@ -66,16 +66,32 @@ jobs:
           PR_NUMBER: ${{ github.event.pull_request.number }}
         run: python3 .github/scripts/pr_message.py
 
-  # The one required status check for main: it passes only when every matrix job passed and the PR message is fine,
-  # so jobs can change without editing the ruleset. `always()` makes it run (and fail) when a job fails, instead of
-  # being skipped.
+  # Keellay checks its own specs, deltas and method with the command it ships, as every project does.
+  check:
+    name: keellay check
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+
+      - uses: astral-sh/setup-uv@68559e99cc807c1eb7e9238fd43a15bba460eec2 # v10.3.3
+
+      - name: Install
+        run: uv sync --locked
+
+      - name: Check
+        run: uv run keellay check
+
+  # The one required status check for main: it passes only when every matrix job passed, the PR message is fine and
+  # the project's checks pass, so jobs can change without editing the ruleset. `always()` makes it run (and fail) when
+  # a job fails, instead of being skipped.
   ci-ok:
     name: ci-ok
     if: always()
-    needs: [test-and-build, pr-message]
+    needs: [test-and-build, pr-message, check]
     runs-on: ubuntu-latest
     steps:
       - name: All jobs passed
         run: |
           test "${{ needs.test-and-build.result }}" = "success"
           test "${{ needs.pr-message.result }}" = "success"
+          test "${{ needs.check.result }}" = "success"
