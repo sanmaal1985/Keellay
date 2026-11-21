@@ -8,6 +8,6 @@ package and derives each project's own setup from it.
 |---|---|---|
 | [layout.md](layout.md) | Default artifact layout in a project and how a project overrides it | decided |
 | [levels.md](levels.md) | Strictness levels and change paths | decided |
-| [contracts/](contracts/) | Role contracts: product owner, architect, developer, manager | planned |
+| [contracts/](contracts/) | Role contracts: product owner, architect, developer, manager; who does what | draft |
 | [formats/](formats/) | Artifact formats: change, living spec, delta, bugfix, ADR, lesson, PRD, idea, constitution | draft |
 | [procedures/](procedures/) | Role generation, brownfield analysis, closing a change | planned |

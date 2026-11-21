@@ -7,10 +7,43 @@ catalogue, with the owner's yes.
 
 | Contract | Kind | Status |
 |---|---|---|
-| `product-owner` | core | planned |
-| `architect` | core | planned |
-| `developer` | core | planned |
-| `manager` | core | planned |
+| [product-owner](product-owner.md) | core | draft |
+| [architect](architect.md) | core | draft |
+| [developer](developer.md) | core | draft |
+| [manager](manager.md) | core | draft |
+
+## Responsibilities
+
+Every artifact and every step of the process has exactly one role that does it; the owner holds the gates. The
+manager is a dispatcher: it routes work and runs the retro, and does no product, design or code work itself.
+
+| Artifact or step | Does it | Owner gate |
+|---|---|---|
+| New owner request: restate, route to product owner or architect | manager | owner's yes |
+| Open questions to the owner: list at the end of the message, hold dependent work | manager | — |
+| Idea: write down, assess, set the verdict, keep the register | product-owner | `planned` / `declined`: owner |
+| PRD: propose edits | product-owner | Purpose, Users, Non-goals, an area's Outcome: owner's yes |
+| Change path (fix / change / feature) | architect | owner confirms |
+| Draft change: plan (intent, scope, phases, done-when) | architect | `draft → approved`: owner |
+| `approved → in-progress`, branch | role of the first phase | — |
+| Delta | architect | — |
+| Phase work (code, tests, steps) | the phase's role | — |
+| Hand a finished phase to its checkers, start the next wave | manager | — |
+| Done-when: code and system, code review — every phase | architect | — |
+| Done-when: business requirements — phases with a result a user can see | product-owner | — |
+| `in-progress → review`, delta merge through the CLI, fresh-context review | architect | — |
+| `review → closed`, move to archive; ideas it carries → `done` | architect | owner's yes |
+| `dropped` | — | owner |
+| Fix: current / expected / unchanged, test, fix | developer | — |
+| Fix review at level strict | architect, fresh context | — |
+| ADR: write, supersede, index | architect | `accepted`: owner |
+| Retro after close, lessons, counts | manager | mechanism waiver: owner |
+| Mechanism for a repeated lesson | the role of the phase that builds it | — |
+| New role or instance, strictness level change | architect, through an ADR | owner |
+| Constitution: edits to Owner and Rules | architect | owner's yes |
+
+A phase is passed when every checker has passed it: the architect always, the product owner when the phase serves a
+PRD area or an idea with a result a user can see.
 
 ## Contract file
 
@@ -56,7 +89,8 @@ How contracts are written:
 - **Instructions, not a persona.** No "you are an architect"; a contract says what to do, when and with what.
 - **One term per concept**, the terms of the formats: change, phase, delta, living spec, lesson.
 - **Rules every role follows** — claims only from files, choices are the owner's, open questions listed — are in the
-  constitution, not repeated in contracts. A contract's Rules hold only what is specific to the role.
+  constitution, not repeated in contracts. A contract's Rules hold only what is specific to the role; the manager's
+  contract holds the behaviour around open questions (holding the work that depends on one).
 - **Each rule says how it holds.** `[check]`: a check in hooks or CI enforces it, and the rule names the check.
   `[instruction]`: only the text holds it. A rule that keeps being broken moves from instruction to check through a
   lesson.
