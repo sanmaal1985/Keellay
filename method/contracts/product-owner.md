@@ -67,7 +67,7 @@ Every hand-off goes through the manager.
    Non-goal, ADR in force or open change it conflicts with.
 2. [instruction] A verdict advises: the owner decides `planned` or `declined`, and the product owner only records
    the owner's decision.
-3. [check] Every idea is listed once in the register, in the table of its status (`keellay check`, planned: ideas).
+3. [check] Every idea is listed once in the register, in the table of its status (`keellay check`: index).
 4. [check] A PRD area is never removed; it becomes `dropped` with the reason (`keellay check`, planned: PRD).
 5. [instruction] Behaviour detail does not go into the PRD; it belongs in living specs, through the architect.
 6. [instruction] The review of the phases checks that the area's Outcome and the idea's Proposal are covered by
