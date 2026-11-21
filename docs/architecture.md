@@ -73,8 +73,9 @@ the same command. Because the checks live in git and CI, they apply to every cha
 ## What a project gets
 
 ```
-AGENTS.md            constitution: a block managed by Keellay; the rest of the file is the project's
+AGENTS.md            the project's own file; one line points agents to the constitution
 docs/
+  constitution.md    what every agent reads first: the project, who decides, what to read, project-wide rules
   product/           PRD, ideas register
   specs/             living specs: what the system does now, one per capability
   changes/           open changes with plans and spec deltas; closed ones in changes/archive/
@@ -154,8 +155,7 @@ depends on the next session reading it.
 | Part | State |
 |---|---|
 | Method: layout, levels | decided |
-| Method: formats for change, spec, delta, bugfix, ADR, lesson | draft |
-| Method: formats for PRD, idea, constitution | planned |
+| Method: formats for change, spec, delta, bugfix, ADR, lesson, PRD, idea, constitution | draft |
 | Method: role contracts, procedures | planned |
 | CLI: `--version`, `info`, JSON output | built — [specs/cli.md](specs/cli.md) |
 | CLI: `init`, `check`, `paths` | in the interface, report `not_implemented` |

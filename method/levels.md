@@ -9,7 +9,7 @@ Each level adds to the one above.
 
 | Level | Turns on |
 |---|---|
-| light | constitution in `AGENTS.md`, core roles, ADRs and index, lessons and index, owner gates; hooks: index co-change, doc links |
+| light | constitution linked from `AGENTS.md`, core roles, ADRs and index, lessons and index, owner gates; hooks: index co-change, doc links |
 | standard (default) | living specs and deltas for behaviour changes, plans with owner-tagged phases and done-when, fresh-context review at close, retro after each closed plan; CI runs the same checks as the hooks |
 | strict | a delta for every behaviour change (enforced in CI), spec freshness gate, fresh-context review for every change including fixes, skill evals in CI, configurable code-rule gates |
 
