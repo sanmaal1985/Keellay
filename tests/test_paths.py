@@ -1,6 +1,7 @@
 """Scenarios of the `paths` delta (change 0004) as tests."""
 
 import json
+import re
 import subprocess
 from pathlib import Path
 
@@ -59,7 +60,11 @@ def test_defaults_without_a_config(capsys, tmp_path, monkeypatch):
 def test_defaults_match_the_layout_in_the_method():
     layout = (method_dir()[0] / "layout.md").read_text(encoding="utf-8")
     for path in DEFAULT_SECTIONS.values():
-        assert Path(path).name in layout, path
+        parent, name = path.split("/")
+        assert re.search(rf"^{parent}/$", layout, re.MULTILINE), parent
+        # A file is listed as `name`, a folder as `name/`, indented under its parent in the layout's tree.
+        entry = name if "." in name else f"{name}/"
+        assert re.search(rf"^  {re.escape(entry)}\s", layout, re.MULTILINE), path
 
 
 def test_config_overrides_level_and_sections(capsys, tmp_path, monkeypatch):
