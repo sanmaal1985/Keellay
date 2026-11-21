@@ -1,8 +1,8 @@
 # Lesson
 
 A lesson records something that went wrong (or nearly did), why the process let it through, and what stops it next
-time. Lessons exist to become mechanisms: a lesson that repeats gets a hook, a check, a contract rule or a checklist
-item, and then stops costing attention.
+time. Lessons exist to become mechanisms: a lesson that repeats gets a hook, a check, a contract rule, a checklist
+item or, weakest, a rule in the constitution or the agent instructions, and then stops costing attention.
 
 ## File
 
@@ -16,7 +16,7 @@ status: active           # active | mechanized | retired
 count: 2                 # times it happened
 first: 2026-11-20
 last: 2026-11-21
-mechanism:               # what enforces it once mechanized: a hook, check, contract rule or checklist item
+mechanism:               # what enforces it once mechanized: a hook, check, contract rule, checklist item or rule
 ---
 
 # 0003 Conventions were chosen without the owner
@@ -73,6 +73,6 @@ Mechanized:
 
 ## Checked by
 
-`keellay check` (task 4): front matter; numbers unique; `count` equals the number of occurrences; a lesson with
+`keellay check` (planned): front matter; numbers unique; `count` equals the number of occurrences; a lesson with
 `count` of 2 or more is mechanized, or has an owner waiver, before its change closes; `mechanized` has a `mechanism`;
 the index lists active and mechanized lessons in the right tables.

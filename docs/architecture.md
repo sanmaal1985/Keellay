@@ -104,8 +104,8 @@ or from Keellay's catalogue of contracts, with the owner's yes. No role is free-
   documents, ADRs, tasks, hooks and CI. Keellay detects what it can and asks only about the rest. The result is a
   report with a proposal for every artifact — keep, convert or archive — and for every section — map it in place or
   move it to the default. **Nothing is written before the owner's yes.** Living specs start empty: a capability's spec
-  appears with the first change that touches it. An existing project usually starts at the light level and moves up
-  through an ADR.
+  appears with the first change that touches it, from the standard level up. An existing project usually starts at the
+  light level and moves up through an ADR.
 
 ### Role skills: rendered, filled, checked
 
@@ -132,26 +132,31 @@ the architect proposes it and the owner confirms:
 | change | small, one area, low risk | a short plan; a spec delta if behaviour changes |
 | feature | a new capability, several areas, or high risk | idea or PRD entry → plan with phases → spec delta → work in waves → fresh-context review → close |
 
-A change is a folder with a plan and, when behaviour changes, a **delta**: the requirements it adds, modifies or
-removes. The delta can be reviewed as the intended behaviour before any code is written. The architect writes what the
-change is; the developer, who knows the code, cuts it into phases — vertical slices, each tagged with the role that
-owns it and saying when it is done — and the architect and the product owner review the cut before the owner approves
-the plan. The architect checks every finished phase against its done-when
-with a code review; the product owner also checks phases with a result a user can see. The manager is a dispatcher:
-it routes a new request, hands a finished phase to its checkers and starts the next wave, not after every step.
+At the light level there are no living specs yet, so no path writes a delta; the fresh-context review at close still
+runs.
 
-**Close.** The CLI merges the delta into the living specs by requirement ID and validates the result: every added or
-modified requirement is there with its new text, removed ones are gone, and no requirement is touched by another open
-change. An architect in a **fresh context** — a new session that did not do the work — checks the merged specs against
-the code and tests. With the owner's yes the change is closed and moved to the archive. The specs now describe the
-system as it is.
+A change is a folder with a plan and, when behaviour changes, a **delta** next to the specs: the requirements it adds,
+modifies or removes. The delta can be reviewed as the intended behaviour before any code is written. The architect
+writes what the change is; the developer, who knows the code, cuts it into phases — vertical slices, each tagged with
+the role that owns it and saying when it is done — and the architect and the product owner review the cut before the
+owner approves the plan. The architect checks every finished phase against its done-when with a code review; the
+product owner also checks phases with a result a user can see. The manager is a dispatcher: it routes a new request,
+hands a finished phase to its checkers and starts the next wave, not after every step.
+
+**Close.** The CLI merges the delta into the living specs by requirement ID — when the change goes to review, or in
+the implementing pull request when plans and specs are kept in different repositories — and validates the result:
+every added or modified requirement is there with its new text, removed ones are gone, and no requirement is touched
+by another open change. At every level an architect in a **fresh context** — a new session that did not do the work —
+checks the change against its intent, scope and done-when, its code and its documents, and, where there are specs,
+the merged specs against the code and tests. With the owner's yes the change is closed and moved to the archive.
+The specs now describe the system as it is.
 
 ### Lessons become mechanisms
 
 After a plan closes, a retro records what went wrong as lessons, one file each, with a count of how often each one
-happened. A lesson that repeats has to become a mechanism — a hook, a check, a rule in a role contract or a checklist
-item — before the change in which it repeated closes, unless the owner waives it. A mechanism holds where a reminder
-depends on the next session reading it.
+happened. A lesson that repeats has to become a mechanism — a hook, a check, a rule in a role contract, a checklist
+item or, weakest, a rule in the constitution — before the change in which it repeated closes, unless the owner waives
+it. A mechanism holds where a reminder depends on the next session reading it.
 
 ## Status
 

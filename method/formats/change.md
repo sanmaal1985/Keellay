@@ -1,6 +1,7 @@
 # Change
 
-A change is one unit of work that the owner approved: a folder with a plan and, when behaviour changes, spec deltas.
+A change is one unit of work that the owner approved: a folder with a plan and, when behaviour changes, spec deltas
+(next to the specs, see [delta.md](delta.md)).
 The fix path has no change folder (see [bugfix.md](bugfix.md)).
 
 ## Identity
@@ -37,7 +38,7 @@ docs/changes/
 | draft | intent, scope and path written; phases cut and reviewed; not yet agreed | anyone |
 | approved | the owner said yes to the plan: intent, scope, path and phases | owner |
 | in-progress | phases are being worked on | the role of the first phase |
-| review | all phases done; a fresh-context review runs, deltas are merged into living specs | architect |
+| review | all phases done; deltas are merged into living specs; a fresh-context review runs (every level); fixes after it that change a rule, a decision or more than wording get a re-review in a fresh context | architect |
 | closed | review passed, deltas merged, the folder moved to `archive/` | architect, with the owner's yes |
 | dropped | will not be done; the reason is in the plan; moved to `archive/` | owner |
 
@@ -88,8 +89,9 @@ Decisions made during the change. One that will matter after the change closes b
 
 ## Close
 
-- Review: fresh-context session, date, result and findings.
-- Merged deltas: `auth-session` (+REQ-auth-004, ~REQ-auth-003).
+- Review: fresh-context session, date, result and findings; fixes after it, and the re-review.
+- Merged deltas: `auth-session` (+REQ-auth-004, ~REQ-auth-003), and the merging commit when plans and specs are in
+  different repositories.
 - ADRs: links. Lessons: links.
 ```
 
@@ -105,6 +107,7 @@ Decisions made during the change. One that will matter after the change closes b
   change into phases; the architect and, for a change that serves a PRD area or an idea, the product owner review the
   phases before the owner approves the plan (see the responsibility table in `method/contracts/README.md`).
 - A `change`-path plan may have one phase and no Decisions section.
+- At level light no plan has a delta, since there are no living specs yet (see `method/levels.md`).
 
 ## Index: docs/changes/README.md
 
@@ -120,6 +123,6 @@ Open changes. Closed and dropped ones are in `archive/`.
 
 ## Checked by
 
-`keellay check` (task 4): front matter fields and values; status matches the index row; one index row per open
+`keellay check` (planned): front matter fields and values; status matches the index row; one index row per open
 change; no duplicate numbers; every phase has Role, Depends on and Done when; roles are known; the branch name
 matches an open change (level light: advice, standard: warning, strict: error).
