@@ -8,7 +8,7 @@ from keellay import __version__
 from keellay.checks import run_checks
 from keellay.checks.source import StagedFiles, WorkingTree, is_git_repository
 from keellay.method_files import method_dir
-from keellay.paths import ConfigError, load_project
+from keellay.paths import CONFIG_FILE, ConfigError, find_root, load_project
 
 EXIT_OK = 0
 EXIT_FINDINGS = 1
@@ -22,7 +22,8 @@ PLANNED = {
 
 
 def _emit(payload: dict) -> None:
-    json.dump(payload, sys.stdout, ensure_ascii=False)
+    # ASCII with \u escapes: the console's code page cannot garble or reject a file name, and JSON parsers decode it.
+    json.dump(payload, sys.stdout, ensure_ascii=True)
     sys.stdout.write("\n")
 
 
@@ -54,12 +55,20 @@ def _check(staged: bool) -> int:
         return EXIT_CONFIG_ERROR
 
     try:
-        project = load_project()
-        if staged and not is_git_repository(project.root):
-            return error("--staged needs a git repository")
-        source = StagedFiles(project.root) if staged else WorkingTree(project.root)
+        if staged:
+            root = find_root()
+            if not is_git_repository(root):
+                return error("--staged needs a git repository")
+            source = StagedFiles(root)
+            # The staged config decides what the staged files are checked against.
+            project = load_project(root, source.read_if_staged(CONFIG_FILE.as_posix()), config_given=True)
+        else:
+            project = load_project()
+            source = WorkingTree(project.root)
         findings = run_checks(project, source)
     except ConfigError as problem:
+        return error(str(problem))
+    except RuntimeError as problem:  # git failed while reading the index
         return error(str(problem))
     failed = any(finding.severity == "error" for finding in findings)
     _emit({"command": "check", "status": "failed" if failed else "ok",

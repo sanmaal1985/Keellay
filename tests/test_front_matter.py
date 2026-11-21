@@ -34,7 +34,7 @@ VALID = {
 BROKEN = {
     "change": ("id: 0007-session-expiry\ntitle: Session expires\npath: epic\nstatus: in-progress\napproved:\n",
                "epic"),
-    "archived change": ("id: 0006-export\ntitle: Export\npath: change\nstatus: dropped\n", "approved"),
+    "archived change": ("id: 0006-export\ntitle: Export\npath: change\nstatus: finished\n", "finished"),
     "idea": ("id: 0004\ntitle: Shared limits\nstatus: started\nverdict:\nsource: owner\ndate: 2026-11-21\n"
              "change:\n", "started"),
     "prd": ("product: Family budget\nupdated: 21.11.2026\n", "21.11.2026"),

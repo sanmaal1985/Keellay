@@ -9,15 +9,17 @@ import re
 from urllib.parse import unquote
 
 from keellay.checks import Finding
+from keellay.checks.markdown import without_code_blocks
 from keellay.checks.source import Source
 from keellay.paths import Project
 
 CHECK = "links"
 
-_FENCE = re.compile(r"^\s*(`{3,}|~{3,})")
 _INLINE_CODE = re.compile(r"(`+)(?:(?!\1).)+?\1")
-_INLINE_LINK = re.compile(r"!?\[(?:[^\[\]]|\[[^\[\]]*\])*\]\(\s*(<[^>]*>|[^)\s]+)(?:\s+[\"'(][^)]*)?\)")
-_DEFINITION = re.compile(r"^\s{0,3}\[[^\]]+\]:\s*(<[^>]*>|\S+)")
+# Link text may wrap onto the next line and may hold one level of brackets, such as an image in a badge.
+_INLINE_LINK = re.compile(r"!?\[(?:[^\[\]]|\[[^\[\]]*\])*\]\(\s*(<[^>\n]*>|[^)\s]+)(?:\s+[\"'(][^)]*)?\)")
+_IMAGE = re.compile(r"!\[[^\[\]]*\]\(\s*(<[^>\n]*>|[^)\s]+)(?:\s+[\"'(][^)]*)?\)")
+_DEFINITION = re.compile(r"^\s{0,3}\[[^\]]+\]:\s*(<[^>]*>|\S+)", re.MULTILINE)
 _SCHEME = re.compile(r"^[A-Za-z][A-Za-z0-9+.-]*:")
 
 
@@ -36,23 +38,15 @@ def markdown_files(project: Project, source: Source, extra: list[str]) -> list[s
 
 
 def links_in(text: str):
-    """Yield (line number, target) for every link outside code."""
-    fence = None
-    for number, line in enumerate(text.splitlines(), start=1):
-        opening = _FENCE.match(line)
-        if fence is not None:
-            if opening and opening.group(1)[0] == fence[0] and len(opening.group(1)) >= len(fence):
-                fence = None
-            continue
-        if opening:
-            fence = opening.group(1)
-            continue
-        line = _INLINE_CODE.sub("", line)
-        for match in _INLINE_LINK.finditer(line):
-            yield number, match.group(1)
-        definition = _DEFINITION.match(line)
-        if definition:
-            yield number, definition.group(1)
+    """Yield (line number, target) for every link outside code, in the order they appear."""
+    # Inline code is blanked with spaces of the same length, so positions and line numbers stay where they were.
+    prose = "\n".join(_INLINE_CODE.sub(lambda m: " " * len(m.group(0)), line) for line in without_code_blocks(text))
+    targets = {}
+    for pattern in (_INLINE_LINK, _IMAGE, _DEFINITION):
+        for match in pattern.finditer(prose):
+            targets.setdefault(match.start(1), match.group(1))
+    for position in sorted(targets):
+        yield prose.count("\n", 0, position) + 1, targets[position]
 
 
 def target_path(file: str, target: str) -> str | None:

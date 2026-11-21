@@ -109,14 +109,20 @@ leave the project root are not checked, and the part after `#` is ignored.
 
 ### REQ-check-007: Staged content
 
-When invoked with `--staged` in a git repository, the CLI shall check the files as they are in the git index, and treat
-files that are not in the index as absent.
+When invoked with `--staged` in a git repository, the CLI shall check the files and read `.keellay/config.toml` as they
+are in the git index, and treat files that are not in the index as absent.
 
 #### Scenario: unfinished file of another session
 
 - GIVEN a staged change that follows its format, and an unstaged edit in another file that breaks a link
 - WHEN `keellay check --staged` runs
 - THEN the status is `ok`
+
+#### Scenario: config edited but not staged
+
+- GIVEN an unstaged edit of `.keellay/config.toml` that maps a section to another folder
+- WHEN `keellay check --staged` runs
+- THEN the sections are those of the staged config
 
 ### REQ-check-008: Invalid config
 

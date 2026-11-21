@@ -6,6 +6,7 @@ from collections import defaultdict
 
 from keellay.checks import Finding
 from keellay.checks.artifacts import Artifact
+from keellay.checks.markdown import without_code_blocks
 from keellay.checks.source import Source
 
 CHECK = "numbers"
@@ -36,8 +37,8 @@ def _shared_numbers(artifacts: list[Artifact]) -> list[Finding]:
             continue
         files = sorted(artifact.file for artifact in group)
         for file in files[1:]:
-            findings.append(Finding(CHECK, "error", file, None,
-                                    f"{kind} number {number} is also used by {', '.join(f for f in files if f != file)}"))
+            others = ", ".join(other for other in files if other != file)
+            findings.append(Finding(CHECK, "error", file, None, f"{kind} number {number} is also used by {others}"))
     return findings
 
 
@@ -46,12 +47,14 @@ def _requirement_ids(artifacts: list[Artifact], source: Source) -> list[Finding]
     for spec in (artifact for artifact in artifacts if artifact.kind == "spec"):
         prefix = (spec.meta or {}).get("prefix")
         seen: dict[str, int] = {}
-        for line_number, line in enumerate(source.read(spec.file).splitlines(), start=1):
+        # Headings in code blocks are examples, such as a delta shown in the spec.
+        for line_number, line in enumerate(without_code_blocks(source.read(spec.file)), start=1):
             match = REQUIREMENT.match(line)
             if not match:
                 continue
             requirement = match.group(1)
-            if isinstance(prefix, str) and prefix and not re.fullmatch(rf"REQ-{re.escape(prefix)}-\d{{3}}", requirement):
+            own_form = rf"REQ-{re.escape(prefix)}-\d{{3}}" if isinstance(prefix, str) and prefix else None
+            if own_form and not re.fullmatch(own_form, requirement):
                 findings.append(Finding(CHECK, "error", spec.file, line_number,
                                         f"{requirement} does not have the form REQ-{prefix}-<nnn> of this spec"))
             if requirement in seen:

@@ -3,6 +3,7 @@
 Defaults follow `method/layout.md`; a project overrides them in `.keellay/config.toml`.
 """
 
+import posixpath
 import subprocess
 import tomllib
 from dataclasses import dataclass
@@ -43,18 +44,14 @@ class Project:
     sections: dict[str, Section]
     config: dict
 
-    def section_dir(self, name: str) -> Path | None:
-        """The section's path when it exists, else None: checks skip a section that is not there."""
-        path = self.sections[name].resolve(self.root)
-        return path if path is not None and path.exists() else None
-
 
 def find_root(cwd: Path | None = None) -> Path:
     """The git repository's top-level folder, or the current folder outside git."""
     cwd = Path.cwd() if cwd is None else cwd
     try:
-        result = subprocess.run(["git", "rev-parse", "--show-toplevel"], cwd=cwd, capture_output=True, text=True,
-                                check=False)
+        # Git prints the path in UTF-8 whatever the system code page is, so a folder named in Cyrillic stays intact.
+        result = subprocess.run(["git", "rev-parse", "--show-toplevel"], cwd=cwd, capture_output=True,
+                                encoding="utf-8", errors="replace", check=False)
     except OSError:
         return cwd.resolve()
     if result.returncode != 0 or not result.stdout.strip():
@@ -62,9 +59,11 @@ def find_root(cwd: Path | None = None) -> Path:
     return Path(result.stdout.strip()).resolve()
 
 
-def load_project(root: Path | None = None) -> Project:
+def load_project(root: Path | None = None, config_text: str | None = None, config_given: bool = False) -> Project:
+    """The project at the root. With `config_given`, the config is `config_text` (None: no config) instead of the
+    file on disk, so `check --staged` reads the config that is staged."""
     root = find_root() if root is None else root
-    config = _read_config(root)
+    config = _parse_config(config_text) if config_given else _read_config(root)
 
     level = config.get("level", DEFAULT_LEVEL)
     if level not in LEVELS:
@@ -81,7 +80,7 @@ def load_project(root: Path | None = None) -> Project:
         if value is False:
             sections[name] = Section(None)
         elif isinstance(value, str) and value.strip():
-            sections[name] = Section(value.replace("\\", "/"))
+            sections[name] = Section(posixpath.normpath(value.strip().replace("\\", "/")))
         else:
             raise ConfigError(f"{CONFIG_FILE.as_posix()}: section {name!r} must be a path or false, not {value!r}")
     return Project(root=root, level=level, sections=sections, config=config)
@@ -91,8 +90,13 @@ def _read_config(root: Path) -> dict:
     path = root / CONFIG_FILE
     if not path.is_file():
         return {}
+    return _parse_config(path.read_bytes().decode("utf-8-sig", errors="replace"))
+
+
+def _parse_config(text: str | None) -> dict:
+    if text is None:
+        return {}
     try:
-        with path.open("rb") as file:
-            return tomllib.load(file)
+        return tomllib.loads(text)
     except tomllib.TOMLDecodeError as error:
         raise ConfigError(f"{CONFIG_FILE.as_posix()}: not valid TOML: {error}") from error

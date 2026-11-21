@@ -15,8 +15,8 @@ How the parts fit together and how a project runs on Keellay: [docs/architecture
 
 ## Status
 
-Design decided, skeleton in place. The CLI starts and reports its version; `init`, `check` and `paths` are not
-implemented yet. Nothing is published.
+Design decided, first commands built. `keellay paths` shows where a project's artifacts live, and `keellay check`
+checks their front matter, numbers, indexes and links; `init` is not implemented yet. Nothing is published.
 
 ## Repository layout
 
@@ -36,10 +36,12 @@ Requires [uv](https://docs.astral.sh/uv/).
 uv sync            # create the environment
 uv run pytest      # run the tests
 uv run keellay info
+uv run keellay check  # check this repository's specs, deltas and method links
 uv build           # build the sdist and wheel into dist/
 ```
 
-CI runs the tests, builds the package and smoke-tests the wheel on Linux, macOS and Windows.
+CI runs the tests, builds the package and smoke-tests the wheel on Linux, macOS and Windows, and runs
+`keellay check` on this repository.
 
 Pull requests are squash-merged: the PR title becomes the commit title and the description becomes its body. Branches
 are named `<type>/<task>-<topic>`, or `<type>/<topic>` without a task, with the types `feat`, `fix`, `docs`, `ci`,

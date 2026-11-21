@@ -60,8 +60,9 @@ def anything(value) -> str | None:
     return None
 
 
-# Kind -> field -> rule. Every field listed must be present; `optional` allows an empty value. Fields a format calls
-# optional and that may be left out entirely are in OMITTABLE.
+# Kind -> field -> rule. Every field listed must be present unless it is in OMITTABLE; `optional` allows an empty
+# value. A field the format marks optional, or one that is only set later ("set when assessed", "set when that change
+# is approved"), may be left out until it has a value.
 SCHEMAS: dict[str, dict[str, Rule]] = {
     "change": {"id": text, "title": text, "path": one_of("change", "feature"),
                "status": one_of("draft", "approved", "in-progress", "review", "closed", "dropped"),
@@ -78,7 +79,8 @@ SCHEMAS: dict[str, dict[str, Rule]] = {
     "spec": {"capability": text, "prefix": text},
     "delta": {"capability": text, "prefix": optional(text)},
 }
-OMITTABLE = {"idea": {"prd"}, "adr": {"supersedes", "superseded-by"}, "delta": {"prefix"}}
+OMITTABLE = {"change": {"approved"}, "idea": {"verdict", "prd", "change"}, "adr": {"supersedes", "superseded-by"},
+             "lesson": {"mechanism"}, "delta": {"prefix"}}
 
 # Kind -> the field that must match what the file or folder name says.
 NAME_FIELD = {"change": "id", "idea": "id", "adr": "id", "lesson": "id", "spec": "capability", "delta": "capability"}

@@ -11,6 +11,7 @@ from dataclasses import dataclass
 
 from keellay.checks import Finding
 from keellay.checks.artifacts import INDEX, Artifact
+from keellay.checks.markdown import prefix_of, without_code_blocks
 from keellay.checks.source import Source
 from keellay.paths import Project
 
@@ -55,12 +56,14 @@ def check(project: Project, source: Source, artifacts: list[Artifact]) -> list[F
 
 
 def _status(artifact: Artifact) -> str | None:
-    return (artifact.meta or {}).get("status")
+    """The item's status; a status that is not a string is a front-matter finding, not something to index by."""
+    status = (artifact.meta or {}).get("status")
+    return status if isinstance(status, str) else None
 
 
 def _check_index(folder: str, source: Source, rule: IndexRule, items: list[Artifact],
                  every: list[Artifact]) -> list[Finding]:
-    index = f"{folder}/{INDEX}"
+    index = prefix_of(folder) + INDEX
     expected = [item for item in items if rule.tables is None or _status(item) in _all_statuses(rule)]
     if not source.is_file(index):
         if expected:
@@ -120,23 +123,13 @@ def _statuses_for(rule: IndexRule, label: str) -> tuple[str, ...] | None:
 
 def _tables(text: str) -> list[Table]:
     """Markdown tables outside code blocks, each with the line above it as its label."""
-    tables, label, fence = [], "", None
-    lines = text.splitlines()
+    tables, label = [], ""
+    lines = without_code_blocks(text)
     index = 0
     while index < len(lines):
-        line = lines[index]
-        stripped = line.strip()
-        opening = re.match(r"^(`{3,}|~{3,})", stripped)
-        if fence is not None:
-            if opening and opening.group(1)[0] == fence[0]:
-                fence = None
-            index += 1
-            continue
-        if opening:
-            fence = opening.group(1)
-            index += 1
-            continue
-        if stripped.startswith("|") and index + 1 < len(lines) and re.match(r"^\|[\s:|-]+\|$", lines[index + 1].strip()):
+        stripped = lines[index].strip()
+        delimiter = lines[index + 1].strip() if index + 1 < len(lines) else ""
+        if stripped.startswith("|") and re.match(r"^\|[\s:|-]+\|$", delimiter):
             header = _cells(stripped)
             status_column = next((i for i, cell in enumerate(header) if cell.lower() == "status"), None)
             rows = []

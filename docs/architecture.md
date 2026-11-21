@@ -173,8 +173,10 @@ mechanism holds where a reminder depends on the next session reading it.
 | Method: role contracts | draft |
 | Method: procedures | planned |
 | CLI: `--version`, `info`, JSON output | built — [specs/cli.md](specs/cli.md) |
-| CLI: `init`, `check`, `paths` | in the interface, report `not_implemented` |
+| CLI: `paths` | built — [specs/paths.md](specs/paths.md) |
+| CLI: `init` | in the interface, reports `not_implemented` |
 | CLI: role rendering, upgrades, delta merge | planned; commands not named yet |
 | Agent wiring: Claude Code, `AGENTS.md` agents | planned |
-| Checks | planned |
+| Checks: front matter, numbers, indexes, links | built — [specs/check.md](specs/check.md) |
+| Checks: the rest named under "Checked by" in the formats | planned |
 | Packages on PyPI | not published |

@@ -10,6 +10,7 @@ from dataclasses import dataclass, field
 
 import yaml
 
+from keellay.checks.markdown import prefix_of
 from keellay.checks.source import Source
 from keellay.paths import Project
 
@@ -41,9 +42,10 @@ def find(project: Project, source: Source) -> list[Artifact]:
         found.append(Artifact("constitution", constitution, None))
     product = _section(project, "product")
     if product:
-        if source.is_file(f"{product}/prd.md"):
-            found.append(Artifact("prd", f"{product}/prd.md", None))
-        found += _numbered(source, f"{product}/ideas", "idea")
+        prd = prefix_of(product) + "prd.md"
+        if source.is_file(prd):
+            found.append(Artifact("prd", prd, None))
+        found += _numbered(source, prefix_of(product) + "ideas", "idea")
     adr = _section(project, "adr")
     if adr:
         found += _numbered(source, adr, "adr")
@@ -72,9 +74,9 @@ def _section(project: Project, name: str) -> str | None:
 
 def _files_in(source: Source, folder: str) -> list[str]:
     """Markdown files directly in the folder, without its index."""
-    prefix = folder.rstrip("/") + "/"
+    prefix = prefix_of(folder)
     return [name for name in source.files_under(folder)
-            if name.endswith(".md") and "/" not in name[len(prefix):] and not name.endswith("/" + INDEX)]
+            if name.endswith(".md") and "/" not in name[len(prefix):] and posixpath.basename(name) != INDEX]
 
 
 def _numbered(source: Source, folder: str, kind: str) -> list[Artifact]:
@@ -88,7 +90,7 @@ def _numbered(source: Source, folder: str, kind: str) -> list[Artifact]:
 def _changes(source: Source, changes: str) -> list[Artifact]:
     """Plans and deltas of open changes (`changes/<id>/`) and archived ones (`changes/archive/<id>/`)."""
     artifacts = []
-    prefix = changes.rstrip("/") + "/"
+    prefix = prefix_of(changes)
     for name in source.files_under(changes):
         parts = name[len(prefix):].split("/")
         archived = parts[0] == "archive"
