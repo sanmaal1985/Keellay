@@ -55,8 +55,8 @@ The owner's decision: planned (and later the change link), or declined with the 
 - **Clarify** keeps the idea `assessed` until the owner answers; the answers go into Assessment and the verdict is set
   again.
 - **Declined ideas stay.** They are the record of what was considered and why not.
-- An idea that will be done straight away may go from `new` to `planned` when the owner says so; Assessment then holds
-  one line on why it was skipped.
+- An idea that will be done straight away may go from `new` to `planned` when the owner says so; `verdict` stays empty
+  and Assessment holds one line on why it was skipped.
 
 ## Index: docs/product/README.md
 
@@ -84,6 +84,7 @@ Ideas, closed:
 
 ## Checked by
 
-`keellay check` (task 4): front matter fields and values; numbers unique; `assessed` and later have a `verdict`;
+`keellay check` (task 4): front matter fields and values; numbers unique; `assessed` has a `verdict`, and a later
+status keeps it unless Assessment says why it was skipped;
 `declined` has an Outcome; `change` names an existing change, and `done` names a closed one; `prd` names an existing
 PRD area; the index lists every idea once, in the table that matches its status.
