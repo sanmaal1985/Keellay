@@ -111,7 +111,7 @@ def _read(source: Source, artifact: Artifact) -> None:
 def parse_front_matter(text: str) -> tuple[dict, dict]:
     """The front matter as a mapping of strings, and the line of each field.
 
-    `BaseLoader` keeps every value a string, so `0012` stays `0012` and dates are not converted (ADR 0019).
+    `BaseLoader` keeps every value a string, so `0012` stays `0012` and dates are not converted.
     """
     lines = text.splitlines()
     if not lines or lines[0].strip() != "---":

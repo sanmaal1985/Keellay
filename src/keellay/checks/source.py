@@ -1,7 +1,7 @@
 """Where checks read files from: the working tree, or the git index for a pre-commit hook.
 
 Paths are relative to the project root and use `/`. A hook checks what is being committed, so an unfinished file
-that another session has not staged does not stop the commit (ADR 0027: parallel sessions share one checkout).
+that another session has not staged does not stop the commit when parallel sessions share one checkout.
 """
 
 import os
