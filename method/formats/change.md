@@ -131,6 +131,6 @@ Open changes. Closed and dropped ones are in `archive/`.
 
 ## Checked by
 
-`keellay check` (planned): front matter fields and values; status matches the index row; one index row per open
-change; no duplicate numbers; every phase has Role, Depends on and Done when; roles are known; the branch name
-matches an open change (level light: advice, standard: warning, strict: error).
+`keellay check`: front matter fields and values; status matches the index row; one index row per open change; no
+duplicate numbers. Planned: every phase has Role, Depends on and Done when; roles are known; the branch name matches
+an open change (level light: advice, standard: warning, strict: error).
