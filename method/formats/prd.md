@@ -57,8 +57,11 @@ An area is one outcome the product commits to; it is the unit that changes and i
 - **Outcome:** what is true for a user when the area is delivered, not a feature list.
 - **Measure:** how the owner will tell the outcome is reached. Optional at level light.
 - **In / Out:** the boundary of the area.
-- **Status:** `planned` (committed, not started), `in-progress` (an open change serves it), `delivered`, or `dropped`
-  (kept in the file with the reason, so the ID is not reused).
+- **Status:** `planned` (committed, not started; the owner's yes to the area), `in-progress` (an approved change
+  serves it, or served it without reaching its Outcome yet; set by the architect), `delivered` (set by the product
+  owner when the owner says yes to close a change that reached the area's Outcome, after the business check at review;
+  otherwise the area stays `in-progress`), or `dropped` (by the owner; kept in the file with the reason, so the ID is
+  not reused).
 
 ## Rules
 

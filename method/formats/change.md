@@ -1,8 +1,7 @@
 # Change
 
 A change is one unit of work that the owner approved: a folder with a plan and, when behaviour changes, spec deltas
-(next to the specs, see [delta.md](delta.md)).
-The fix path has no change folder (see [bugfix.md](bugfix.md)).
+(next to the specs, see [delta.md](delta.md)). The fix path has no change folder (see [bugfix.md](bugfix.md)).
 
 ## Identity
 
@@ -35,11 +34,11 @@ docs/changes/
 
 | Status | Meaning | Who moves it here |
 |---|---|---|
-| draft | intent, scope and path written; phases cut and reviewed; not yet agreed | anyone |
+| draft | intent, scope and path written; phases cut and reviewed; not yet agreed | architect |
 | approved | the owner said yes to the plan: intent, scope, path and phases | owner |
-| in-progress | phases are being worked on | the role of the first phase |
-| review | all phases done; deltas are merged into living specs; a fresh-context review runs (every level); fixes after it that change a rule, a decision or more than wording get a re-review in a fresh context | architect |
-| closed | review passed, deltas merged, the folder moved to `archive/` | architect, with the owner's yes |
+| in-progress | phases are being worked on | manager, starting the first wave |
+| review | all phases done; deltas are merged into living specs; a fresh-context review runs (every level), the product owner's business check runs for a change that serves a PRD area or an idea, and the manager runs the retro at level standard and up; at every level a lesson that repeated here gets a small mechanism, or the owner's waiver for a large one; fixes after the review that change a rule, a decision or more than wording get a re-review in a fresh context | architect |
+| closed | review passed; business check passed where the change serves a PRD area or an idea; retro done at level standard and up; any repeated lesson's mechanism made or waived; the PRD areas whose Outcome the change reached `delivered`; the folder moved to `archive/` | architect, with the owner's yes |
 | dropped | will not be done; the reason is in the plan; moved to `archive/` | owner |
 
 Every status change updates the index in the same commit.
@@ -83,6 +82,11 @@ Why this change exists and what is true when it is done. Links to the idea or PR
 - Depends on: 1
 - Done when: ...
 
+## Open questions
+
+Questions found while cutting the phases, marked `[architect]` or `[product-owner]`, each with its answer once given.
+No phase's done-when assumes an answer that is not here yet.
+
 ## Decisions
 
 Decisions made during the change. One that will matter after the change closes becomes an ADR; link it here.
@@ -90,8 +94,12 @@ Decisions made during the change. One that will matter after the change closes b
 ## Close
 
 - Review: fresh-context session, date, result and findings; fixes after it, and the re-review.
+- Business check: for a change that serves a PRD area or an idea, the product owner's check of the areas' Outcome
+  and the ideas' Proposal against what can be observed, date, result; the areas set `delivered`.
 - Merged deltas: `auth-session` (+REQ-auth-004, ~REQ-auth-003), and the merging commit when plans and specs are in
   different repositories.
+- Retro, written by the manager (level standard and up): what went wrong, as new lessons or new occurrences of
+  existing ones. At every level: for a lesson that repeated here, the mechanism made or the waiver.
 - ADRs: links. Lessons: links.
 ```
 

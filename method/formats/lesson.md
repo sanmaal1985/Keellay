@@ -1,8 +1,8 @@
 # Lesson
 
 A lesson records something that went wrong (or nearly did), why the process let it through, and what stops it next
-time. Lessons exist to become mechanisms: a lesson that repeats gets a hook, a check, a contract rule, a checklist
-item or, weakest, a rule in the constitution or the agent instructions, and then stops costing attention.
+time. Lessons exist to become mechanisms: a lesson that repeats gets a hook, a check, a rule in a role skill, a
+checklist item or, weakest, a rule in the constitution or the agent instructions, and then stops costing attention.
 
 ## File
 
@@ -11,20 +11,20 @@ item or, weakest, a rule in the constitution or the agent instructions, and then
 ```markdown
 ---
 id: 0003
-title: Conventions were chosen without the owner
+title: A migration ran without a backup
 status: active           # active | mechanized | retired
 count: 2                 # times it happened
-first: 2026-11-20
-last: 2026-11-21
-mechanism:               # what enforces it once mechanized: a hook, check, contract rule, checklist item or rule
+first: 2026-03-02
+last: 2026-04-15
+mechanism:               # what enforces it once mechanized: a hook, check, role skill rule, checklist item or rule
 ---
 
-# 0003 Conventions were chosen without the owner
+# 0003 A migration ran without a backup
 
 ## Occurrences
 
-- 2026-11-20, change 0011: the agent wrote a branch-name convention into the agent instructions without asking.
-- 2026-11-21, change 0003: ...
+- 2026-03-02, change 0011: a schema migration ran on the staging database before its backup finished.
+- 2026-04-15, change 0019: ...
 
 ## Gap
 
@@ -44,12 +44,15 @@ What will enforce the rule, or what does already. Empty while there is none.
 
 - **active:** the rule is in force and agents read it; `count` grows with each repeat.
 - **Repeats force a mechanism:** when `count` reaches 2, the lesson must get a mechanism before the change in which it
-  repeated closes, unless the owner waives it in that change's Decisions.
+  repeated closes. A small mechanism (a rule in a role skill's project section, a checklist item, a constitution rule)
+  is made at review with the owner's yes and re-reviewed in a fresh context. A large one (a hook, a check) is planned
+  as a change of its own, and one that needs the method itself changed (a contract, a format) becomes an idea for
+  Keellay; for either the owner waives the mechanism for this change in its Decisions.
 - **mechanized:** the mechanism is in place and named in `mechanism`; agents no longer need to read the lesson.
 - **retired:** no longer relevant, with the reason in the file.
 
-**Where lessons come from:** the retro after a change closes (level standard and up), and any moment the owner or an
-agent sees the process fail. The change's Close section links the lessons it created or updated.
+**Where lessons come from:** the retro at review, before a change closes (level standard and up), and any moment the
+owner or an agent sees the process fail. The change's Close section links the lessons it created or updated.
 
 ## Index: docs/lessons/README.md
 
@@ -62,13 +65,13 @@ Active (read before working):
 
 | Lesson | Rule | Count |
 |---|---|---|
-| [0003](0003-conventions-without-owner.md) | Conventions and other choices go to the owner as options with a recommendation | 2 |
+| [0003](0003-migration-without-backup.md) | A migration runs only after its backup is verified | 2 |
 
 Mechanized:
 
 | Lesson | Mechanism |
 |---|---|
-| [0001](0001-attribution-in-public-commits.md) | `commit-msg` hook |
+| [0001](0001-secrets-in-logs.md) | log redaction check in CI |
 ```
 
 ## Checked by

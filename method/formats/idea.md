@@ -17,7 +17,7 @@ verdict: clarify         # go | clarify | stop; set when assessed
 source: owner            # owner | user | agent | retro
 date: 2026-11-21
 prd: PRD-limits          # optional: the PRD area it serves
-change:                  # the change that carries it, once opened
+change:                  # the change that carries it, set when that change is approved
 ---
 
 # 0004 Shared limits for two households
@@ -46,7 +46,7 @@ The owner's decision: planned (and later the change link), or declined with the 
 |---|---|---|
 | new | written down as proposed, not assessed | anyone |
 | assessed | Assessment filled in, `verdict` set | product owner |
-| planned | the owner said yes; `change` is set when the change is opened | owner |
+| planned | the owner said yes; `change` is set when the change that carries it is approved | owner |
 | done | the change that carries it closed | architect, at the change's close |
 | declined | will not be done; the reason is in Outcome | owner |
 
@@ -55,6 +55,8 @@ The owner's decision: planned (and later the change link), or declined with the 
 - **Clarify** keeps the idea `assessed` until the owner answers; the answers go into Assessment and the verdict is set
   again.
 - **Declined ideas stay.** They are the record of what was considered and why not.
+- **A dropped change** leaves its ideas `planned` without a change, or `declined`, as the owner says; the product
+  owner records it and clears `change`.
 - An idea that will be done straight away may go from `new` to `planned` when the owner says so; `verdict` stays empty
   and Assessment holds one line on why it was skipped.
 
@@ -85,6 +87,6 @@ Ideas, closed:
 ## Checked by
 
 `keellay check` (planned): front matter fields and values; numbers unique; `assessed` has a `verdict`, and a later
-status keeps it unless Assessment says why it was skipped;
-`declined` has an Outcome; `change` names an existing change, and `done` names a closed one; `prd` names an existing
-PRD area; the index lists every idea once, in the table that matches its status.
+status keeps it unless Assessment says why it was skipped; `declined` has an Outcome; `change` names an existing
+change, and `done` names a closed one; `prd` names an existing PRD area; the index lists every idea once, in the table
+that matches its status.

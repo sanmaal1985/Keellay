@@ -130,7 +130,7 @@ the architect proposes it and the owner confirms:
 |---|---|---|
 | fix | a defect with known expected behaviour | current / expected / unchanged, and a test; no plan |
 | change | small, one area, low risk | a short plan; a spec delta if behaviour changes |
-| feature | a new capability, several areas, or high risk | idea or PRD entry → plan with phases → spec delta → work in waves → fresh-context review → close |
+| feature | a new capability, several areas, or high risk | idea or PRD entry → intent, scope and spec delta → plan with phases → work in waves → fresh-context review → close |
 
 At the light level there are no living specs yet, so no path writes a delta; the fresh-context review at close still
 runs.
@@ -140,23 +140,28 @@ modifies or removes. The delta can be reviewed as the intended behaviour before 
 writes what the change is; the developer, who knows the code, cuts it into phases — vertical slices, each tagged with
 the role that owns it and saying when it is done — and the architect and the product owner review the cut before the
 owner approves the plan. The architect checks every finished phase against its done-when with a code review; the
-product owner also checks phases with a result a user can see. The manager is a dispatcher: it routes a new request,
-hands a finished phase to its checkers and starts the next wave, not after every step.
+product owner also checks phases with a result a user can see, in a change that serves a PRD area or an idea. The
+manager is a dispatcher: it routes a new request, every hand-off between roles goes through it, and it starts each
+wave; it acts on hand-offs, not on every skill call.
 
 **Close.** The CLI merges the delta into the living specs by requirement ID — when the change goes to review, or in
 the implementing pull request when plans and specs are kept in different repositories — and validates the result:
 every added or modified requirement is there with its new text, removed ones are gone, and no requirement is touched
 by another open change. At every level an architect in a **fresh context** — a new session that did not do the work —
-checks the change against its intent, scope and done-when, its code and its documents, and, where there are specs,
-the merged specs against the code and tests. With the owner's yes the change is closed and moved to the archive.
-The specs now describe the system as it is.
+checks the change against its intent, scope and done-when, its code and its documents, and, where there are specs, the
+merged specs against the code and tests; for a change that serves a PRD area or an idea the product owner checks it,
+and from the standard level up the manager runs the retro. With the owner's yes the areas whose Outcome the change
+reached become `delivered`, and the change is closed and moved to the archive. The specs now describe the system as it
+is.
 
 ### Lessons become mechanisms
 
-After a plan closes, a retro records what went wrong as lessons, one file each, with a count of how often each one
-happened. A lesson that repeats has to become a mechanism — a hook, a check, a rule in a role contract, a checklist
-item or, weakest, a rule in the constitution — before the change in which it repeated closes, unless the owner waives
-it. A mechanism holds where a reminder depends on the next session reading it.
+Before a change closes, from the standard level up, a retro records what went wrong as lessons, one file each, with a
+count of how often each one happened. A lesson that repeats has to become a mechanism — a hook, a check, a rule in a
+role skill, a checklist item or, weakest, a rule in the constitution — before the change in which it repeated closes.
+A small one is made at review with the owner's yes; for a large one the owner may waive it for that change while it is
+built in a change of its own; a lesson that needs the method itself changed is recorded as input for Keellay. A
+mechanism holds where a reminder depends on the next session reading it.
 
 ## Status
 
