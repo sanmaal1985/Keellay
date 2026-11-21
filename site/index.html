@@ -1,0 +1,273 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Keellay — lay the keel first</title>
+<meta name="description" content="A vendor-agnostic, spec-driven development framework for projects built with AI coding agents.">
+<meta name="theme-color" content="#0D1B2A">
+<meta property="og:type" content="website">
+<meta property="og:title" content="Keellay — lay the keel first">
+<meta property="og:description" content="A vendor-agnostic, spec-driven development framework for projects built with AI coding agents.">
+<meta property="og:url" content="https://sanmaal1985.github.io/Keellay/">
+<meta property="og:image" content="https://sanmaal1985.github.io/Keellay/social-preview.png">
+<meta property="og:image:width" content="1280">
+<meta property="og:image:height" content="640">
+<meta name="twitter:card" content="summary_large_image">
+<link rel="icon" href="favicon.ico" sizes="any">
+<link rel="icon" href="icon.svg" type="image/svg+xml">
+<link rel="apple-touch-icon" href="apple-touch-icon.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600&family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+:root{
+  --abyss:#0D1B2A;--hull:#1B3A57;--slate:#55677A;--blueprint:#7FB2E5;
+  --signal:#E8572A;--signal-dark:#B9401A;--paper:#F4F6F8;--mist:#C9D3DD;--line:#DCE3EA;
+  --display:"Space Grotesk",system-ui,sans-serif;--body:Inter,system-ui,sans-serif;--mono:"JetBrains Mono",ui-monospace,monospace;
+}
+*{box-sizing:border-box}
+html{scroll-behavior:smooth}
+body{margin:0;background:var(--paper);color:var(--abyss);font-family:var(--body);line-height:1.6;-webkit-font-smoothing:antialiased}
+a{color:var(--signal-dark)}a:hover{color:#8F3114}
+a:focus-visible{outline:2px solid var(--signal);outline-offset:3px;border-radius:4px}
+h1,h2,h3{font-family:var(--display);font-weight:600;margin:0}
+p{margin:0}
+code{font-family:var(--mono);font-size:.9em;background:#E6EBF0;padding:2px 6px;border-radius:6px}
+.wrap{max-width:1200px;margin:0 auto;padding-inline:32px}
+.grid-bg{background-image:linear-gradient(rgba(127,178,229,.07) 1px,transparent 1px),linear-gradient(90deg,rgba(127,178,229,.07) 1px,transparent 1px);background-size:32px 32px}
+.dark{background-color:var(--abyss);color:var(--paper)}
+.mono{font-family:var(--mono)}
+.eyebrow{font-family:var(--mono);font-size:13px;color:var(--signal-dark);margin-bottom:12px}
+
+/* nav */
+nav{display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:16px;padding-block:20px}
+.brand{display:flex;align-items:center;gap:10px;text-decoration:none;color:var(--paper)}
+.brand span{font-family:var(--display);font-weight:600;font-size:26px;letter-spacing:-.03em}
+.links{display:flex;flex-wrap:wrap;align-items:center;gap:4px 8px}
+.links a{color:var(--mist);text-decoration:none;font-size:15px;padding:12px 10px}
+.links a:hover{color:var(--paper)}
+.links a{display:inline-flex;align-items:center;gap:4px}
+.links .sep{width:1px;height:20px;background:var(--hull);margin:0 8px}
+.sr{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}
+.btn-primary .ext,.btn-ghost .ext{margin-left:2px}
+.links a.gh{color:var(--abyss);background:var(--paper);font-weight:600;padding:12px 18px;border-radius:10px;margin-left:8px}
+
+/* hero */
+.hero{display:flex;flex-wrap:wrap;gap:56px;align-items:center;padding-block:72px 104px}
+.hero-copy{flex:1 1 480px;min-width:0;display:flex;flex-direction:column;gap:28px}
+.pill{align-self:flex-start;font-family:var(--mono);font-size:13px;background:var(--hull);border-radius:999px;padding:6px 14px}
+.hero h1{font-size:clamp(44px,7vw,80px);letter-spacing:-.04em;line-height:.98}
+.lead{font-size:20px;line-height:1.55;color:var(--mist);max-width:560px}
+.ctas{display:flex;flex-wrap:wrap;gap:12px}
+.btn{display:inline-flex;align-items:center;gap:6px;text-decoration:none;font-weight:600;font-size:16px;padding:14px 22px;border-radius:10px}
+.btn-primary{background:var(--signal);color:var(--abyss)}
+.btn-primary:hover{background:#F06A40;color:var(--abyss)}
+.btn-ghost{border:1px solid var(--slate);color:var(--paper);font-weight:500}
+.btn-ghost:hover{border-color:var(--mist);color:var(--paper)}
+.term{flex:1 1 420px;min-width:0;background:#08131E;border:1px solid var(--hull);border-radius:14px;overflow:hidden}
+.term-bar{display:flex;align-items:center;gap:8px;padding:12px 16px;border-bottom:1px solid var(--hull);font-family:var(--mono);font-size:12px;color:var(--mist)}
+.term-bar i{width:10px;height:10px;border-radius:5px;background:var(--hull)}
+.term-bar span{margin-left:8px}
+.term pre{margin:0;padding:20px;font-family:var(--mono);font-size:14px;line-height:1.7;white-space:pre-wrap;word-break:break-word}
+.p{color:var(--signal)}.o{color:var(--blueprint)}.m{color:var(--mist)}
+
+/* sections */
+section.block{padding-block:48px}
+.idea{display:flex;flex-wrap:wrap;gap:48px;padding-top:96px}
+.idea>div:first-child{flex:1 1 320px;min-width:0}
+.idea h2{font-size:40px;letter-spacing:-.03em;line-height:1.08}
+.idea .text{flex:1 1 520px;min-width:0;display:flex;flex-direction:column;gap:16px;font-size:18px;line-height:1.65;color:var(--hull)}
+.idea strong{color:var(--abyss)}
+h2.title{font-size:28px;letter-spacing:-.02em;margin-bottom:28px}
+.sub{font-size:17px;color:var(--slate);max-width:720px;margin:-20px 0 28px}
+.cards{display:grid;gap:20px}
+.cards.c3{grid-template-columns:repeat(auto-fit,minmax(280px,1fr))}
+.cards.c2{grid-template-columns:repeat(auto-fit,minmax(320px,1fr))}
+.card{background:#fff;border:1px solid var(--line);border-radius:16px;padding:28px;display:flex;flex-direction:column;gap:12px}
+.card h3{font-size:22px}
+.card p{font-size:16px;color:var(--slate)}
+.card.ink{background-color:var(--abyss);border:0;color:var(--paper);padding:36px;gap:14px}
+.card.hull{background:var(--hull);border:0;color:var(--paper);padding:36px;gap:14px}
+.card.ink h3,.card.hull h3{font-size:26px;letter-spacing:-.02em}
+.card.ink p{color:var(--mist)}.card.hull p{color:var(--line)}
+.tag{font-family:var(--mono);font-size:13px}
+.level-head{display:flex;align-items:center;gap:12px}
+.bars{display:flex;gap:4px;align-items:flex-end}
+.bars i{width:6px;border-radius:3px;background:var(--line)}
+.bars i:nth-child(1){height:14px;background:var(--abyss)}.bars i:nth-child(2){height:20px}.bars i:nth-child(3){height:26px}
+.bars i.on{background:var(--abyss)}.bars i.sig{background:var(--signal)}
+.default{font-family:var(--mono);font-size:12px;color:var(--signal-dark);border:1px solid #F1C7B8;border-radius:999px;padding:3px 10px}
+.table-box{margin-top:20px;background:#fff;border:1px solid var(--line);border-radius:16px;overflow-x:auto}
+table{width:100%;min-width:640px;border-collapse:collapse;font-size:15px}
+th{text-align:left;font-family:var(--mono);font-size:13px;font-weight:500;color:var(--slate)}
+th,td{padding:16px 24px;border-bottom:1px solid var(--line);vertical-align:top}
+tr:last-child td{border-bottom:0}
+td{color:var(--hull)}td:first-child{font-family:var(--mono);font-weight:500;color:var(--abyss)}
+.principles{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));border-top:2px solid var(--abyss)}
+.principles div{padding:24px 24px 24px 0;display:flex;flex-direction:column;gap:10px}
+.principles h3{font-size:19px}.principles p{font-size:15px;color:var(--slate)}
+footer .wrap{display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:20px;padding-block:40px;color:var(--mist)}
+footer .brand span{font-size:20px}
+footer small{font-size:14px;margin-left:8px}
+footer .links a{font-size:14px;padding:12px 0;margin-right:20px}
+footer .links a:last-child{margin-right:0}
+@media (max-width:600px){nav .wide{display:none}.links a.gh{margin-left:0}.wrap{padding-inline:20px}.hero{padding-block:48px 72px}.idea{padding-top:64px}.idea h2{font-size:32px}}
+</style>
+</head>
+<body>
+
+<header class="dark grid-bg">
+  <div class="wrap">
+    <nav aria-label="Main">
+      <a class="brand" href="#top" aria-label="Keellay home">
+        <svg width="36" height="36" viewBox="0 0 64 64" fill="none" aria-hidden="true"><path d="M13 47V26M22 47V23M31 47V20M40 47V17M45 50C52 49 55.5 40 55.5 12" stroke="#F4F6F8" stroke-width="4.5" stroke-linecap="round"/><path d="M8 50H45" stroke="#E8572A" stroke-width="6" stroke-linecap="round"/></svg>
+        <span>keellay</span>
+      </a>
+      <div class="links">
+        <a class="wide" href="#how" title="Jump to: Who does what">How it works</a>
+        <a class="wide" href="#levels" title="Jump to: Right-sized ceremony">Levels</a>
+        <span class="sep wide" aria-hidden="true"></span>
+        <a href="https://github.com/sanmaal1985/Keellay/tree/main/method" title="method/ folder on GitHub">Method docs <svg class="ext" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M7 17L17 7"/><path d="M8 7h9v9"/></svg><span class="sr">(opens GitHub)</span></a>
+        <a class="wide" href="https://github.com/sanmaal1985/Keellay/blob/main/docs/architecture.md" title="docs/architecture.md on GitHub">Architecture <svg class="ext" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M7 17L17 7"/><path d="M8 7h9v9"/></svg><span class="sr">(opens GitHub)</span></a>
+        <a class="gh" href="https://github.com/sanmaal1985/Keellay" title="Repository on GitHub">Source on GitHub <svg class="ext" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M7 17L17 7"/><path d="M8 7h9v9"/></svg></a>
+      </div>
+    </nav>
+
+    <div class="hero" id="top">
+      <div class="hero-copy">
+        <span class="pill">Status: design decided, first commands built</span>
+        <h1>Lay the keel first.</h1>
+        <p class="lead">Keellay is a vendor-agnostic, spec-driven development framework for projects built with AI coding agents. It keeps one method — roles, process, artifact formats, gates and checks — and lays it into your project.</p>
+        <div class="ctas">
+          <a class="btn btn-primary" href="https://github.com/sanmaal1985/Keellay/tree/main/method">Read the method <svg class="ext" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M7 17L17 7"/><path d="M8 7h9v9"/></svg></a>
+          <a class="btn btn-ghost" href="https://github.com/sanmaal1985/Keellay">View on GitHub <svg class="ext" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M7 17L17 7"/><path d="M8 7h9v9"/></svg></a>
+        </div>
+      </div>
+      <div class="term" role="figure" aria-label="Example keellay commands and their JSON output">
+        <div class="term-bar"><i></i><i></i><i></i><span>one JSON object per command</span></div>
+<pre><span class="p">$</span> uv run keellay check
+<span class="o">{"command": "check", "status": "ok", "findings": []}</span>
+
+<span class="p">$</span> uv run keellay paths
+<span class="o">{"command": "paths", "status": "ok",
+ "level": "standard",
+ "sections": {
+   "specs":   {"path": "docs/specs",   "exists": true},
+   "changes": {"path": "docs/changes", "exists": true}}}</span>
+
+<span class="p">$</span> uv run keellay init
+<span class="m">not implemented yet</span></pre>
+      </div>
+    </div>
+  </div>
+</header>
+
+<main>
+  <section class="wrap idea">
+    <div>
+      <p class="eyebrow">The idea</p>
+      <h2>The keel goes down first. The hull is built on it.</h2>
+    </div>
+    <div class="text">
+      <p>Keellay keeps one <strong>method</strong> versioned in one place. A project does not copy it: <code>keellay init</code> lays the method in — a small configuration, the project's documents and indexes, role skills generated for that project, and checks wired into git hooks and CI.</p>
+      <p>Coding agents do the work by reading those files; the owner decides at the gates; the checks hold whatever agent wrote the change.</p>
+    </div>
+  </section>
+
+  <section class="wrap block" id="how">
+    <h2 class="title">Who does what</h2>
+    <div class="cards c3">
+      <div class="card">
+        <svg width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="#0D1B2A" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 17l6-5-6-5"/><path d="M12 19h8"/></svg>
+        <h3>CLI</h3>
+        <p>Deterministic work: the same input always gives the same output. Lays out files, renders role skeletons, resolves paths, merges spec deltas, runs checks.</p>
+      </div>
+      <div class="card">
+        <svg width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="#0D1B2A" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="4" y="7" width="16" height="12" rx="3"/><path d="M12 3v4"/><path d="M9 13h.01M15 13h.01"/></svg>
+        <h3>Agent</h3>
+        <p>Judgment, following one of Keellay's written procedures. Analyses a project, fills a role's project sections, writes a plan, implements, reviews.</p>
+      </div>
+      <div class="card">
+        <svg width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="#E8572A" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="8" r="4"/><path d="M5 20c1.5-3.5 4-5 7-5s5.5 1.5 7 5"/></svg>
+        <h3>Owner</h3>
+        <p>Decisions. Approves a change and its path, accepts a plan, says yes before anything is written into an existing project.</p>
+      </div>
+    </div>
+  </section>
+
+  <section class="wrap block">
+    <div class="cards c2">
+      <div class="card ink grid-bg">
+        <span class="tag" style="color:#E8572A">greenfield</span>
+        <h3>An empty project</h3>
+        <p>Gets the default layout, the constitution, the core roles and the checks for its level. No configuration up front.</p>
+      </div>
+      <div class="card hull">
+        <span class="tag" style="color:#7FB2E5">brownfield</span>
+        <h3>An existing project</h3>
+        <p>Is analysed first: structure, agent instructions, skills, documents, hooks and CI. Keellay proposes keep, convert or archive for each artifact. Nothing is written before the owner's yes.</p>
+      </div>
+    </div>
+  </section>
+
+  <section class="wrap block" id="levels">
+    <h2 class="title">Right-sized ceremony</h2>
+    <p class="sub">The project level sets which mechanisms are installed. The path of each change sets what that change goes through — the architect proposes it, the owner confirms.</p>
+    <div class="cards c3">
+      <div class="card">
+        <div class="level-head"><span class="bars" aria-hidden="true"><i></i><i></i><i></i></span><h3>light</h3></div>
+        <p>Constitution, core roles, PRD and ideas, plans with done-when, fresh-context review at close, ADRs, lessons, owner gates. Where existing projects usually start.</p>
+      </div>
+      <div class="card">
+        <div class="level-head"><span class="bars" aria-hidden="true"><i></i><i class="on"></i><i></i></span><h3>standard</h3><span class="default">default</span></div>
+        <p>Adds living specs and deltas for behaviour changes; the review also reads the merged specs; a retro before each change closes; CI runs the same checks as the hooks.</p>
+      </div>
+      <div class="card">
+        <div class="level-head"><span class="bars" aria-hidden="true"><i></i><i class="on"></i><i class="sig"></i></span><h3>strict</h3></div>
+        <p>A delta for every behaviour change, enforced in CI; spec freshness gate; fresh-context review for every change including fixes; skill evals in CI.</p>
+      </div>
+    </div>
+    <div class="table-box">
+      <table>
+        <thead><tr><th scope="col">path</th><th scope="col">for</th><th scope="col">goes through</th></tr></thead>
+        <tbody>
+          <tr><td>fix</td><td>a defect with known expected behaviour</td><td>current / expected / unchanged, and a test; no plan</td></tr>
+          <tr><td>change</td><td>small, one area, low risk</td><td>a short plan; a spec delta if behaviour changes</td></tr>
+          <tr><td>feature</td><td>a new capability, several areas, or high risk</td><td>idea or PRD entry → intent, scope and delta → plan with phases → waves → fresh-context review → close</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+  <section class="wrap block" style="padding-bottom:96px">
+    <h2 class="title">Principles</h2>
+    <div class="principles">
+      <div><span class="eyebrow" style="margin:0">01</span><h3>Method, not templates</h3><p>Versioned in one place; each project gets a small adapter and its own generated roles, checked against a contract.</p></div>
+      <div><span class="eyebrow" style="margin:0">02</span><h3>Vendor-agnostic</h3><p>Plain Markdown and scripts at the core; role skills in the open Agent Skills format; checks in git hooks and CI.</p></div>
+      <div><span class="eyebrow" style="margin:0">03</span><h3>The owner decides</h3><p>Agents restate the request, show options with a recommendation, and act after a yes.</p></div>
+      <div><span class="eyebrow" style="margin:0">04</span><h3>Mechanisms over memory</h3><p>A lesson that repeats becomes a hook, a checklist item or a rule.</p></div>
+      <div><span class="eyebrow" style="margin:0">05</span><h3>Right-sized ceremony</h3><p>A small fix needs no plan; a large change gets specs, a plan and an independent review.</p></div>
+    </div>
+  </section>
+</main>
+
+<footer class="dark">
+  <div class="wrap">
+    <div class="brand">
+      <svg width="28" height="28" viewBox="0 0 64 64" fill="none" aria-hidden="true"><path d="M13 47V26M22 47V23M31 47V20M40 47V17M45 50C52 49 55.5 40 55.5 12" stroke="#F4F6F8" stroke-width="4.5" stroke-linecap="round"/><path d="M8 50H45" stroke="#E8572A" stroke-width="6" stroke-linecap="round"/></svg>
+      <span>keellay</span>
+      <small>MIT licensed · nothing published yet</small>
+    </div>
+    <div class="links">
+      <a href="https://github.com/sanmaal1985/Keellay/tree/main/method">Method <svg class="ext" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M7 17L17 7"/><path d="M8 7h9v9"/></svg></a>
+      <a href="https://github.com/sanmaal1985/Keellay/blob/main/docs/architecture.md">Architecture <svg class="ext" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M7 17L17 7"/><path d="M8 7h9v9"/></svg></a>
+      <a href="https://github.com/sanmaal1985/Keellay/tree/main/docs/specs">Specs <svg class="ext" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M7 17L17 7"/><path d="M8 7h9v9"/></svg></a>
+      <a href="https://github.com/sanmaal1985/Keellay/blob/main/LICENSE">License <svg class="ext" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M7 17L17 7"/><path d="M8 7h9v9"/></svg></a>
+      <a href="https://github.com/sanmaal1985/Keellay">GitHub <svg class="ext" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M7 17L17 7"/><path d="M8 7h9v9"/></svg></a>
+    </div>
+  </div>
+</footer>
+
+</body>
+</html>

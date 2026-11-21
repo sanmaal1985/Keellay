@@ -1,3 +1,8 @@
+<picture>
+  <source media="(prefers-color-scheme: dark)" srcset="assets/brand/banner-dark.svg">
+  <img alt="Keellay — spec-driven development for projects built with AI coding agents" src="assets/brand/banner-light.svg">
+</picture>
+
 # Keellay
 
 *Keel laying* is the ceremony that starts the building of a ship: the keel goes down first, and the whole hull is
