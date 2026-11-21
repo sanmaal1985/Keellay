@@ -124,7 +124,7 @@ The manifest tells generated content from the project's own edits.
 
 Ceremony is set on two axes ([levels.md](../method/levels.md)). The **project level** — light, standard (the default)
 or strict — decides which mechanisms are installed. The **path** of each change decides what that change goes through;
-the manager or architect proposes it and the owner confirms:
+the architect proposes it and the owner confirms:
 
 | Path | For | Goes through |
 |---|---|---|
@@ -133,9 +133,12 @@ the manager or architect proposes it and the owner confirms:
 | feature | a new capability, several areas, or high risk | idea or PRD entry → plan with phases → spec delta → work in waves → fresh-context review → close |
 
 A change is a folder with a plan and, when behaviour changes, a **delta**: the requirements it adds, modifies or
-removes. The delta can be reviewed as the intended behaviour before any code is written. Each plan phase is tagged
-with the role that owns it and says when it is done. The manager steps in when a phase changes and when the owner
-brings a new request, not after every step.
+removes. The delta can be reviewed as the intended behaviour before any code is written. The architect writes what the
+change is; the developer, who knows the code, cuts it into phases — vertical slices, each tagged with the role that
+owns it and saying when it is done — and the architect and the product owner review the cut before the owner approves
+the plan. The architect checks every finished phase against its done-when
+with a code review; the product owner also checks phases with a result a user can see. The manager is a dispatcher:
+it routes a new request, hands a finished phase to its checkers and starts the next wave, not after every step.
 
 **Close.** The CLI merges the delta into the living specs by requirement ID and validates the result: every added or
 modified requirement is there with its new text, removed ones are gone, and no requirement is touched by another open
@@ -156,7 +159,8 @@ depends on the next session reading it.
 |---|---|
 | Method: layout, levels | decided |
 | Method: formats for change, spec, delta, bugfix, ADR, lesson, PRD, idea, constitution | draft |
-| Method: role contracts, procedures | planned |
+| Method: role contracts | draft |
+| Method: procedures | planned |
 | CLI: `--version`, `info`, JSON output | built — [specs/cli.md](specs/cli.md) |
 | CLI: `init`, `check`, `paths` | in the interface, report `not_implemented` |
 | CLI: role rendering, upgrades, delta merge | planned; commands not named yet |

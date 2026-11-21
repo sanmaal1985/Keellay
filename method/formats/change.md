@@ -34,8 +34,8 @@ docs/changes/
 
 | Status | Meaning | Who moves it here |
 |---|---|---|
-| draft | intent and scope written, not yet agreed | anyone |
-| approved | the owner said yes to intent, scope and path | owner |
+| draft | intent, scope and path written; phases cut and reviewed; not yet agreed | anyone |
+| approved | the owner said yes to the plan: intent, scope, path and phases | owner |
 | in-progress | phases are being worked on | the role of the first phase |
 | review | all phases done; a fresh-context review runs, deltas are merged into living specs | architect |
 | closed | review passed, deltas merged, the folder moved to `archive/` | architect, with the owner's yes |
@@ -73,7 +73,7 @@ Why this change exists and what is true when it is done. Links to the idea or PR
 - Depends on: —
 - Done when: inactive sessions end after the configured timeout; scenarios in `delta/auth-session.md` pass as tests.
 
-- [ ] step
+- [ ] step               # optional: the phase's own working list
 - [ ] step
 
 ### 2. Expired-session screen
@@ -97,6 +97,13 @@ Decisions made during the change. One that will matter after the change closes b
   an unknown role fails the check.
 - **Depends on** lists phase numbers. Phases whose dependencies are done form a wave and can run in parallel.
 - **Done when** is a condition someone else can verify, not a list of activities.
+- **A phase is a vertical slice:** it leaves the system working and gives a result someone can check. A phase that
+  only builds a layer is merged with the phase that uses it.
+- **Steps** inside a phase are optional; the phase's role may keep them as a working list. Nobody checks them; the
+  done-when is what is checked.
+- **Who writes what:** the architect writes Intent, Scope and the delta and proposes the path; the developer cuts the
+  change into phases; the architect and, for a change that serves a PRD area or an idea, the product owner review the
+  phases before the owner approves the plan (see the responsibility table in `method/contracts/README.md`).
 - A `change`-path plan may have one phase and no Decisions section.
 
 ## Index: docs/changes/README.md

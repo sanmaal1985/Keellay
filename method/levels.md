@@ -1,7 +1,7 @@
 # Strictness levels and change paths
 
 Ceremony is set on two axes. The **project level** decides which mechanisms are installed and sets the floor. The
-**change path** decides what one change goes through; the manager or architect proposes it and the owner confirms.
+**change path** decides what one change goes through; the architect proposes it and the owner confirms.
 
 ## Project levels
 
