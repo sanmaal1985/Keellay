@@ -33,7 +33,8 @@ def check_settings(project: Project) -> dict:
     links = settings.get("links", [])
     if not isinstance(links, list) or not all(isinstance(path, str) and path.strip() for path in links):
         raise ConfigError(f"{CONFIG_FILE.as_posix()}: links under [check] must be a list of paths, not {links!r}")
-    return {"links": [posixpath.normpath(path.strip().replace("\\", "/")) for path in links]}
+    # Paths are relative to the root, so a leading `/` means the root too.
+    return {"links": [posixpath.normpath(path.strip().replace("\\", "/")).lstrip("/") or "." for path in links]}
 
 
 def run_checks(project: Project, source: Source) -> list[Finding]:

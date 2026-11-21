@@ -16,10 +16,13 @@ from keellay.paths import Project
 CHECK = "links"
 
 _INLINE_CODE = re.compile(r"(`+)(?:(?!\1).)+?\1")
-# Link text may wrap onto the next line and may hold one level of brackets, such as an image in a badge.
-_INLINE_LINK = re.compile(r"!?\[(?:[^\[\]]|\[[^\[\]]*\])*\]\(\s*(<[^>\n]*>|[^)\s]+)(?:\s+[\"'(][^)]*)?\)")
-_IMAGE = re.compile(r"!\[[^\[\]]*\]\(\s*(<[^>\n]*>|[^)\s]+)(?:\s+[\"'(][^)]*)?\)")
-_DEFINITION = re.compile(r"^\s{0,3}\[[^\]]+\]:\s*(<[^>]*>|\S+)", re.MULTILINE)
+# Link text may wrap onto the next line but not past a blank line (that is the next paragraph), and may hold one level
+# of brackets, such as an image in a badge.
+_TEXT = r"(?:[^\[\]\n]|\n(?![ \t]*\n))"
+_INLINE_LINK = re.compile(rf"!?\[(?:{_TEXT}|\[{_TEXT}*\])*\]\(\s*(<[^>\n]*>|[^)\s]+)(?:\s+[\"'(][^)]*)?\)")
+_IMAGE = re.compile(rf"!\[{_TEXT}*\]\(\s*(<[^>\n]*>|[^)\s]+)(?:\s+[\"'(][^)]*)?\)")
+# A reference definition is one line: the label, the destination, and at most a title after it.
+_DEFINITION = re.compile(r"^[ \t]{0,3}\[[^\]\n]+\]:[ \t]*(<[^>\n]*>|\S+)(?:[ \t]+[\"'(][^\n]*)?[ \t]*$", re.MULTILINE)
 _SCHEME = re.compile(r"^[A-Za-z][A-Za-z0-9+.-]*:")
 
 

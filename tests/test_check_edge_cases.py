@@ -131,7 +131,32 @@ def test_build_and_dist_folders_are_project_files(capsys, project):
     assert (code, out["findings"]) == (0, [])
 
 
-@pytest.mark.parametrize("links", ['["./method"]', '["method/"]', '["method\\\\"]'])
+@pytest.mark.parametrize("text", [
+    "[Owner, 2026-11-21]:\nall options as recommended.\n",
+    "[label]: missing.md and more words\n",
+    "Items [a\n\nb](missing.md)\n",
+])
+def test_text_that_only_looks_like_a_link(capsys, project, text):
+    write(project, "docs/adr/README.md", text)
+    code, out = run(capsys, "check")
+    assert (code, out["findings"]) == (0, [])
+
+
+def test_reference_definition_with_a_title_is_checked(capsys, project):
+    write(project, "docs/adr/README.md", '[label]: missing.md "Title"\n')
+    code, out = run(capsys, "check")
+    assert code == 1
+
+
+def test_extra_link_path_with_a_leading_slash_names_a_file(capsys, project):
+    write(project, ".keellay/config.toml", '[check]\nlinks = ["/README.md"]\n')
+    write(project, "README.md", "[x](missing.md)\n")
+    code, out = run(capsys, "check")
+    assert code == 1
+    assert out["findings"][0]["file"] == "README.md"
+
+
+@pytest.mark.parametrize("links", ['["./method"]', '["method/"]', '["method\\\\"]', '["/method"]'])
 def test_extra_link_paths_are_normalized(capsys, project, links):
     write(project, ".keellay/config.toml", f"[check]\nlinks = {links}\n")
     write(project, "method/a.md", "[missing](missing.md)\n")
