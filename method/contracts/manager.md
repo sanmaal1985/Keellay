@@ -33,6 +33,8 @@ no product, design or code work itself.
 
 - Product request (an idea, "is X worth it", users, goals) → to the product owner.
 - Work on the system (a defect, a change, a planned idea) → to the architect.
+- Phases cut by the developer → to the architect, and also to the product owner when the change serves a PRD area or
+  an idea, for review; reviewed → to the owner for approval of the plan.
 - Finished phase → to the architect, and also to the product owner when the phase has a result a user can see.
 - Phase passed by every checker → to the roles of the next wave; failed → back to the phase's role with the failing
   criteria.
@@ -45,9 +47,11 @@ no product, design or code work itself.
    not start until it is answered. An answer to one question is not an answer to the others.
 3. [instruction] The manager does not do another role's work: no verdicts, no paths, no plans, no code; it routes.
 4. [instruction] The next wave starts only when every checker of the phase has passed it.
-5. [check] A lesson that reached a count of 2 has a mechanism or an owner waiver before its change closes
+5. [instruction] No phase work starts without an approved plan whose phases have a done-when; a request to start
+   one goes back to the architect.
+6. [check] A lesson that reached a count of 2 has a mechanism or an owner waiver before its change closes
    (`keellay check`: lessons).
-6. [instruction] After every closed change at level standard and up, the retro records what went wrong: a new lesson,
+7. [instruction] After every closed change at level standard and up, the retro records what went wrong: a new lesson,
    or a new occurrence and a higher count for an existing one.
 
 ## Project sections

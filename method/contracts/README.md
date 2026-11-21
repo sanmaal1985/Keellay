@@ -24,10 +24,13 @@ manager is a dispatcher: it routes work and runs the retro, and does no product,
 | Idea: write down, assess, set the verdict, keep the register | product-owner | `planned` / `declined`: owner |
 | PRD: propose edits | product-owner | Purpose, Users, Non-goals, an area's Outcome: owner's yes |
 | Change path (fix / change / feature) | architect | owner confirms |
-| Draft change: plan (intent, scope, phases, done-when) | architect | `draft → approved`: owner |
+| Draft change: intent, scope, delta | architect | — |
+| Phases: cut the change into phases with role, depends-on and done-when; questions to architect and product owner | developer | — |
+| Review of the phases: system and code | architect | — |
+| Review of the phases: business, for changes that serve a PRD area or an idea | product-owner | — |
+| Plan with reviewed phases | — | `draft → approved`: owner |
 | `approved → in-progress`, branch | role of the first phase | — |
-| Delta | architect | — |
-| Phase work (code, tests, steps) | the phase's role | — |
+| Phase work (code, tests; steps inside a phase are optional) | the phase's role | — |
 | Hand a finished phase to its checkers, start the next wave | manager | — |
 | Done-when: code and system, code review — every phase | architect | — |
 | Done-when: business requirements — phases with a result a user can see | product-owner | — |
@@ -44,6 +47,9 @@ manager is a dispatcher: it routes work and runs the retro, and does no product,
 
 A phase is passed when every checker has passed it: the architect always, the product owner when the phase serves a
 PRD area or an idea with a result a user can see.
+
+The architect says what a change is (intent, scope, delta); the developer, who knows the code, cuts it into phases;
+the architect and the product owner review the cut before the owner approves the plan.
 
 ## Contract file
 
