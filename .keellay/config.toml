@@ -1,0 +1,6 @@
+# Keellay keeps only its living specs and their deltas in this repository; the method's own files are not sections.
+[sections]
+constitution = false
+product = false
+adr = false
+lessons = false
