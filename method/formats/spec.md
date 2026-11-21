@@ -1,8 +1,8 @@
 # Living spec
 
-A living spec says what the system does now, for one capability. It changes only when a change closes and its delta
-is merged (see [delta.md](delta.md)). A project that starts with Keellay on existing code begins with no specs; a
-capability gets its spec with the first change that touches it.
+A living spec says what the system does now, for one capability. It changes only when a change's delta is merged into
+it (see [delta.md](delta.md) for when that happens). A project that starts with Keellay on existing code begins with
+no specs; a capability gets its spec with the first change that touches it, from level standard up.
 
 ## File
 
@@ -57,7 +57,8 @@ Verified by: `tests/session/test_expiry.py::test_inactive_session_ends`
 
 - **Scenarios:** at least one, as GIVEN (optional) / WHEN / THEN lines; AND continues the line above it. Each scenario
   should be checkable by a test.
-- **Verified by:** tests that check the requirement. Optional at levels light and standard, required at strict.
+- **Verified by:** tests that check the requirement. Optional at level standard, required at strict; level light
+  has no living specs.
 
 ## Index: docs/specs/README.md
 
@@ -73,6 +74,6 @@ What the system does now, one file per capability.
 
 ## Checked by
 
-`keellay check` (task 4): one index row per spec; front matter; IDs are unique, use the spec's prefix and are not reused (compared with git
-history); every requirement has a statement with "shall" and at least one scenario; at strict, every requirement has
-a "Verified by" line pointing to an existing test.
+`keellay check` (planned): one index row per spec; front matter; IDs are unique, use the spec's prefix and are not
+reused (compared with git history); every requirement has a statement with "shall" and at least one scenario; at
+strict, every requirement has a "Verified by" line pointing to an existing test.

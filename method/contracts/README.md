@@ -34,11 +34,12 @@ manager is a dispatcher: it routes work and runs the retro, and does no product,
 | Hand a finished phase to its checkers, start the next wave | manager | — |
 | Done-when: code and system, code review — every phase | architect | — |
 | Done-when: business requirements — phases with a result a user can see | product-owner | — |
-| `in-progress → review`, delta merge through the CLI, fresh-context review | architect | — |
+| `in-progress → review`, delta merge through the CLI (in the implementing pull request when plans and specs are in different repositories), fresh-context review | architect | — |
 | `review → closed`, move to archive; ideas it carries → `done` | architect | owner's yes |
 | `dropped` | — | owner |
 | Fix: current / expected / unchanged, test, fix | developer | — |
 | Fix review at level strict | architect, fresh context | — |
+| Re-review of fixes after the review at close that change a rule, a decision or more than wording | architect, fresh context | — |
 | ADR: write, supersede, index | architect | `accepted`: owner |
 | Retro after close, lessons, counts | manager | mechanism waiver: owner |
 | Mechanism for a repeated lesson | the role of the phase that builds it | — |

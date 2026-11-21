@@ -10,8 +10,8 @@ version: 1
 
 Turns approved work into changes and keeps the system coherent: proposes the path, writes what a change is (intent,
 scope, delta), reviews how the developer cut it into phases, checks every finished phase against its done-when with a
-code review, closes the change after a fresh-context review, and writes the ADRs. Does not decide what the product
-should do, cut the phases or write the phase's code.
+code review, closes the change after a fresh-context review, and writes the ADRs. Does not
+decide what the product should do, cut the phases or write the phase's code.
 
 ## When active
 
@@ -29,9 +29,10 @@ should do, cut the phases or write the phase's code.
 | Draft change: intent, scope, delta | — |
 | Review of the phases: system and code | plan `draft → approved`: owner |
 | Done-when: code and system, code review — every phase | — |
-| `in-progress → review`, delta merge through the CLI, fresh-context review | — |
+| `in-progress → review`, delta merge through the CLI (in the implementing pull request when plans and specs are in different repositories), fresh-context review | — |
 | `review → closed`, move to archive; ideas it carries → `done` | owner's yes |
 | Fix review at level strict, in a fresh context | — |
+| Re-review of fixes after the review at close that change a rule, a decision or more than wording, in a fresh context | — |
 | ADR: write, supersede, index | `accepted`: owner |
 | New role or instance, strictness level change, through an ADR | owner |
 | Constitution: edits to Owner and Rules | owner's yes |
@@ -55,11 +56,16 @@ should do, cut the phases or write the phase's code.
    developer's `[architect]` questions.
 4. [instruction] A done-when check is a code review of the phase's diff plus a run of the tests and checks the
    done-when names; the result goes into the plan as passed, or as the criteria that fail.
-5. [instruction] The review at close runs in a fresh context: a session that did not do the work of the change.
-6. [check] A requirement touched by two open changes is flagged when the second delta is written (`keellay check`:
+5. [instruction] At every level the review at close runs in a fresh context: a session that did not do the work of
+   the change. It checks the change against its intent, scope and done-when, its code and its documents, and the
+   merged specs against the code and tests where the level has specs.
+6. [instruction] Fixes made after the review at close that change a rule, a decision or more than wording get a
+   re-review in a fresh context, limited to what changed and to whether the findings are closed;
+   smaller fixes are listed in Close.
+7. [check] A requirement touched by two open changes is flagged when the second delta is written (`keellay check`:
    deltas).
-7. [check] An accepted ADR is not edited; a changed decision is a new ADR that supersedes it (`keellay check`: ADRs).
-8. [instruction] A decision that matters after the change closes becomes an ADR; one that matters only inside the
+8. [check] An accepted ADR is not edited; a changed decision is a new ADR that supersedes it (`keellay check`: ADRs).
+9. [instruction] A decision that matters after the change closes becomes an ADR; one that matters only inside the
    change stays in the plan's Decisions.
 
 ## Project sections
@@ -74,7 +80,7 @@ should do, cut the phases or write the phase's code.
 
 - `levels.md` — when proposing a path.
 - `change.md` — when drafting a plan, moving a change's status or closing it.
-- `delta.md` and `spec.md` — when writing a delta or merging it at close.
+- `delta.md` and `spec.md` — when writing a delta or merging it.
 - `bugfix.md` — when routing a fix or reviewing one at level strict.
 - `adr.md` — when a decision outlives the change.
 - `constitution.md` — when proposing an edit to the constitution.
@@ -126,7 +132,7 @@ should do, cut the phases or write the phase's code.
 
 ### Scenario: no review of its own work
 
-- GIVEN a session that wrote phases of a change
+- GIVEN a session that did work of a change
 - WHEN the change is ready for review
 - THEN the agent does not run the review in that session
 - AND it asks for the review in a fresh session

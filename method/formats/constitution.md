@@ -69,9 +69,9 @@ releases, store listings, pushes to protected branches. Agents bring options wit
 
 Agents that can import a file load the constitution directly, so it does not depend on the agent following the link
 (Claude Code: `@docs/constitution.md` next to `@AGENTS.md` in `CLAUDE.md`). Wiring for each agent is set up by
-`keellay init` (task 8).
+`keellay init` (planned).
 
 ## Checked by
 
-`keellay check` (task 4): the file exists at the resolved path; front matter; the four sections are present; links
+`keellay check` (planned): the file exists at the resolved path; front matter; the four sections are present; links
 resolve; `AGENTS.md` links to the constitution.

@@ -18,6 +18,8 @@ docs/
 
 - **Any section can live elsewhere**, the constitution included. `.keellay/config.toml` maps a section to the
   project's own path, so an existing project keeps its documents where they are.
+- **Plans and specs in different repositories.** Deltas live next to the specs: at the same `changes/` path in the
+  specs' repository, while plans stay where they are (see `formats/delta.md`).
 - **`AGENTS.md` is not Keellay's.** Keellay adds one line that links to the constitution and edits nothing else in
   it; agent wiring makes agents that can import a file load the constitution directly.
 - **One resolver.** Tools, checks and generated role files find sections only through `keellay paths`; nothing

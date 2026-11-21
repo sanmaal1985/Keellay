@@ -30,5 +30,5 @@ Unchanged: A session with a request every 20 minutes stays open.
 
 ## Checked by
 
-`keellay check` (task 4): on a `fix/` branch, a commit message has the Current, Expected and Unchanged lines. The
+`keellay check` (planned): on a `fix/` branch, a commit message has the Current, Expected and Unchanged lines. The
 test rules are for the review.

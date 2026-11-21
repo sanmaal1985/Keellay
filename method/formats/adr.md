@@ -19,7 +19,7 @@ title: Sessions expire after inactivity, not after a fixed time
 status: accepted         # proposed | accepted | superseded
 date: 2026-11-20
 decided-by: owner
-supersedes: 0004         # optional
+supersedes: 0004         # optional; a list when it replaces several: [0004, 0007]
 superseded-by:           # set only when a later ADR replaces this one
 ---
 
@@ -49,7 +49,8 @@ What becomes easier, what becomes harder, what has to be done because of it.
 - **Frozen once accepted.** After `accepted`, only `status` and `superseded-by` may change.
 - **Changing a decision** is a new ADR with `supersedes`. It restates the whole rule as it is now, including what it
   keeps from the old one, so the reader never has to combine two ADRs. The old ADR gets `status: superseded` and
-  `superseded-by` in the same commit.
+  `superseded-by` in the same commit. When a new decision changes several ADRs at once, one ADR may supersede all of
+  them (`supersedes` as a list); each old one names it in `superseded-by`.
 - **Declined options count.** "We evaluated X and do not use it" is a decision worth an ADR, so the question is not
   reopened from scratch.
 
@@ -75,6 +76,6 @@ Replaced:
 
 ## Checked by
 
-`keellay check` (task 4): front matter; numbers unique; an accepted ADR's body is unchanged since acceptance
+`keellay check` (planned): front matter; numbers unique; an accepted ADR's body is unchanged since acceptance
 (compared with git history; light: advice, standard: warning, strict: error); `supersedes` and `superseded-by` agree;
 the index lists exactly the accepted ADRs under "In force" and the superseded ones under "Replaced".
