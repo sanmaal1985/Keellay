@@ -76,6 +76,6 @@ The PRD is listed in the product index, `docs/product/README.md` (see [idea.md](
 
 ## Checked by
 
-`keellay check` (planned): front matter; every area heading has a unique `PRD-` ID; each area has Outcome, In / Out
+`keellay check`: front matter. Planned: every area heading has a unique `PRD-` ID; each area has Outcome, In / Out
 and Status, and Measure at levels standard and strict; area IDs referenced from changes and ideas exist; an area
 removed from the file is reported (it should be `dropped` instead).

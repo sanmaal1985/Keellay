@@ -86,7 +86,7 @@ Ideas, closed:
 
 ## Checked by
 
-`keellay check` (planned): front matter fields and values; numbers unique; `assessed` has a `verdict`, and a later
+`keellay check`: front matter fields and values. Planned: numbers unique; `assessed` has a `verdict`, and a later
 status keeps it unless Assessment says why it was skipped; `declined` has an Outcome; `change` names an existing
 change, and `done` names a closed one; `prd` names an existing PRD area; the index lists every idea once, in the table
 that matches its status.

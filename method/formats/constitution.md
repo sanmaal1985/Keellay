@@ -76,5 +76,5 @@ Agents that can import a file load the constitution directly, so it does not dep
 
 ## Checked by
 
-`keellay check`: links resolve. Planned: the file exists at the resolved path; front matter; the four sections are
+`keellay check`: front matter; links resolve. Planned: the file exists at the resolved path; the four sections are
 present; Rules holds the three rules every role follows; `AGENTS.md` links to the constitution.

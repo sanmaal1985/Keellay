@@ -28,6 +28,9 @@ def project(tmp_path, monkeypatch):
     return tmp_path
 
 
+ADR = "---\nid: 0001\ntitle: X\nstatus: proposed\ndate: 2026-11-21\ndecided-by: owner\n---\n\n# 0001\n"
+
+
 def git_add(root: Path, *paths: str) -> None:
     subprocess.run(["git", "add", *paths], cwd=root, check=True)
 
@@ -37,7 +40,8 @@ def git_add(root: Path, *paths: str) -> None:
 
 def test_clean_project_reports_ok(capsys, project):
     write(project, "AGENTS.md", "Read [the constitution](docs/constitution.md).\n")
-    write(project, "docs/constitution.md", "# Constitution\n\nDecisions: [adr](adr/).\n")
+    write(project, "docs/constitution.md",
+          "---\nproject: X\nupdated: 2026-11-21\n---\n\n# Constitution\n\nDecisions: [adr](adr/).\n")
     (project / "docs" / "adr").mkdir()
     write(project, "docs/adr/README.md", "# Decisions\n")
     code, out = run(capsys, "check")
@@ -91,7 +95,7 @@ def test_links_that_are_checked(capsys, project, text):
 
 
 def test_anchor_and_folder_targets_resolve(capsys, project):
-    write(project, "docs/adr/0001-x.md", "# 0001\n")
+    write(project, "docs/adr/0001-x.md", ADR)
     write(project, "docs/changes/README.md", "[adr](../adr/0001-x.md#context), [folder](../adr/), [up](../adr)\n")
     code, out = run(capsys, "check")
     assert (code, out["findings"]) == (0, [])
@@ -124,7 +128,7 @@ def test_a_section_mapped_elsewhere_is_read_there(capsys, project):
 
 def test_staged_ignores_an_unstaged_broken_file(capsys, project):
     write(project, "docs/adr/README.md", "# Decisions\n\n- [0001](0001-x.md)\n")
-    write(project, "docs/adr/0001-x.md", "# 0001\n")
+    write(project, "docs/adr/0001-x.md", ADR)
     git_add(project, "docs/adr/README.md", "docs/adr/0001-x.md")
     write(project, "docs/lessons/README.md", "[missing](0009-x.md)\n")
     code, out = run(capsys, "check", "--staged")

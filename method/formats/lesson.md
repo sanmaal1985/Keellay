@@ -76,6 +76,6 @@ Mechanized:
 
 ## Checked by
 
-`keellay check` (planned): front matter; numbers unique; `count` equals the number of occurrences; a lesson with
+`keellay check`: front matter. Planned: numbers unique; `count` equals the number of occurrences; a lesson with
 `count` of 2 or more is mechanized, or has an owner waiver, before its change closes; `mechanized` has a `mechanism`;
 the index lists active and mechanized lessons in the right tables.
