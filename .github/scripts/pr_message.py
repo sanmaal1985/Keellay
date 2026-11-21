@@ -15,6 +15,9 @@ this script fixes both before the merge:
 - on a `fix/` branch the description must have the Current, Expected and Unchanged lines (method/formats/bugfix.md);
   they cannot be made up, so their absence is an error.
 
+Before writing, the script reads the PR again and writes nothing when the title or description changed since its
+first read: runs overlap, and the run started by that edit handles the newer text.
+
 Run in CI with GH_TOKEN, GITHUB_REPOSITORY and PR_NUMBER set; exits with 1 when something cannot be fixed.
 """
 
@@ -130,6 +133,15 @@ def fix_message(title: str, body: str | None, branch: str, commit_messages: list
     return result
 
 
+def changed_meanwhile(read: dict, latest: dict) -> bool:
+    """True when the PR's title or description changed after this run read it.
+
+    Each edit starts its own run, and runs overlap: a run that read the PR before an edit must not write over it, or
+    the older text wins. The run started by the edit reads the new text and fixes it.
+    """
+    return (read["title"], read["body"] or "") != (latest["title"], latest["body"] or "")
+
+
 def _gh(*args: str, stdin: str | None = None) -> str:
     return subprocess.run(["gh", *args], input=stdin, capture_output=True, text=True, check=True).stdout
 
@@ -148,6 +160,10 @@ def main() -> int:
         changes["body"] = result.body
 
     if changes:
+        latest = json.loads(_gh("api", f"repos/{repo}/pulls/{number}"))
+        if changed_meanwhile(pr, latest):
+            print("the title or description changed while this run worked; the run started by that edit fixes it")
+            return 0
         if pr["head"]["repo"]["full_name"] != repo:
             # A fork's token cannot edit the PR; say what to change instead.
             result.errors.append(f"set the title to '{result.title}'; write a description without AI attribution lines")

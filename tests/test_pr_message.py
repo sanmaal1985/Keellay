@@ -149,3 +149,26 @@ def test_fix_with_the_triple_passes():
 def test_fix_triple_from_the_commit_counts():
     message = "fix: session expiry\n\nCurrent: a\nExpected: b\nUnchanged: c"
     assert fix_message("fix: session expiry", "", "fix/session-expiry", [message, "fix: test"]).errors == []
+
+
+# Overlapping runs
+
+changed_meanwhile = pr_message.changed_meanwhile
+
+
+def test_an_edit_after_the_read_stops_the_write():
+    read = {"title": "docs: formats", "body": "old text"}
+    latest = {"title": "docs: formats", "body": "new text approved by the owner"}
+    assert changed_meanwhile(read, latest)
+
+
+def test_a_title_edit_after_the_read_stops_the_write():
+    assert changed_meanwhile({"title": "docs: a", "body": "x"}, {"title": "docs: b", "body": "x"})
+
+
+def test_no_edit_lets_the_run_write():
+    assert not changed_meanwhile({"title": "docs: a", "body": "x"}, {"title": "docs: a", "body": "x"})
+
+
+def test_empty_and_missing_body_are_the_same():
+    assert not changed_meanwhile({"title": "docs: a", "body": None}, {"title": "docs: a", "body": ""})
