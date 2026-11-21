@@ -91,9 +91,17 @@ the changes index lists exactly the open changes.
 
 ### REQ-check-006: Links
 
-The CLI shall report, as check `links`, every relative link in `AGENTS.md` and in the Markdown files of the project's
-sections that points to no existing file or folder; links inside fenced code blocks and inline code, links with a URL
-scheme and links that leave the project root are not checked, and the part after `#` is ignored.
+The CLI shall report, as check `links`, every relative link that points to no existing file or folder in `AGENTS.md`,
+in the Markdown files of the project's sections and in the Markdown files and folders listed in `links` under `[check]`
+in `.keellay/config.toml`; links inside fenced code blocks and inline code, links with a URL scheme and links that
+leave the project root are not checked, and the part after `#` is ignored.
+
+#### Scenario: extra paths from the config
+
+- GIVEN `.keellay/config.toml` with `links = ["method", "README.md"]` under `[check]`, and `method/formats/adr.md`
+  that links to `missing.md` outside a code block
+- WHEN `keellay check` runs
+- THEN there is a `links` error for `method/formats/adr.md`
 
 #### Scenario: link in an example
 
@@ -114,8 +122,9 @@ files that are not in the index as absent.
 
 ### REQ-check-008: Invalid config
 
-If `.keellay/config.toml` is invalid as described in REQ-paths-004, then `keellay check` shall report status `error`
-with the same message and no findings, and exit with code 2.
+If `.keellay/config.toml` is invalid as described in REQ-paths-004, or its `links` under `[check]` is not a list of
+paths, then `keellay check` shall report status `error` with a message that names the problem and no findings, and
+exit with code 2.
 
 #### Scenario: config with an unknown section
 
