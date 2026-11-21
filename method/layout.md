@@ -3,9 +3,10 @@
 A project that uses Keellay gets this layout by default:
 
 ```
-AGENTS.md            constitution block (a managed section; the rest of the file is the project's)
+AGENTS.md            the project's own file; one line points agents to the constitution
 docs/
-  product/           PRD, ideas register, index
+  constitution.md    what every agent reads first: project, owner, read-first list, rules
+  product/           PRD, ideas, index with the ideas register
   specs/             living specs, one per capability, index
   changes/           open changes (plan, delta); closed ones move to changes/archive/
   adr/               append-only ADRs, index of what is in force
@@ -15,8 +16,10 @@ docs/
   manifest.json      generated files with contract version and content hash
 ```
 
-- **Any section can live elsewhere.** `.keellay/config.toml` maps a section to the project's own path, so an existing
-  project keeps its documents where they are.
+- **Any section can live elsewhere**, the constitution included. `.keellay/config.toml` maps a section to the
+  project's own path, so an existing project keeps its documents where they are.
+- **`AGENTS.md` is not Keellay's.** Keellay adds one line that links to the constitution and edits nothing else in
+  it; agent wiring makes agents that can import a file load the constitution directly.
 - **One resolver.** Tools, checks and generated role files find sections only through `keellay paths`; nothing
   hardcodes a path.
 - **Brownfield.** `keellay init` detects existing sections and proposes, per section, to map it in place or move it

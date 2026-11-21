@@ -19,5 +19,4 @@ Common rules:
 | [lesson.md](lesson.md) | Lesson: occurrences, gap, rule, mechanism; repeats force a mechanism | draft |
 | [prd.md](prd.md) | PRD: purpose, users, non-goals, areas with stable IDs that changes and ideas link to | draft |
 | [idea.md](idea.md) | Idea: proposal, assessment with a verdict, owner's outcome; the ideas register | draft |
-
-Planned: constitution.
+| [constitution.md](constitution.md) | Constitution: project, owner, what to read first, project-wide rules; linked from `AGENTS.md` | draft |
