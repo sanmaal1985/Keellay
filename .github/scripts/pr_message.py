@@ -281,8 +281,8 @@ def main() -> int:
             # A fork's token cannot edit the PR; say what to change instead, only for what would change.
             todo = [f"set the title to '{result.title}'"] if "title" in changes else []
             if "body" in changes:
-                todo.append("set the description to the text below (AI attribution lines removed, lines wrapped "
-                            "at 72):\n" + result.body)
+                todo.append("set the description to the text below:\n" + result.body if result.body
+                            else "clear the description")
             result.errors.append("; ".join(todo))
         else:
             _gh("api", "-X", "PATCH", f"repos/{repo}/pulls/{number}", "--input", "-", stdin=json.dumps(changes))
