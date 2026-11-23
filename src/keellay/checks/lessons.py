@@ -53,7 +53,7 @@ def _check_lesson(lesson: Artifact, source: Source, plans: dict[int, Artifact]) 
                                                     f"occurrences {where}"))
     if status == "mechanized" and not _value(meta, "mechanism"):
         findings.append(finding(lines.get("mechanism", lines.get("status")),
-                                "the lesson is `mechanized` and `mechanism` does not name what enforces it"))
+                                "the lesson is `mechanized` and `mechanism` is empty; name what enforces the rule"))
     if status == "active" and count.isdigit() and int(count) >= 2 and items:
         line, last = items[-1]
         change = _CHANGE_NUMBER.search(last)
@@ -65,5 +65,7 @@ def _check_lesson(lesson: Artifact, source: Source, plans: dict[int, Artifact]) 
                 rf"(?<![A-Za-z0-9]){re.escape(lesson_id)}(?![0-9])", decisions.text())
             if not waived:
                 findings.append(finding(line, f"the lesson repeated in change {plan.name_id}, which closed with the "
-                                              f"lesson still `active` and no waiver for {lesson_id} in its Decisions"))
+                                              f"lesson still `active` and no waiver for {lesson_id} in its Decisions; "
+                                              f"mechanize the lesson, or record the owner's waiver in those "
+                                              f"Decisions by naming {lesson_id}"))
     return findings

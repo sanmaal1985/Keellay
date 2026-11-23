@@ -49,7 +49,7 @@ def run_checks(project: Project, source: Source) -> list[Finding]:
     findings += indexes.check(project, source, found)
     findings += links.check(project, source, settings)
     findings += phases.check(found, source)
-    findings += ideas.check(found, source)
+    findings += ideas.check(project, found, source)
     findings += lessons.check(found, source)
     findings += adr.check(found)
     return sorted(findings, key=lambda f: (f.file, f.line or 0, f.check, f.message))

@@ -3,25 +3,28 @@
 A field whose form is wrong is the front-matter check's finding; this one reads only values of the right form. The
 changes an idea may name are the plans of open and archived changes, and the change folders that hold only deltas, as
 in a repository whose plans live in another one; whether such a change is closed cannot be seen here, so it is not
-checked. Areas are the `### PRD-<topic>` headings of the PRD; a project without a PRD file has no areas to compare
-with, so `prd` is not checked there.
+checked. When the changes section is in another repository, `change` is not checked at all. Areas are the
+`### PRD-<topic>` headings of the PRD; a project without a PRD file has no areas to compare with, so `prd` is not
+checked there.
 """
 
 import posixpath
 import re
 
 from keellay.checks import Finding
-from keellay.checks.artifacts import Artifact
+from keellay.checks.artifacts import Artifact, section_path
 from keellay.checks.front_matter import CHANGE_ID
 from keellay.checks.markdown import section, without_code_blocks
 from keellay.checks.source import Source
+from keellay.paths import Project
 
 CHECK = "ideas"
 _AREA = re.compile(r"^###\s+(PRD-[a-z0-9]+(?:-[a-z0-9]+)*)\b")
 
 
-def check(artifacts: list[Artifact], source: Source) -> list[Finding]:
-    changes = known_changes(artifacts)
+def check(project: Project, artifacts: list[Artifact], source: Source) -> list[Finding]:
+    # Plans in another repository are checked there; here an idea's change could not be told from a missing one.
+    changes = known_changes(artifacts) if section_path(project, "changes") is not None else None
     areas = _areas(artifacts, source)
     findings = []
     for idea in artifacts:
@@ -54,11 +57,11 @@ def _value(meta: dict, name: str) -> str:
     return value.strip() if isinstance(value, str) else ""
 
 
-def _check_idea(idea: Artifact, text: str, changes: dict, areas: set[str] | None) -> list[Finding]:
+def _check_idea(idea: Artifact, text: str, changes: dict | None, areas: set[str] | None) -> list[Finding]:
     meta, lines = idea.meta, idea.meta_lines
 
-    def finding(field: str, message: str) -> Finding:
-        return Finding(CHECK, "error", idea.file, lines.get(field, lines.get("status", 1)), message)
+    def finding(field: str, message: str, line: int | None = None) -> Finding:
+        return Finding(CHECK, "error", idea.file, line or lines.get(field, lines.get("status", 1)), message)
 
     findings = []
     status, verdict = _value(meta, "status"), _value(meta, "verdict")
@@ -73,9 +76,10 @@ def _check_idea(idea: Artifact, text: str, changes: dict, areas: set[str] | None
     if status == "declined":
         outcome = section(text, "Outcome")
         if outcome is None or outcome.is_empty():
-            findings.append(finding("status", "the idea is `declined` and its Outcome does not say why"))
+            findings.append(finding("status", "the idea is `declined` and its Outcome does not say why",
+                                    outcome.line if outcome else None))
     change = _value(meta, "change")
-    if change and CHANGE_ID.fullmatch(change):
+    if change and CHANGE_ID.fullmatch(change) and changes is not None:
         if change not in changes:
             findings.append(finding("change", f"`change` names `{change}`, which is not a change, open or archived"))
         elif status == "done" and changes[change] is not None:

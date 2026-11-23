@@ -15,9 +15,14 @@ _ADR = re.compile(r"A(?:\d{4}|[1-9]\d{4,})")
 
 def check(artifacts: list[Artifact]) -> list[Finding]:
     adrs = {_id(adr): adr for adr in artifacts if adr.kind == "adr" and adr.meta is not None and _id(adr)}
-    replaces = {(new, old) for new, adr in adrs.items() for old in _ids(adr.meta, "supersedes")}
-    replaced = {(new, old) for old, adr in adrs.items() for new in _ids(adr.meta, "superseded-by")}
     findings = []
+    for adr_id, adr in sorted(adrs.items()):
+        for name in ("supersedes", "superseded-by"):
+            if adr_id in _ids(adr.meta, name):
+                findings.append(_finding(adr, name, f"`{name}` names {adr_id} itself; it names another ADR"))
+    # A link of an ADR to itself is reported above, not as a pair with a missing side.
+    replaces = {(new, old) for new, adr in adrs.items() for old in _ids(adr.meta, "supersedes") if old != new}
+    replaced = {(new, old) for old, adr in adrs.items() for new in _ids(adr.meta, "superseded-by") if new != old}
     for new, old in sorted(replaces - replaced):
         if old in adrs:
             findings.append(_finding(adrs[old], "superseded-by", f"{new} supersedes {old}, but {old}'s "

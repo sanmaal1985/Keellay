@@ -88,6 +88,8 @@ def test_declined_without_an_outcome(capsys, monkeypatch, project):
     code, out = run_check(project, capsys, monkeypatch)
     [finding] = of(out, "ideas")
     assert "Outcome" in finding["message"]
+    lines = (project / IDEA).read_text(encoding="utf-8").splitlines()
+    assert finding["line"] == lines.index("## Outcome") + 1
 
 
 def test_change_that_does_not_exist(capsys, monkeypatch, project):
@@ -95,6 +97,13 @@ def test_change_that_does_not_exist(capsys, monkeypatch, project):
     code, out = run_check(project, capsys, monkeypatch)
     [finding] = of(out, "ideas")
     assert "`C0042-x`" in finding["message"] and finding["line"] == 8
+
+
+def test_change_is_not_checked_when_plans_are_in_another_repository(capsys, monkeypatch, project):
+    write(project, ".keellay/config.toml", '[sections]\nchanges = "../other/changes"\n')
+    write(project, IDEA, idea("I0004", "done", verdict="go", assessment="A.", change="C0042-x"))
+    code, out = run_check(project, capsys, monkeypatch)
+    assert of(out, "ideas") == []
 
 
 def test_change_open_archived_or_only_deltas_exists(capsys, monkeypatch, project):
@@ -154,6 +163,7 @@ def test_repeated_lesson_closed_without_a_mechanism(capsys, monkeypatch, project
     code, out = run_check(project, capsys, monkeypatch)
     [finding] = of(out, "lessons")
     assert finding["file"] == LESSON and "C0007" in finding["message"]
+    assert "record the owner's waiver in those Decisions by naming L0003" in finding["message"]
 
 
 def test_waived_mechanism(capsys, monkeypatch, project):
@@ -182,7 +192,7 @@ def test_mechanized_lesson_without_a_mechanism(capsys, monkeypatch, project):
     write(project, LESSON, lesson(1, ["2026-03-02: a."], status="mechanized"))
     code, out = run_check(project, capsys, monkeypatch)
     [finding] = of(out, "lessons")
-    assert "`mechanism`" in finding["message"] and finding["line"] == 8
+    assert "`mechanism` is empty" in finding["message"] and finding["line"] == 8
 
 
 def test_mechanized_lesson_with_a_mechanism(capsys, monkeypatch, project):
@@ -232,6 +242,17 @@ def test_superseded_without_superseded_by(capsys, monkeypatch, project):
     code, out = run_check(project, capsys, monkeypatch)
     [finding] = of(out, "adr")
     assert "`superseded-by`" in finding["message"]
+
+
+@pytest.mark.parametrize("status, supersedes, superseded_by", [
+    ("superseded", "A0001", "A0001"),
+    ("accepted", "A0001", ""),
+])
+def test_adr_that_supersedes_itself(capsys, monkeypatch, project, status, supersedes, superseded_by):
+    write(project, "docs/adr/A0001-x.md", adr("A0001", status, supersedes, superseded_by))
+    code, out = run_check(project, capsys, monkeypatch)
+    findings = of(out, "adr")
+    assert findings and all("A0001 itself" in finding["message"] for finding in findings)
 
 
 def test_supersedes_an_adr_that_does_not_exist(capsys, monkeypatch, project):
