@@ -1,7 +1,8 @@
 """Make a pull request's title and description a good squash-merge commit message.
 
 The repository squash-merges with the PR title as the commit title and the PR description as the commit body, so
-this script fixes both before the merge:
+this script fixes both before the merge. On a branch outside the naming convention (a bot's, for example) it only
+removes AI attribution lines from the description; on the others:
 
 - the title is `<type>: <summary>`, with the type of the branch (`docs/13-architecture` -> `docs`); a title that
   already has that form is kept, otherwise it becomes the subject of the branch's first commit when that has the
@@ -204,8 +205,11 @@ def fix_message(title: str, body: str | None, branch: str, commit_messages: list
     body = body or ""
     branch_match = BRANCH.match(branch)
     if not branch_match or branch_match["type"] not in TYPES:
-        # Not a branch named by the convention (e.g. a bot's branch): leave it alone.
-        return Result(title, body)
+        # Not a branch named by the convention (e.g. a bot's branch): only the attribution lines go, since the
+        # description becomes the squash commit's body on every branch; the rest is left as it was written.
+        written = body.replace("\r\n", "\n")
+        cleaned = _without_attribution(written)
+        return Result(title, cleaned if cleaned != written.strip() else body)
     branch_type = branch_match["type"]
     commits = [_split(message) for message in commit_messages]
     result = Result(title.strip(), body)

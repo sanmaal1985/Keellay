@@ -55,7 +55,8 @@ missing:
 
 - a title that is not `<type>: <summary>` becomes the first commit's subject, or else the branch topic;
 - an empty description becomes the body of the only commit, or a list of the commits with their bodies;
-- AI attribution lines are removed from the description;
+- AI attribution lines are removed from the description, also on a branch outside the naming convention, where CI
+  changes nothing else;
 - description lines longer than 72 characters are wrapped, list items with a hanging indent, because GitHub wraps the
   commit body at 72 itself; write a list item or paragraph as one line and let CI wrap it;
 - on `fix/` branches the `Current:`, `Expected:` and `Unchanged:` lines of [the bugfix format](method/formats/bugfix.md)

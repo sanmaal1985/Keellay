@@ -45,6 +45,13 @@ def test_branch_without_a_topic_is_an_error():
 def test_branch_outside_the_convention_is_left_alone():
     result = fix_message("Bump uv", "", "dependabot/uv/uv-1.0", ["Bump uv\n\n" + ATTRIBUTION])
     assert (result.title, result.body, result.errors) == ("Bump uv", "", [])
+    body = "Bumps uv.\r\n\r\n" + "A line far longer than seventy-two characters that the convention branches wrap. " * 2
+    assert fix_message("Bump uv", body, "dependabot/uv/uv-1.0", []).body == body
+
+
+def test_attribution_is_removed_from_the_description_on_any_branch():
+    result = fix_message("Add landing", "Adds the landing.\r\n\r\n" + ATTRIBUTION, "claude/landing-x7Q", [])
+    assert (result.title, result.body, result.errors) == ("Add landing", "Adds the landing.", [])
 
 
 # Description
