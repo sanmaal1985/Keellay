@@ -54,6 +54,30 @@ def test_attribution_is_removed_from_the_description_on_any_branch():
     assert (result.title, result.body, result.errors) == ("Add landing", "Adds the landing.", [])
 
 
+def test_other_line_separators_are_left_alone():
+    body = "Release notes. Second line.\fThird."
+    assert fix_message("Bump uv", body, "dependabot/uv/uv-1.0", []).body == body
+
+
+def test_fork_is_told_only_what_would_change(monkeypatch, capsys):
+    pr = {"title": "Add landing", "body": "Adds it.\n\n" + ATTRIBUTION,
+          "head": {"ref": "claude/landing-x7Q", "repo": {"full_name": "someone/fork"}}}
+    commits = [[{"sha": "0123456789abcdef", "commit": {"message": "Add landing", "author": {"email": NOREPLY},
+                                                       "committer": {"email": NOREPLY}}}]]
+
+    def gh(*args, stdin=None):
+        assert "PATCH" not in args
+        return pr_message.json.dumps(commits if args[-1].endswith("/commits") else pr)
+
+    monkeypatch.setenv("GITHUB_REPOSITORY", "o/r")
+    monkeypatch.setenv("PR_NUMBER", "1")
+    monkeypatch.setattr(pr_message, "_gh", gh)
+    assert pr_message.main() == 1
+    out = capsys.readouterr().out
+    assert "set the description to the text below" in out and "Adds it." in out
+    assert "set the title" not in out
+
+
 # Description
 
 def test_written_description_is_kept():
@@ -295,7 +319,7 @@ def test_only_the_failing_commits_are_named():
     assert errors[0].startswith("commit fedcba9 'ci: b'")
 
 
-# The check runs in main() on every branch, before fix_message leaves a branch outside the convention alone
+# The check runs in main() on every branch, also outside the naming convention
 
 def test_main_fails_a_branch_outside_the_convention(monkeypatch, capsys):
     pr = {"title": "Bump uv", "body": "", "head": {"ref": "bot/bump-uv", "repo": {"full_name": "o/r"}}}

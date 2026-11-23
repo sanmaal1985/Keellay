@@ -156,7 +156,9 @@ def _valid_title(title: str, branch_type: str) -> bool:
 
 
 def _without_attribution(text: str) -> str:
-    return "\n".join(line for line in text.splitlines() if not _is_attribution(line)).strip()
+    # split("\n"), not splitlines(): the text is already LF, and splitlines() would also break it at form feeds and
+    # Unicode separators, rewriting a description that has no attribution at all.
+    return "\n".join(line for line in text.split("\n") if not _is_attribution(line)).strip()
 
 
 def _split(message: str) -> tuple[str, str]:
@@ -256,7 +258,7 @@ def main() -> int:
     commits = [Commit(c["sha"], c["commit"]["message"], c["commit"]["author"]["email"],
                       c["commit"]["committer"]["email"]) for page in commits for c in page]
 
-    # Before fix_message, which leaves branches outside the naming convention alone: this check holds on every branch.
+    # On every branch, also outside the naming convention, where fix_message only removes attribution lines.
     commit_errors = check_commits(commits)
     result = fix_message(pr["title"], pr["body"], pr["head"]["ref"], [c.message for c in commits])
     result.errors = commit_errors + result.errors
@@ -276,8 +278,12 @@ def main() -> int:
                 print(f"::error::{error}")
             return 1 if commit_errors else 0
         if pr["head"]["repo"]["full_name"] != repo:
-            # A fork's token cannot edit the PR; say what to change instead.
-            result.errors.append(f"set the title to '{result.title}'; write a description without AI attribution lines")
+            # A fork's token cannot edit the PR; say what to change instead, only for what would change.
+            todo = [f"set the title to '{result.title}'"] if "title" in changes else []
+            if "body" in changes:
+                todo.append("set the description to the text below (AI attribution lines removed, lines wrapped "
+                            "at 72):\n" + result.body)
+            result.errors.append("; ".join(todo))
         else:
             _gh("api", "-X", "PATCH", f"repos/{repo}/pulls/{number}", "--input", "-", stdin=json.dumps(changes))
             print(f"updated the PR ({', '.join(changes)}): title '{result.title}'")
