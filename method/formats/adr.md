@@ -78,5 +78,6 @@ Replaced:
 ## Checked by
 
 `keellay check`: front matter; numbers unique; the index lists exactly the accepted ADRs under "In force" and the
-superseded ones under "Replaced". Planned: an accepted ADR's body is unchanged since acceptance (compared with git
-history; light: advice, standard: warning, strict: error); `supersedes` and `superseded-by` agree.
+superseded ones under "Replaced"; `supersedes` and `superseded-by` name each other, a `superseded` ADR names the one
+that replaced it, and an ADR with `superseded-by` is `superseded`. Planned: an accepted ADR's body is unchanged since
+acceptance (compared with git history; light: advice, standard: warning, strict: error).

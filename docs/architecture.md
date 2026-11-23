@@ -177,6 +177,6 @@ mechanism holds where a reminder depends on the next session reading it.
 | CLI: `init` | in the interface, reports `not_implemented` |
 | CLI: role rendering, upgrades, delta merge | planned; commands not named yet |
 | Agent wiring: Claude Code, `AGENTS.md` agents | planned |
-| Checks: front matter, numbers, indexes, links, phases of a plan | built — [specs/check.md](specs/check.md) |
+| Checks: front matter, numbers, indexes, links, phases of a plan, ideas, lessons, superseded ADRs | built — [specs/check.md](specs/check.md) |
 | Checks: the rest named under "Checked by" in the formats | planned |
 | Packages on PyPI | not published |
