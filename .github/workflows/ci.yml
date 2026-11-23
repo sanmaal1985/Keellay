@@ -51,7 +51,7 @@ jobs:
   # `<type>: <summary>`, build an empty description from the commits, drop AI attribution lines, wrap the description
   # at 72, require the bugfix triple on fix/ branches. On every branch, fail a PR with a commit that would bring AI
   # attribution into main: an attribution line in its message, or an author or committer that is not a GitHub noreply
-  # address.
+  # address or is an AI agent's GitHub account.
   # Edits made with GITHUB_TOKEN start no new workflow run, so this does not loop.
   pr-message:
     name: PR title, description and commits

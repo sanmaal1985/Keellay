@@ -16,8 +16,9 @@ this script fixes both before the merge:
   they cannot be made up, so their absence is an error.
 
 It also checks the PR's commits, on every branch: public commits carry no AI attribution. A commit fails when its
-message has an attribution line, or when its author or committer is not a GitHub noreply address (the committer may
-also be GitHub itself, for commits made on github.com). The commit's author matters as much as its message: at a
+message has an attribution line (a co-author line naming an AI agent's GitHub account counts), or when its author or
+committer is not a GitHub noreply address (the committer may also be GitHub itself, for commits made on github.com)
+or is the GitHub account of an AI agent. The commit's author matters as much as its message: at a
 squash merge GitHub turns every commit author other than the merger into a `Co-authored-by` line. Commits cannot be
 fixed from here, so this is an error that names each commit.
 
@@ -38,14 +39,15 @@ from dataclasses import dataclass, field
 TYPES = ("feat", "fix", "docs", "ci", "chore", "refactor", "test")
 BRANCH = re.compile(r"^(?P<type>[a-z]+)/(?P<rest>.+)$")
 TITLE = re.compile(r"^(?P<type>[a-z]+): \S")
-# Anchored to the start of a line and to the shape of a trailer, so that prose about these lines (and a wrapped
+# Each alternative matches a whole line in the shape of a trailer, so that prose about these lines (and a wrapped
 # line that happens to start with their words) is not taken for them: this check blocks merges.
 ATTRIBUTION = re.compile(
-    r"^\s*Co-Authored-By:\s*Claude\b[^<]*<"              # Co-Authored-By: Claude Opus 5.5 <...>
-    r"|^\s*Co-Authored-By:[^<]*<[^>]*@anthropic\.com>"   # any co-author with an Anthropic address
-    r"|^\s*Claude-Session:\s*https?://"                  # the session trailer of cloud sessions
-    r"|^\W*Generated with \[?Claude Code",               # with or without the leading emoji
+    r"^\s*Co-Authored-By:\s*Claude\b[^<]*<[^>]*>\s*$"              # Co-Authored-By: Claude Opus 5.5 <...>
+    r"|^\s*Co-Authored-By:[^<]*<[^>]*@anthropic\.com>\s*$"         # any co-author with an Anthropic address
+    r"|^\s*Claude-Session:\s*https?://\S+\s*$"                     # the session trailer of cloud sessions
+    r"|^\W*Generated with \[?Claude Code\]?(?:\([^)\s]*\))?\s*$",  # with or without the emoji and the link
     re.IGNORECASE)
+CO_AUTHOR = re.compile(r"^\s*Co-Authored-By:[^<]*<([^>]*)>\s*$", re.IGNORECASE)
 ADDRESS = re.compile(r"<[^>]*>")
 NOREPLY = re.compile(r"^[^@\s]+@users\.noreply\.github\.com$", re.IGNORECASE)
 GITHUB_COMMITTER = "noreply@github.com"  # the committer of commits made on github.com
@@ -63,7 +65,8 @@ AI_ACCOUNTS = frozenset({
     "gemini-code-assist[bot]",
 })
 MAX_COMMITS = 250  # GitHub lists at most this many commits of a pull request
-FIX_COMMITS = ("rewrite these commits before the merge: set user.email to your GitHub noreply address "
+FIX_COMMITS = ("rewrite these commits before the merge, on top of the target repository's main (origin/main, or "
+               "upstream/main in a fork): set user.email to your GitHub noreply address "
                "(<id>+<login>@users.noreply.github.com); remove the attribution lines with "
                "git rebase -i origin/main (reword); reset the author with "
                "git rebase origin/main --exec \"git commit --amend --no-edit --reset-author\"; "
@@ -88,14 +91,29 @@ class Commit:
     committer_email: str
 
 
+def _ai_account(email: str) -> str | None:
+    """The login of an AI agent's GitHub account behind a noreply address, else None."""
+    email = email.strip()
+    if not NOREPLY.match(email):
+        return None
+    local = email.partition("@")[0]
+    login = local.partition("+")[2] or local  # <id>+<login>, or the old <login>
+    return login if login.lower() in AI_ACCOUNTS else None
+
+
+def _is_attribution(line: str) -> bool:
+    """An attribution trailer, or a co-author line that names an AI agent's GitHub account."""
+    co_author = CO_AUTHOR.match(line)
+    return bool(ATTRIBUTION.search(line) or (co_author and _ai_account(co_author[1])))
+
+
 def _identity_problem(email: str, role: str, github_may_commit: bool = False) -> str | None:
     email = email.strip()
     if github_may_commit and email.lower() == GITHUB_COMMITTER:
         return None
     if not NOREPLY.match(email):
         return f"the {role} is not a GitHub noreply address"
-    login = email.partition("@")[0].partition("+")[2] or email.partition("@")[0]  # <id>+<login>, or the old <login>
-    if login.lower() in AI_ACCOUNTS:
+    if login := _ai_account(email):
         return f"the {role} is the GitHub account of an AI agent ({login})"
     return None
 
@@ -109,7 +127,7 @@ def check_commits(commits: list[Commit]) -> list[str]:
     errors = []
     for commit in commits:
         problems = []
-        lines = [ADDRESS.sub("<...>", line.strip()) for line in commit.message.splitlines() if ATTRIBUTION.search(line)]
+        lines = [ADDRESS.sub("<...>", line.strip()) for line in commit.message.splitlines() if _is_attribution(line)]
         if lines:
             problems.append("AI attribution in the message: " + "; ".join(f"'{line}'" for line in lines))
         problems += [problem for problem in (_identity_problem(commit.author_email, "author"),
@@ -137,7 +155,7 @@ def _valid_title(title: str, branch_type: str) -> bool:
 
 
 def _without_attribution(text: str) -> str:
-    return "\n".join(line for line in text.splitlines() if not ATTRIBUTION.search(line)).strip()
+    return "\n".join(line for line in text.splitlines() if not _is_attribution(line)).strip()
 
 
 def _split(message: str) -> tuple[str, str]:

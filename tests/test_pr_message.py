@@ -218,8 +218,24 @@ def test_prose_about_attribution_lines_passes():
     message = ("fix: strip attribution\n\n"
                "The hook drops 'Generated with Claude Code' lines and the trailers\n"
                "Co-Authored-By: Claude and\n"
-               "Claude-Session: and the like, from every commit.")
+               "Claude-Session: and the like, from every commit.\n"
+               "'Generated with Claude Code' lines are dropped too.\n"
+               "- `Generated with Claude Code`: the line it adds.\n"
+               "Generated with Claude Code is the line it adds.\n"
+               "Co-Authored-By: Claude lines (with <noreply@anthropic.com>) are dropped.")
     assert check_commits([_commit(message)]) == []
+
+
+def test_co_author_line_naming_an_ai_account_fails():
+    message = "ci: a\n\nWhy.\n\nCo-authored-by: Copilot <175728472+Copilot@users.noreply.github.com>"
+    errors = check_commits([_commit(message)])
+    assert errors and "Co-authored-by: Copilot <...>" in errors[0]
+    body = "Why.\n\nCo-authored-by: Copilot <175728472+Copilot@users.noreply.github.com>"
+    assert fix_message("ci: a", body, "ci/1-a", []).body == "Why."
+
+
+def test_co_author_line_naming_a_person_passes():
+    assert check_commits([_commit("ci: a\n\nCo-authored-by: Someone <12345+someone@users.noreply.github.com>")]) == []
 
 
 def test_quoted_attribution_line_hides_the_address():
