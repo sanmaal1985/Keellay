@@ -39,7 +39,7 @@ def check_settings(project: Project) -> dict:
 
 def run_checks(project: Project, source: Source) -> list[Finding]:
     # Imported here: each check module imports `Finding` from this package.
-    from keellay.checks import artifacts, front_matter, indexes, links, numbers, phases
+    from keellay.checks import adr, artifacts, front_matter, ideas, indexes, lessons, links, numbers, phases
 
     settings = check_settings(project)
     found = artifacts.find(project, source)
@@ -49,4 +49,7 @@ def run_checks(project: Project, source: Source) -> list[Finding]:
     findings += indexes.check(project, source, found)
     findings += links.check(project, source, settings)
     findings += phases.check(found, source)
+    findings += ideas.check(found, source)
+    findings += lessons.check(found, source)
+    findings += adr.check(found)
     return sorted(findings, key=lambda f: (f.file, f.line or 0, f.check, f.message))
