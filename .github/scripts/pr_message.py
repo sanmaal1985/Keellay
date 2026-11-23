@@ -15,6 +15,12 @@ this script fixes both before the merge:
 - on a `fix/` branch the description must have the Current, Expected and Unchanged lines (method/formats/bugfix.md);
   they cannot be made up, so their absence is an error.
 
+It also checks the PR's commits, on every branch: public commits carry no AI attribution. A commit fails when its
+message has an attribution line, or when its author or committer is not a GitHub noreply address (the committer may
+also be GitHub itself, for commits made on github.com). The commit's author matters as much as its message: at a
+squash merge GitHub turns every commit author other than the merger into a `Co-authored-by` line. Commits cannot be
+fixed from here, so this is an error that names each commit.
+
 Before writing, the script reads the PR again and writes nothing when the title or description changed since its
 first read: runs overlap, and the run started by that edit handles the newer text.
 
@@ -32,7 +38,18 @@ from dataclasses import dataclass, field
 TYPES = ("feat", "fix", "docs", "ci", "chore", "refactor", "test")
 BRANCH = re.compile(r"^(?P<type>[a-z]+)/(?P<rest>.+)$")
 TITLE = re.compile(r"^(?P<type>[a-z]+): \S")
-ATTRIBUTION = re.compile(r"^\s*Co-Authored-By:\s*Claude|Generated with \[?Claude Code", re.IGNORECASE)
+ATTRIBUTION = re.compile(
+    r"^\s*Co-Authored-By:\s*Claude\b"         # Co-Authored-By: Claude Opus 5.5 <...>, Co-authored-by: Claude <...>
+    r"|^\s*Co-Authored-By:.*@anthropic\.com"  # any co-author line with an Anthropic address
+    r"|^\s*Claude-Session:"                   # the session trailer of cloud sessions
+    r"|Generated with \[?Claude Code",
+    re.IGNORECASE)
+NOREPLY = re.compile(r"^[^@\s]+@users\.noreply\.github\.com$", re.IGNORECASE)
+GITHUB_COMMITTER = "noreply@github.com"  # the committer of commits made on github.com
+FIX_COMMITS = ("rewrite these commits before the merge: set user.email to your GitHub noreply address "
+               "(<id>+<login>@users.noreply.github.com), drop the attribution lines, amend each commit with "
+               "--reset-author (for several, git rebase --exec 'git commit --amend --no-edit --reset-author'), "
+               "then push the branch with --force-with-lease")
 TRIPLE = ("Current", "Expected", "Unchanged")
 WIDTH = 72  # GitHub wraps the squash commit body at this width
 LIST_ITEM = re.compile(r"^\s*(?:[-*+]|\d+[.)])\s+")
@@ -43,6 +60,38 @@ class Result:
     title: str
     body: str
     errors: list[str] = field(default_factory=list)
+
+
+@dataclass
+class Commit:
+    sha: str
+    message: str
+    author_email: str
+    committer_email: str
+
+
+def check_commits(commits: list[Commit]) -> list[str]:
+    """One error per commit that would put AI attribution into main, then how to fix them; empty when none would.
+
+    The addresses are not printed: a personal one would only be repeated in a public log.
+    """
+    errors = []
+    for commit in commits:
+        problems = []
+        lines = [line.strip() for line in commit.message.splitlines() if ATTRIBUTION.search(line)]
+        if lines:
+            problems.append("AI attribution in the message: " + "; ".join(f"'{line}'" for line in lines))
+        if not NOREPLY.match(commit.author_email.strip()):
+            problems.append("the author is not a GitHub noreply address")
+        committer = commit.committer_email.strip()
+        if not (NOREPLY.match(committer) or committer.lower() == GITHUB_COMMITTER):
+            problems.append("the committer is not a GitHub noreply address")
+        if problems:
+            subject = commit.message.strip().partition("\n")[0]
+            errors.append(f"commit {commit.sha[:7]} '{subject}': " + "; ".join(problems))
+    if errors:
+        errors.append(FIX_COMMITS)
+    return errors
 
 
 def _topic(rest: str) -> str:
@@ -150,9 +199,13 @@ def main() -> int:
     repo, number = os.environ["GITHUB_REPOSITORY"], os.environ["PR_NUMBER"]
     pr = json.loads(_gh("api", f"repos/{repo}/pulls/{number}"))
     commits = json.loads(_gh("api", "--paginate", "--slurp", f"repos/{repo}/pulls/{number}/commits"))
-    messages = [c["commit"]["message"] for page in commits for c in page]
+    commits = [Commit(c["sha"], c["commit"]["message"], c["commit"]["author"]["email"],
+                      c["commit"]["committer"]["email"]) for page in commits for c in page]
 
-    result = fix_message(pr["title"], pr["body"], pr["head"]["ref"], messages)
+    # Before fix_message, which leaves branches outside the naming convention alone: this check holds on every branch.
+    commit_errors = check_commits(commits)
+    result = fix_message(pr["title"], pr["body"], pr["head"]["ref"], [c.message for c in commits])
+    result.errors = commit_errors + result.errors
     changes = {}
     if result.title != pr["title"]:
         changes["title"] = result.title

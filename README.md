@@ -61,6 +61,12 @@ missing:
 - on `fix/` branches the `Current:`, `Expected:` and `Unchanged:` lines of [the bugfix format](method/formats/bugfix.md)
   are required.
 
+Commits cannot be fixed by CI, so on every branch it fails a pull request with a commit that would bring AI
+attribution into `main`: an attribution line in the message (`Co-Authored-By: Claude`, `Claude-Session:` and the
+like), or an author or committer that is not a GitHub noreply address (`<id>+<login>@users.noreply.github.com`; the
+committer may also be GitHub itself, for commits made on github.com). At a squash merge GitHub turns every commit
+author other than the merger into a `Co-authored-by` line, so the author counts as much as the message.
+
 ## Principles (draft)
 
 - **Method, not templates.** The framework is versioned in one place; each project gets a small adapter and its own

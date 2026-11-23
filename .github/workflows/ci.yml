@@ -49,10 +49,12 @@ jobs:
 
   # Main is squash-merged with the PR title and description as the commit message: fix the title to
   # `<type>: <summary>`, build an empty description from the commits, drop AI attribution lines, wrap the description
-  # at 72, require the bugfix triple on fix/ branches.
+  # at 72, require the bugfix triple on fix/ branches. On every branch, fail a PR with a commit that would bring AI
+  # attribution into main: an attribution line in its message, or an author or committer that is not a GitHub noreply
+  # address.
   # Edits made with GITHUB_TOKEN start no new workflow run, so this does not loop.
   pr-message:
-    name: PR title and description
+    name: PR title, description and commits
     runs-on: ubuntu-latest
     permissions:
       contents: read
