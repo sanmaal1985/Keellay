@@ -6,6 +6,7 @@ from pathlib import Path
 
 import pytest
 
+from conftest import CONSTITUTION, add_constitution
 from keellay.cli import EXIT_CONFIG_ERROR, EXIT_FINDINGS, main
 
 
@@ -24,6 +25,7 @@ def write(root: Path, path: str, text: str) -> None:
 def project(tmp_path, monkeypatch):
     """An empty git repository as the current folder."""
     subprocess.run(["git", "init", "-q", str(tmp_path)], check=True)
+    add_constitution(tmp_path)
     monkeypatch.chdir(tmp_path)
     return tmp_path
 
@@ -40,8 +42,7 @@ def git_add(root: Path, *paths: str) -> None:
 
 def test_clean_project_reports_ok(capsys, project):
     write(project, "AGENTS.md", "Read [the constitution](docs/constitution.md).\n")
-    write(project, "docs/constitution.md",
-          "---\nproject: X\nupdated: 2026-11-21\n---\n\n# Constitution\n\nDecisions: [adr](adr/).\n")
+    write(project, "docs/constitution.md", CONSTITUTION.replace("1. Nothing yet.", "1. Decisions: [adr](adr/)."))
     (project / "docs" / "adr").mkdir()
     write(project, "docs/adr/README.md", "# Decisions\n")
     code, out = run(capsys, "check")

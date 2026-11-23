@@ -6,6 +6,7 @@ from pathlib import Path
 
 import pytest
 
+from conftest import add_constitution
 from keellay.cli import main
 
 
@@ -50,6 +51,7 @@ def spec(capability: str, prefix: str, *requirements: str) -> str:
 @pytest.fixture
 def project(tmp_path):
     subprocess.run(["git", "init", "-q", str(tmp_path)], check=True)
+    add_constitution(tmp_path)
     return tmp_path
 
 

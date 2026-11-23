@@ -6,6 +6,7 @@ from pathlib import Path
 
 import pytest
 
+from conftest import add_constitution
 from keellay.cli import main
 
 ADR = "---\nid: A0001\ntitle: X\nstatus: accepted\ndate: 2026-11-21\ndecided-by: owner\n---\n\n# A0001\n"
@@ -30,6 +31,7 @@ def git(root: Path, *args: str) -> None:
 @pytest.fixture
 def project(tmp_path, monkeypatch):
     subprocess.run(["git", "init", "-q", str(tmp_path)], check=True)
+    add_constitution(tmp_path)
     monkeypatch.chdir(tmp_path)
     return tmp_path
 
@@ -38,6 +40,7 @@ def test_project_in_a_folder_with_a_non_ascii_name(capsys, tmp_path, monkeypatch
     root = tmp_path / "проект"
     root.mkdir()
     subprocess.run(["git", "init", "-q", str(root)], check=True)
+    add_constitution(root)
     write(root, "docs/adr/A0001-x.md", ADR.replace("accepted", "started"))
     write(root, "docs/adr/README.md", ADR_INDEX)
     monkeypatch.chdir(root)
@@ -45,7 +48,7 @@ def test_project_in_a_folder_with_a_non_ascii_name(capsys, tmp_path, monkeypatch
     assert code == 1
     assert any(f["check"] == "front-matter" and "started" in f["message"] for f in out["findings"])
     code, out = run(capsys, "check", "--staged")
-    assert out["status"] == "ok"  # nothing staged yet: the index is read, not a wrong folder
+    assert out["status"] == "ok"  # the ADR is not staged yet: the index is read, not a wrong folder
 
 
 def test_byte_order_mark_is_not_a_missing_front_matter(capsys, project):
@@ -166,7 +169,9 @@ def test_extra_link_paths_are_normalized(capsys, project, links):
 
 
 def test_section_at_the_root(capsys, project):
-    write(project, ".keellay/config.toml", '[sections]\nspecs = "."\n')
+    # Every Markdown file at the root is a spec here, so the project keeps no AGENTS.md and no constitution.
+    (project / "AGENTS.md").unlink()
+    write(project, ".keellay/config.toml", '[sections]\nspecs = "."\nconstitution = false\n')
     write(project, "auth.md", "---\ncapability: session\nprefix: auth\n---\n")
     write(project, "README.md", "| Capability | Covers |\n|---|---|\n| [auth](auth.md) | Auth |\n")
     code, out = run(capsys, "check")
