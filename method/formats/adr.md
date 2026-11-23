@@ -11,7 +11,7 @@ change stays in that change's Decisions section.
 ## File
 
 `docs/adr/<number>-<topic>.md`, where the number is `A` and at least four digits (`A0012`), sequential and never
-reused (see [Numbers](README.md)).
+reused (see Numbers in the formats' README).
 
 ```markdown
 ---

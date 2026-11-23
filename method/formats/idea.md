@@ -7,7 +7,7 @@ the reason, so the same idea is not argued again from scratch.
 ## File
 
 `docs/product/ideas/<number>-<topic>.md`, where the number is `I` and at least four digits (`I0004`), sequential
-and never reused (see [Numbers](README.md)).
+and never reused (see Numbers in the formats' README).
 
 ```markdown
 ---
