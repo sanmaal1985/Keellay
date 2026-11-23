@@ -38,17 +38,22 @@ from dataclasses import dataclass, field
 TYPES = ("feat", "fix", "docs", "ci", "chore", "refactor", "test")
 BRANCH = re.compile(r"^(?P<type>[a-z]+)/(?P<rest>.+)$")
 TITLE = re.compile(r"^(?P<type>[a-z]+): \S")
+# Anchored to the start of a line and to the shape of a trailer, so that prose about these lines (and a wrapped
+# line that happens to start with their words) is not taken for them: this check blocks merges.
 ATTRIBUTION = re.compile(
-    r"^\s*Co-Authored-By:\s*Claude\b"         # Co-Authored-By: Claude Opus 5.5 <...>, Co-authored-by: Claude <...>
-    r"|^\s*Co-Authored-By:.*@anthropic\.com"  # any co-author line with an Anthropic address
-    r"|^\s*Claude-Session:"                   # the session trailer of cloud sessions
-    r"|Generated with \[?Claude Code",
+    r"^\s*Co-Authored-By:\s*Claude\b[^<]*<"              # Co-Authored-By: Claude Opus 5.5 <...>
+    r"|^\s*Co-Authored-By:[^<]*<[^>]*@anthropic\.com>"   # any co-author with an Anthropic address
+    r"|^\s*Claude-Session:\s*https?://"                  # the session trailer of cloud sessions
+    r"|^\W*Generated with \[?Claude Code",               # with or without the leading emoji
     re.IGNORECASE)
+ADDRESS = re.compile(r"<[^>]*>")
 NOREPLY = re.compile(r"^[^@\s]+@users\.noreply\.github\.com$", re.IGNORECASE)
 GITHUB_COMMITTER = "noreply@github.com"  # the committer of commits made on github.com
+MAX_COMMITS = 250  # GitHub lists at most this many commits of a pull request
 FIX_COMMITS = ("rewrite these commits before the merge: set user.email to your GitHub noreply address "
-               "(<id>+<login>@users.noreply.github.com), drop the attribution lines, amend each commit with "
-               "--reset-author (for several, git rebase --exec 'git commit --amend --no-edit --reset-author'), "
+               "(<id>+<login>@users.noreply.github.com); remove the attribution lines with "
+               "git rebase -i origin/main (reword); reset the author with "
+               "git rebase origin/main --exec \"git commit --amend --no-edit --reset-author\"; "
                "then push the branch with --force-with-lease")
 TRIPLE = ("Current", "Expected", "Unchanged")
 WIDTH = 72  # GitHub wraps the squash commit body at this width
@@ -73,12 +78,13 @@ class Commit:
 def check_commits(commits: list[Commit]) -> list[str]:
     """One error per commit that would put AI attribution into main, then how to fix them; empty when none would.
 
-    The addresses are not printed: a personal one would only be repeated in a public log.
+    No address is printed, not even inside a quoted attribution line: a personal one would only be repeated in a
+    public log.
     """
     errors = []
     for commit in commits:
         problems = []
-        lines = [line.strip() for line in commit.message.splitlines() if ATTRIBUTION.search(line)]
+        lines = [ADDRESS.sub("<...>", line.strip()) for line in commit.message.splitlines() if ATTRIBUTION.search(line)]
         if lines:
             problems.append("AI attribution in the message: " + "; ".join(f"'{line}'" for line in lines))
         if not NOREPLY.match(commit.author_email.strip()):
@@ -91,6 +97,10 @@ def check_commits(commits: list[Commit]) -> list[str]:
             errors.append(f"commit {commit.sha[:7]} '{subject}': " + "; ".join(problems))
     if errors:
         errors.append(FIX_COMMITS)
+    if len(commits) >= MAX_COMMITS:
+        # GitHub returns no more than MAX_COMMITS, so the ones after them cannot be read: fail rather than pass unseen.
+        errors.insert(0, f"the pull request has {MAX_COMMITS} or more commits, and GitHub lists only {MAX_COMMITS}; "
+                         "the rest cannot be checked: split the pull request or squash its commits")
     return errors
 
 
@@ -215,8 +225,12 @@ def main() -> int:
     if changes:
         latest = json.loads(_gh("api", f"repos/{repo}/pulls/{number}"))
         if changed_meanwhile(pr, latest):
+            # The newer run handles the title and description, but the commits are the same: their errors stand, or
+            # this run's ci-ok would pass a pull request that the newer run fails.
             print("the title or description changed while this run worked; the run started by that edit fixes it")
-            return 0
+            for error in commit_errors:
+                print(f"::error::{error}")
+            return 1 if commit_errors else 0
         if pr["head"]["repo"]["full_name"] != repo:
             # A fork's token cannot edit the PR; say what to change instead.
             result.errors.append(f"set the title to '{result.title}'; write a description without AI attribution lines")

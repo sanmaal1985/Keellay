@@ -190,11 +190,26 @@ def test_each_attribution_line_fails():
                  "Claude-Session: https://claude.ai/code/session_0123",
                  "🤖 Generated with [Claude Code](https://claude.com/claude-code)"):
         errors = check_commits([_commit(f"ci: a\n\nWhy.\n\n{line}")])
-        assert errors and line in errors[0], line
+        assert errors and line.split("<")[0].strip() in errors[0], line
 
 
 def test_other_mentions_of_claude_in_a_commit_pass():
     assert check_commits([_commit("feat: Claude Code adapter\n\nWires the Claude Code adapter.")]) == []
+
+
+def test_prose_about_attribution_lines_passes():
+    # A commit that describes these lines, also wrapped so that a line starts with their words.
+    message = ("fix: strip attribution\n\n"
+               "The hook drops 'Generated with Claude Code' lines and the trailers\n"
+               "Co-Authored-By: Claude and\n"
+               "Claude-Session: and the like, from every commit.")
+    assert check_commits([_commit(message)]) == []
+
+
+def test_quoted_attribution_line_hides_the_address():
+    errors = check_commits([_commit("ci: a\n\nCo-authored-by: Someone <someone@anthropic.com>")])
+    assert "Co-authored-by: Someone <...>" in errors[0]
+    assert all("someone@anthropic.com" not in error for error in errors)
 
 
 def test_anthropic_author_fails():
@@ -218,15 +233,21 @@ def test_github_address_is_not_an_author():
 
 
 def test_commit_pushed_by_a_cloud_session_fails():
-    # As a cloud session pushed it: trailers in the message and the agent as author and committer.
+    # As a cloud session pushed it: trailers in the message, the agent as author, a noreply committer.
     message = ("feat: add brand assets and a GitHub Pages landing\n\nAdds the logo.\n\n"
                "Co-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>\n"
                "Claude-Session: https://claude.ai/code/session_0123")
-    errors = check_commits([_commit(message, "noreply@anthropic.com", "noreply@anthropic.com")])
+    errors = check_commits([_commit(message, author="noreply@anthropic.com")])
     assert errors[0].startswith("commit 0123456 'feat: add brand assets and a GitHub Pages landing': ")
     assert "Co-Authored-By: Claude Opus 5.5" in errors[0] and "Claude-Session:" in errors[0]
-    assert "author" in errors[0] and "committer" in errors[0]
+    assert "the author is not" in errors[0] and "committer" not in errors[0]
     assert "--reset-author" in errors[-1]
+
+
+def test_too_many_commits_to_read_fail():
+    errors = check_commits([_commit()] * 250)
+    assert len(errors) == 1 and "250" in errors[0]
+    assert check_commits([_commit()] * 249) == []
 
 
 def test_only_the_failing_commits_are_named():
@@ -251,6 +272,30 @@ def test_main_fails_a_branch_outside_the_convention(monkeypatch, capsys):
     monkeypatch.setattr(pr_message, "_gh", gh)
     assert pr_message.main() == 1
     assert "::error::commit 0123456 'Bump uv'" in capsys.readouterr().out
+
+
+def test_main_keeps_commit_errors_when_the_description_changed_meanwhile(monkeypatch, capsys):
+    # The description needs a fix, but the owner edits it while the run works: the newer run handles the text, and
+    # this run still fails on the commit.
+    reads = iter([{"title": "ci: a", "body": "Why.\n\nCo-Authored-By: Claude <noreply@anthropic.com>"},
+                  {"title": "ci: a", "body": "Why, edited."}])
+    commits = [[{"sha": "0123456789abcdef",
+                 "commit": {"message": "ci: a\n\nCo-Authored-By: Claude <noreply@anthropic.com>",
+                            "author": {"email": "noreply@anthropic.com"}, "committer": {"email": NOREPLY}}}]]
+
+    def gh(*args, stdin=None):
+        if args[-1].endswith("/commits"):
+            return pr_message.json.dumps(commits)
+        pr = next(reads)
+        pr["head"] = {"ref": "ci/1-a", "repo": {"full_name": "o/r"}}
+        return pr_message.json.dumps(pr)
+
+    monkeypatch.setenv("GITHUB_REPOSITORY", "o/r")
+    monkeypatch.setenv("PR_NUMBER", "1")
+    monkeypatch.setattr(pr_message, "_gh", gh)
+    assert pr_message.main() == 1
+    out = capsys.readouterr().out
+    assert "changed while this run worked" in out and "::error::commit 0123456 'ci: a'" in out
 
 
 # Overlapping runs
