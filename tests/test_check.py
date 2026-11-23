@@ -1,4 +1,4 @@
-"""Scenarios of the `check` delta (change 0004) as tests: the command, the `links` check and `--staged`."""
+"""Scenarios of the `check` spec as tests: the command, the `links` check and `--staged`."""
 
 import json
 import subprocess
@@ -28,7 +28,7 @@ def project(tmp_path, monkeypatch):
     return tmp_path
 
 
-ADR = "---\nid: 0001\ntitle: X\nstatus: proposed\ndate: 2026-11-21\ndecided-by: owner\n---\n\n# 0001\n"
+ADR = "---\nid: A0001\ntitle: X\nstatus: proposed\ndate: 2026-11-21\ndecided-by: owner\n---\n\n# A0001\n"
 
 
 def git_add(root: Path, *paths: str) -> None:
@@ -53,22 +53,22 @@ def test_clean_project_reports_ok(capsys, project):
 
 
 def test_broken_link_is_reported_as_an_error(capsys, project):
-    write(project, "docs/adr/README.md", "# Decisions\n\n- [0009](0009-missing.md)\n")
+    write(project, "docs/adr/README.md", "# Decisions\n\n- [A0009](A0009-missing.md)\n")
     code, out = run(capsys, "check")
     assert code == EXIT_FINDINGS == 1
     assert out["status"] == "failed"
     assert out["findings"] == [{"check": "links", "severity": "error", "file": "docs/adr/README.md", "line": 3,
-                                "message": "link to 0009-missing.md points to nothing"}]
+                                "message": "link to A0009-missing.md points to nothing"}]
 
 
 # REQ-check-006
 
 
 @pytest.mark.parametrize("text", [
-    "```markdown\n[plan](0007-x/plan.md)\n```\n",
-    "~~~\n[plan](0007-x/plan.md)\n~~~\n",
-    "  ```\n  [plan](0007-x/plan.md)\n  ```\n",
-    "See `[plan](0007-x/plan.md)` in the format.\n",
+    "```markdown\n[plan](C0007-x/plan.md)\n```\n",
+    "~~~\n[plan](C0007-x/plan.md)\n~~~\n",
+    "  ```\n  [plan](C0007-x/plan.md)\n  ```\n",
+    "See `[plan](C0007-x/plan.md)` in the format.\n",
     "[site](https://example.com/missing) and [mail](mailto:someone@example.com)\n",
     "[here](#requirements)\n",
     "[outside](../../../other-repo/file.md)\n",
@@ -80,12 +80,12 @@ def test_links_that_are_not_checked(capsys, project, text):
 
 
 @pytest.mark.parametrize("text", [
-    "[plan](0007-x/plan.md)\n",
+    "[plan](C0007-x/plan.md)\n",
     "![diagram](img/flow.png)\n",
-    "[plan](<0007 x/plan.md>)\n",
-    "[plan](0007-x/plan.md \"title\")\n",
-    "[plan]: 0007-x/plan.md\n",
-    "```\n[ok](README.md)\n```\n[plan](0007-x/plan.md)\n",
+    "[plan](<C0007 x/plan.md>)\n",
+    "[plan](C0007-x/plan.md \"title\")\n",
+    "[plan]: C0007-x/plan.md\n",
+    "```\n[ok](README.md)\n```\n[plan](C0007-x/plan.md)\n",
 ])
 def test_links_that_are_checked(capsys, project, text):
     write(project, "docs/changes/README.md", text)
@@ -95,8 +95,8 @@ def test_links_that_are_checked(capsys, project, text):
 
 
 def test_anchor_and_folder_targets_resolve(capsys, project):
-    write(project, "docs/adr/0001-x.md", ADR)
-    write(project, "docs/changes/README.md", "[adr](../adr/0001-x.md#context), [folder](../adr/), [up](../adr)\n")
+    write(project, "docs/adr/A0001-x.md", ADR)
+    write(project, "docs/changes/README.md", "[adr](../adr/A0001-x.md#context), [folder](../adr/), [up](../adr)\n")
     code, out = run(capsys, "check")
     assert (code, out["findings"]) == (0, [])
 
@@ -127,9 +127,9 @@ def test_a_section_mapped_elsewhere_is_read_there(capsys, project):
 
 
 def test_staged_ignores_an_unstaged_broken_file(capsys, project):
-    write(project, "docs/adr/README.md", "# Decisions\n\n- [0001](0001-x.md)\n")
-    write(project, "docs/adr/0001-x.md", ADR)
-    git_add(project, "docs/adr/README.md", "docs/adr/0001-x.md")
+    write(project, "docs/adr/README.md", "# Decisions\n\n- [A0001](A0001-x.md)\n")
+    write(project, "docs/adr/A0001-x.md", ADR)
+    git_add(project, "docs/adr/README.md", "docs/adr/A0001-x.md")
     write(project, "docs/lessons/README.md", "[missing](0009-x.md)\n")
     code, out = run(capsys, "check", "--staged")
     assert (code, out["status"]) == (0, "ok")
@@ -145,9 +145,9 @@ def test_staged_reads_the_staged_content_not_the_working_tree(capsys, project):
 
 
 def test_staged_treats_unstaged_files_as_absent(capsys, project):
-    write(project, "docs/adr/README.md", "[0001](0001-x.md)\n")
+    write(project, "docs/adr/README.md", "[A0001](A0001-x.md)\n")
     git_add(project, "docs/adr/README.md")
-    write(project, "docs/adr/0001-x.md", "# 0001, not staged\n")
+    write(project, "docs/adr/A0001-x.md", "# A0001, not staged\n")
     code, out = run(capsys, "check", "--staged")
     assert code == 1
 

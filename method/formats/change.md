@@ -5,11 +5,11 @@ A change is one unit of work that the owner approved: a folder with a plan and, 
 
 ## Identity
 
-- **ID:** `<number>-<topic>`, e.g. `0007-session-expiry`. The number has four digits, is sequential per project and is
-  never reused; the topic is lowercase words joined by hyphens.
+- **ID:** `<number>-<topic>`, e.g. `C0007-session-expiry`. The number is `C` and at least four digits, sequential
+  per project and never reused (see [Numbers](README.md)); the topic is lowercase words joined by hyphens.
 - **Claiming a number:** the row in the changes index claims it. When two branches claim the same number, the check
   fails on the second one and it takes the next free number.
-- **Branch:** `<type>/<id>`, e.g. `feat/0007-session-expiry`. Types follow commit messages: `feat`, `fix`, `docs`,
+- **Branch:** `<type>/<id>`, e.g. `feat/C0007-session-expiry`. Types follow commit messages: `feat`, `fix`, `docs`,
   `ci`, `chore`, `refactor`, `test`. Work without a change uses `<type>/<topic>`.
 - The pattern is configurable in `.keellay/config.toml`, so a project that keys work by tracker IDs (e.g.
   `feat/PROJ-123-session-expiry`) keeps them.
@@ -19,13 +19,13 @@ A change is one unit of work that the owner approved: a folder with a plan and, 
 ```
 docs/changes/
   README.md                 index of open changes
-  0007-session-expiry/
+  C0007-session-expiry/
     plan.md                 required
     design.md               optional: options considered for a feature; lasting decisions become ADRs
     delta/
       auth-session.md       one file per capability whose behaviour changes (see delta.md)
   archive/
-    0006-.../               closed and dropped changes, moved here unchanged
+    C0006-.../              closed and dropped changes, moved here unchanged
 ```
 
 ## Lifecycle
@@ -47,14 +47,14 @@ Every status change updates the index in the same commit.
 
 ```markdown
 ---
-id: 0007-session-expiry
+id: C0007-session-expiry
 title: Session expires after inactivity
 path: feature            # change | feature
 status: in-progress
 approved: 2026-11-20     # date of the owner's yes
 ---
 
-# 0007 Session expires after inactivity
+# C0007 Session expires after inactivity
 
 ## Intent
 
@@ -126,7 +126,7 @@ Open changes. Closed and dropped ones are in `archive/`.
 
 | ID | Title | Path | Status |
 |---|---|---|---|
-| [0007](0007-session-expiry/plan.md) | Session expires after inactivity | feature | in-progress |
+| [C0007](C0007-session-expiry/plan.md) | Session expires after inactivity | feature | in-progress |
 ```
 
 ## Checked by

@@ -95,13 +95,13 @@ Every hand-off goes through the manager.
 
 | Request | Calls this role |
 |---|---|
-| From the manager: assess idea 0004, shared limits for two households | yes |
+| From the manager: assess I0004, shared limits for two households | yes |
 | From the manager: write down the owner's proposal as an idea: CSV export | yes |
 | From the manager: propose the non-goal the owner asked for: no bank sync this year | yes |
-| From the manager: business check of phase 2 of change 0007 | yes |
-| From the manager: draft the change for idea 0005, CSV export | no — architect |
+| From the manager: business check of phase 2 of C0007 | yes |
+| From the manager: draft the change for I0005, CSV export | no — architect |
 | From the manager: is the export crash a fix or a change? | no — architect |
-| From the manager: implement phase 2 of change 0007 | no — developer |
+| From the manager: implement phase 2 of C0007 | no — developer |
 | I have an idea: shared limits for two households | no — manager |
 
 ### Scenario: an idea that hits a non-goal

@@ -6,9 +6,13 @@ Common rules:
 
 - **Metadata** is YAML front matter at the top of the file, flat `key: value` pairs. Agents already know it from
   `SKILL.md`; the CLI reads it with a YAML library.
-- **Values are read as strings.** The CLI reads front matter without YAML type resolution, so `0012` stays `0012`
-  (a standard YAML 1.1 reader would turn it into the number 10) and dates stay text; nothing needs quoting. A list,
-  such as `supersedes: [0004, 0007]`, is a list of strings.
+- **Values are read as strings.** The CLI reads front matter without YAML type resolution, so `A0012` stays `A0012`
+  and dates stay text; nothing needs quoting. A list, such as `supersedes: [A0004, A0007]`, is a list of strings.
+- **Numbers** of changes, ideas, ADRs and lessons are the letter of their kind and at least four digits, with no
+  separator: `C` for a change (`C0007`), `I` for an idea (`I0004`), `A` for an ADR (`A0012`), `L` for a lesson
+  (`L0003`). Each kind counts on its own, from `0001`, and never reuses a number; after `9999` it goes on with
+  `10000`. The number is written in this form everywhere: file and folder names, front matter, links, branch names and
+  prose (`see A0012`), so a reader never has to guess the kind.
 - **Names** of files, folders, capabilities and topics are lowercase words joined by hyphens.
 - **Every section with an index** changes its index in the same commit as the artifact.
 

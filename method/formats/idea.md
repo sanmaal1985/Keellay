@@ -6,21 +6,22 @@ the reason, so the same idea is not argued again from scratch.
 
 ## File
 
-`docs/product/ideas/<number>-<topic>.md`, with a four-digit sequential number that is never reused.
+`docs/product/ideas/<number>-<topic>.md`, where the number is `I` and at least four digits (`I0004`), sequential
+and never reused (see [Numbers](README.md)).
 
 ```markdown
 ---
-id: 0004
+id: I0004
 title: Shared limits for two households
 status: assessed         # new | assessed | planned | done | declined
 verdict: clarify         # go | clarify | stop; set when assessed
 source: owner            # owner | user | agent | retro
 date: 2026-11-21
 prd: PRD-limits          # optional: the PRD area it serves
-change:                  # the change that carries it, set when that change is approved
+change:                  # the ID of the change that carries it (C0009-receipt-photo), set when it is approved
 ---
 
-# 0004 Shared limits for two households
+# I0004 Shared limits for two households
 
 ## Proposal
 
@@ -74,14 +75,14 @@ Ideas, open (in order of priority):
 
 | Idea | Title | Status | Verdict | Change |
 |---|---|---|---|---|
-| [0004](ideas/0004-shared-limits.md) | Shared limits for two households | assessed | clarify | |
-| [0002](ideas/0002-receipt-photo.md) | Receipt photo on an entry | planned | go | 0009 |
+| [I0004](ideas/I0004-shared-limits.md) | Shared limits for two households | assessed | clarify | |
+| [I0002](ideas/I0002-receipt-photo.md) | Receipt photo on an entry | planned | go | C0009 |
 
 Ideas, closed:
 
 | Idea | Title | Status |
 |---|---|---|
-| [0001](ideas/0001-bank-import.md) | Import from the bank | declined |
+| [I0001](ideas/I0001-bank-import.md) | Import from the bank | declined |
 ```
 
 ## Checked by

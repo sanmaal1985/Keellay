@@ -126,15 +126,15 @@ Every hand-off goes through the manager.
 
 | Request | Calls this role |
 |---|---|
-| From the manager: draft the change for planned idea 0004, session expiry | yes |
+| From the manager: draft the change for planned I0004, session expiry | yes |
 | From the manager: is the export crash a fix or a change? | yes |
-| From the manager: review how change 0007 is cut into phases | yes |
-| From the manager: done-when check of phase 1 of change 0007 | yes |
+| From the manager: review how C0007 is cut into phases | yes |
+| From the manager: done-when check of phase 1 of C0007 | yes |
 | From the manager: record the owner's decision to move to PostgreSQL as an ADR | yes |
 | Is session expiry worth building? | no — manager |
-| From the manager: break change 0007 into phases | no — developer |
-| From the manager: implement phase 1 of change 0007 | no — developer |
-| From the manager: assess idea 0004 | no — product-owner |
+| From the manager: break C0007 into phases | no — developer |
+| From the manager: implement phase 1 of C0007 | no — developer |
+| From the manager: assess I0004 | no — product-owner |
 | Fix the typo on the login screen | no — manager |
 
 ### Scenario: path before plan

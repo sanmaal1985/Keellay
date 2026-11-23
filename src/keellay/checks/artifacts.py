@@ -15,7 +15,12 @@ from keellay.checks.source import Source
 from keellay.paths import Project
 
 INDEX = "README.md"
-_NUMBERED = re.compile(r"^(\d{4})-[a-z0-9]+(?:-[a-z0-9]+)*\.md$")
+# The letter of each numbered kind: a number is the letter and at least four digits, zero-padded to four (`C0007`,
+# `I0004`, `A0012`, `L0003`), so numbering goes on after 9999 (`I10000`).
+LETTERS = {"change": "C", "idea": "I", "adr": "A", "lesson": "L"}
+# Any letters before the digits are taken here, so that a bare or wrongly lettered name is reported with the form it
+# should have, instead of as a name without a number.
+_NUMBERED = re.compile(r"^([A-Za-z]*\d{4,})-[a-z0-9]+(?:-[a-z0-9]+)*\.md$")
 
 
 class FrontMatterError(Exception):
@@ -33,6 +38,7 @@ class Artifact:
     meta: dict | None = None  # front matter, values as strings; None when it cannot be read
     meta_lines: dict = field(default_factory=dict)  # field -> line number in the file
     error: FrontMatterError | None = None
+    folder: str | None = None  # for a plan or a delta: the change folder (`docs/changes/archive/C0007-x`)
 
 
 def find(project: Project, source: Source) -> list[Artifact]:
@@ -96,10 +102,11 @@ def _changes(source: Source, changes: str) -> list[Artifact]:
         archived = parts[0] == "archive"
         if archived:
             parts = parts[1:]
+        folder = prefix + ("archive/" if archived else "") + parts[0]
         if len(parts) == 2 and parts[1] == "plan.md":
-            artifacts.append(Artifact("change", name, parts[0], archived))
+            artifacts.append(Artifact("change", name, parts[0], archived, folder=folder))
         elif len(parts) == 3 and parts[1] == "delta" and parts[2].endswith(".md"):
-            artifacts.append(Artifact("delta", name, parts[2][:-3], archived))
+            artifacts.append(Artifact("delta", name, parts[2][:-3], archived, folder=folder))
     return artifacts
 
 

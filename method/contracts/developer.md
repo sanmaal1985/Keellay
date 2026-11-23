@@ -90,11 +90,11 @@ Every hand-off goes through the manager.
 
 | Request | Calls this role |
 |---|---|
-| From the manager: break change 0007 into phases | yes |
-| From the manager: implement phase 1 of change 0007 | yes |
+| From the manager: break C0007 into phases | yes |
+| From the manager: implement phase 1 of C0007 | yes |
 | From the manager: fix the login screen that says "Pasword" | yes |
 | From the manager: fix the export crash on an empty list; expected an empty file | yes |
-| From the manager: draft the change for idea 0005, CSV export | no — architect |
+| From the manager: draft the change for I0005, CSV export | no — architect |
 | From the manager: is the export crash a fix or a change? | no — architect |
 | Fix the typo on the login screen | no — manager |
 | Phase 1 is done, what's next? | no — manager |

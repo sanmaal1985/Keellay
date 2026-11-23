@@ -49,9 +49,9 @@ CI runs the tests, builds the package and smoke-tests the wheel on Linux, macOS 
 `keellay check` on this repository.
 
 Pull requests are squash-merged: the PR title becomes the commit title and the description becomes its body. Branches
-are named `<type>/<task>-<topic>`, or `<type>/<topic>` without a task, with the types `feat`, `fix`, `docs`, `ci`,
-`chore`, `refactor`, `test`; the first commit of a branch is written as the title of the whole PR. CI fills in what is
-missing:
+are named `<type>/<change ID>` (`feat/C0007-session-expiry`), or `<type>/<topic>` without a change, with the types
+`feat`, `fix`, `docs`, `ci`, `chore`, `refactor`, `test`; the first commit of a branch is written as the title of the
+whole PR. CI fills in what is missing:
 
 - a title that is not `<type>: <summary>` becomes the first commit's subject, or else the branch topic;
 - an empty description becomes the body of the only commit, or a list of the commits with their bodies;

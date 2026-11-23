@@ -1,4 +1,4 @@
-"""Cases found by the fresh-context review of change 0004: encodings, odd paths, crashes and code examples."""
+"""Edge cases of `keellay check`: encodings, odd paths, crashes and code examples."""
 
 import json
 import subprocess
@@ -8,8 +8,8 @@ import pytest
 
 from keellay.cli import main
 
-ADR = "---\nid: 0001\ntitle: X\nstatus: accepted\ndate: 2026-11-21\ndecided-by: owner\n---\n\n# 0001\n"
-ADR_INDEX = "# Decisions\n\nIn force:\n\n| ADR | Decision |\n|---|---|\n| [0001](0001-x.md) | X |\n"
+ADR = "---\nid: A0001\ntitle: X\nstatus: accepted\ndate: 2026-11-21\ndecided-by: owner\n---\n\n# A0001\n"
+ADR_INDEX = "# Decisions\n\nIn force:\n\n| ADR | Decision |\n|---|---|\n| [A0001](A0001-x.md) | X |\n"
 
 
 def run(capsys, *argv):
@@ -38,7 +38,7 @@ def test_project_in_a_folder_with_a_non_ascii_name(capsys, tmp_path, monkeypatch
     root = tmp_path / "проект"
     root.mkdir()
     subprocess.run(["git", "init", "-q", str(root)], check=True)
-    write(root, "docs/adr/0001-x.md", ADR.replace("accepted", "started"))
+    write(root, "docs/adr/A0001-x.md", ADR.replace("accepted", "started"))
     write(root, "docs/adr/README.md", ADR_INDEX)
     monkeypatch.chdir(root)
     code, out = run(capsys, "check")
@@ -49,7 +49,7 @@ def test_project_in_a_folder_with_a_non_ascii_name(capsys, tmp_path, monkeypatch
 
 
 def test_byte_order_mark_is_not_a_missing_front_matter(capsys, project):
-    write(project, "docs/adr/0001-x.md", "﻿" + ADR)
+    write(project, "docs/adr/A0001-x.md", "﻿" + ADR)
     write(project, "docs/adr/README.md", ADR_INDEX)
     code, out = run(capsys, "check")
     assert (code, out["findings"]) == (0, [])
@@ -57,7 +57,7 @@ def test_byte_order_mark_is_not_a_missing_front_matter(capsys, project):
 
 @pytest.mark.parametrize("staged", [False, True])
 def test_file_that_is_not_utf8_is_read_not_a_crash(capsys, project, staged):
-    write(project, "docs/adr/0001-x.md", ADR)
+    write(project, "docs/adr/A0001-x.md", ADR)
     write(project, "docs/adr/README.md", ADR_INDEX + "\nРешения: [нет](missing.md)\n", encoding="cp1251")
     git(project, "add", "-A")
     code, out = run(capsys, "check", *(["--staged"] if staged else []))
@@ -66,7 +66,7 @@ def test_file_that_is_not_utf8_is_read_not_a_crash(capsys, project, staged):
 
 
 def test_status_that_is_a_list_is_a_finding_not_a_crash(capsys, project):
-    write(project, "docs/adr/0001-x.md", ADR.replace("status: accepted", "status: [accepted]"))
+    write(project, "docs/adr/A0001-x.md", ADR.replace("status: accepted", "status: [accepted]"))
     write(project, "docs/adr/README.md", ADR_INDEX)
     code, out = run(capsys, "check")
     assert code == 1
@@ -186,9 +186,9 @@ def test_staged_reads_the_staged_config(capsys, project):
 
 
 @pytest.mark.parametrize("path, meta", [
-    ("docs/product/ideas/0001-x.md", "id: 0001\ntitle: X\nstatus: new\nsource: owner\ndate: 2026-11-21\n"),
-    ("docs/lessons/0001-x.md", "id: 0001\ntitle: X\nstatus: active\ncount: 1\nfirst: 2026-11-21\nlast: 2026-11-21\n"),
-    ("docs/changes/0001-x/plan.md", "id: 0001-x\ntitle: X\npath: change\nstatus: draft\n"),
+    ("docs/product/ideas/I0001-x.md", "id: I0001\ntitle: X\nstatus: new\nsource: owner\ndate: 2026-11-21\n"),
+    ("docs/lessons/L0001-x.md", "id: L0001\ntitle: X\nstatus: active\ncount: 1\nfirst: 2026-11-21\nlast: 2026-11-21\n"),
+    ("docs/changes/C0001-x/plan.md", "id: C0001-x\ntitle: X\npath: change\nstatus: draft\n"),
 ])
 def test_fields_set_later_may_be_left_out(capsys, project, path, meta):
     write(project, path, f"---\n{meta}---\n")
