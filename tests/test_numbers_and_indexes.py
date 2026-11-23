@@ -1,4 +1,4 @@
-"""Scenarios of REQ-check-004 and REQ-check-005 (change 0004) as tests: unique numbers and the index of each section."""
+"""Scenarios of REQ-check-004 and REQ-check-005 as tests: unique numbers and the index of each section."""
 
 import json
 import subprocess
@@ -79,6 +79,15 @@ def test_one_number_in_two_kinds_is_not_a_clash(capsys, monkeypatch, project):
     assert findings_of(out, "numbers") == []
 
 
+def test_change_folders_with_only_deltas_count_for_numbers(capsys, monkeypatch, project):
+    write(project, "docs/changes/archive/C0004-a/delta/check.md", "---\ncapability: check\n---\n")
+    write(project, "docs/changes/archive/C0004-a/delta/cli.md", "---\ncapability: cli\n---\n")
+    write(project, "docs/changes/archive/C0004-b/delta/paths.md", "---\ncapability: paths\n---\n")
+    code, out = run_check(project, capsys, monkeypatch)
+    (finding,) = findings_of(out, "numbers")
+    assert "C0004-a" in finding["file"] + finding["message"] and "C0004-b" in finding["file"] + finding["message"]
+
+
 @pytest.mark.parametrize("folder, letter, make", [
     ("docs/product/ideas", "I", lambda n: idea(n, "new")),
     ("docs/adr", "A", lambda n: adr(n, "proposed")),
@@ -125,7 +134,7 @@ def test_ideas_in_the_right_tables_pass(capsys, monkeypatch, project):
     write(project, "docs/product/ideas/I0001-a.md", idea("I0001", "declined"))
     write(project, "docs/product/ideas/I0002-b.md", idea("I0002", "planned"))
     write(project, "docs/product/README.md", IDEAS_INDEX.format(
-        open="| [0002](ideas/I0002-b.md) | B | planned | | |", closed="| [0001](ideas/I0001-a.md) | A | declined |"))
+        open="| [I0002](ideas/I0002-b.md) | B | planned | | |", closed="| [I0001](ideas/I0001-a.md) | A | declined |"))
     code, out = run_check(project, capsys, monkeypatch)
     assert (code, out["findings"]) == (0, [])
 
@@ -133,7 +142,7 @@ def test_ideas_in_the_right_tables_pass(capsys, monkeypatch, project):
 def test_idea_in_the_wrong_table(capsys, monkeypatch, project):
     write(project, "docs/product/ideas/I0001-a.md", idea("I0001", "declined"))
     write(project, "docs/product/README.md", IDEAS_INDEX.format(
-        open="| [0001](ideas/I0001-a.md) | A | declined | | |", closed=""))
+        open="| [I0001](ideas/I0001-a.md) | A | declined | | |", closed=""))
     code, out = run_check(project, capsys, monkeypatch)
     assert code == 1
     (finding,) = findings_of(out, "index")
@@ -151,7 +160,7 @@ def test_idea_not_listed(capsys, monkeypatch, project):
 
 def test_idea_listed_twice(capsys, monkeypatch, project):
     write(project, "docs/product/ideas/I0001-a.md", idea("I0001", "new"))
-    row = "| [0001](ideas/I0001-a.md) | A | new | | |"
+    row = "| [I0001](ideas/I0001-a.md) | A | new | | |"
     write(project, "docs/product/README.md", IDEAS_INDEX.format(open=f"{row}\n{row}", closed=""))
     code, out = run_check(project, capsys, monkeypatch)
     assert code == 1
@@ -189,7 +198,8 @@ def test_adr_index(capsys, monkeypatch, project):
     write(project, "docs/adr/A0002-b.md", adr("A0002", "accepted"))
     write(project, "docs/adr/A0003-c.md", adr("A0003", "proposed"))
     write(project, "docs/adr/README.md", "# Decisions\n\nIn force:\n\n| ADR | Decision |\n|---|---|\n"
-          "| [A0002](A0002-b.md) | B |\n\nReplaced:\n\n| ADR | Replaced by |\n|---|---|\n| [A0001](A0001-a.md) | A0002 |\n")
+          "| [A0002](A0002-b.md) | B |\n\nReplaced:\n\n| ADR | Replaced by |\n|---|---|\n"
+          "| [A0001](A0001-a.md) | A0002 |\n")
     code, out = run_check(project, capsys, monkeypatch)
     assert (code, out["findings"]) == (0, [])
 

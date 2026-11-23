@@ -1,4 +1,4 @@
-"""Scenarios of the `check` delta (change 0004) as tests: the command, the `links` check and `--staged`."""
+"""Scenarios of the `check` spec as tests: the command, the `links` check and `--staged`."""
 
 import json
 import subprocess

@@ -38,6 +38,7 @@ class Artifact:
     meta: dict | None = None  # front matter, values as strings; None when it cannot be read
     meta_lines: dict = field(default_factory=dict)  # field -> line number in the file
     error: FrontMatterError | None = None
+    folder: str | None = None  # for a plan or a delta: the change folder (`docs/changes/archive/C0007-x`)
 
 
 def find(project: Project, source: Source) -> list[Artifact]:
@@ -101,10 +102,11 @@ def _changes(source: Source, changes: str) -> list[Artifact]:
         archived = parts[0] == "archive"
         if archived:
             parts = parts[1:]
+        folder = prefix + ("archive/" if archived else "") + parts[0]
         if len(parts) == 2 and parts[1] == "plan.md":
-            artifacts.append(Artifact("change", name, parts[0], archived))
+            artifacts.append(Artifact("change", name, parts[0], archived, folder=folder))
         elif len(parts) == 3 and parts[1] == "delta" and parts[2].endswith(".md"):
-            artifacts.append(Artifact("delta", name, parts[2][:-3], archived))
+            artifacts.append(Artifact("delta", name, parts[2][:-3], archived, folder=folder))
     return artifacts
 
 

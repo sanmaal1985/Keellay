@@ -18,7 +18,7 @@ verdict: clarify         # go | clarify | stop; set when assessed
 source: owner            # owner | user | agent | retro
 date: 2026-11-21
 prd: PRD-limits          # optional: the PRD area it serves
-change:                  # the change that carries it, set when that change is approved
+change:                  # the ID of the change that carries it (C0009-receipt-photo), set when it is approved
 ---
 
 # I0004 Shared limits for two households

@@ -35,16 +35,24 @@ def date(value) -> str | None:
     return f"is {value!r}; expected a date as YYYY-MM-DD"
 
 
+# The digits of a number: four, zero-padded, or more without a leading zero (`0012`, `10000`, not `00012`), so that
+# one number has one spelling.
+DIGITS = r"(?:\d{4}|[1-9]\d{4,})"
+
+
 def _expected(letter: str, value) -> str:
-    """The form a number should have, from what was written: `0012` -> `A0012`, `C0004` -> `A0004`."""
-    digits = re.search(r"\d{4,}$", value) if isinstance(value, str) else None
-    return f"{letter}{digits.group(0)}" if digits else f"{letter}0007"
+    """The form a number should have, from what was written.
+
+    `0012` -> `A0012`, `C0004` -> `A0004`, `00012` -> `A0012`.
+    """
+    digits = re.search(r"\d+$", value) if isinstance(value, str) else None
+    return f"{letter}{int(digits.group(0)):04d}" if digits else f"{letter}0007"
 
 
 def number(letter: str) -> Rule:
     """A number of one kind: its letter and at least four digits (`A0012`, `A10000`)."""
     def rule(value) -> str | None:
-        return None if isinstance(value, str) and re.fullmatch(rf"{letter}\d{{4,}}", value) else \
+        return None if isinstance(value, str) and re.fullmatch(rf"{letter}{DIGITS}", value) else \
             f"is {value!r}; expected a number of the form {_expected(letter, value)}"
     return rule
 
@@ -63,7 +71,7 @@ def numbers(letter: str) -> Rule:
     return rule
 
 
-CHANGE_ID = re.compile(r"C\d{4,}-[a-z0-9]+(?:-[a-z0-9]+)*")
+CHANGE_ID = re.compile(rf"C{DIGITS}-[a-z0-9]+(?:-[a-z0-9]+)*")
 
 
 def change_id(value) -> str | None:
@@ -117,13 +125,31 @@ def check(artifacts: list[Artifact]) -> list[Finding]:
     findings = []
     for artifact in artifacts:
         findings += _check_one(artifact)
+    return findings + _delta_only_folders(artifacts)
+
+
+def _delta_only_folders(artifacts: list[Artifact]) -> list[Finding]:
+    """A change folder that holds only deltas, as in a repository whose plans live in another one, still carries the
+    change ID; a folder with a plan is reported through its plan."""
+    with_plan = {artifact.folder for artifact in artifacts if artifact.kind == "change"}
+    findings, seen = [], set()
+    for artifact in artifacts:
+        folder = artifact.folder
+        if artifact.kind != "delta" or folder is None or folder in with_plan or folder in seen:
+            continue
+        seen.add(folder)
+        name = folder.rsplit("/", 1)[-1]
+        if not CHANGE_ID.fullmatch(name):
+            findings.append(Finding(CHECK, "error", artifact.file, 1,
+                                    f"delta: its change folder `{name}` must be the change ID, as "
+                                    f"`{_expected('C', name.split('-')[0])}-topic`"))
     return findings
 
 
 def _name_has_number(artifact: Artifact, letter: str) -> bool:
     if artifact.kind == "change":  # the folder name is the change ID
         return bool(CHANGE_ID.fullmatch(artifact.name_id))
-    return bool(re.fullmatch(rf"{letter}\d{{4,}}", artifact.name_id))
+    return bool(re.fullmatch(rf"{letter}{DIGITS}", artifact.name_id))
 
 
 def _check_one(artifact: Artifact) -> list[Finding]:
@@ -148,9 +174,10 @@ def _check_one(artifact: Artifact) -> list[Finding]:
         if artifact.name_id is None:
             findings.append(finding(f"the file name must start with the number, as `{letter}0007-topic.md`"))
         elif letter is not None and not _name_has_number(artifact, letter):
-            shown = "folder" if artifact.kind == "change" else "file"
-            findings.append(finding(f"the {shown} name must start with a number of the form "
-                                    f"{_expected(letter, artifact.name_id.split('-')[0])}"))
+            expected = _expected(letter, artifact.name_id.split("-")[0])
+            findings.append(finding(f"the folder name must be the change ID, as `{expected}-topic`"
+                                    if artifact.kind == "change"
+                                    else f"the file name must start with a number of the form {expected}"))
         elif name_field in meta and meta[name_field] != artifact.name_id:
             findings.append(finding(f"`{name_field}` is {meta[name_field]!r} but the name says {artifact.name_id!r}",
                                     lines.get(name_field, 1)))

@@ -157,6 +157,42 @@ def test_wrong_or_missing_letter_in_names_and_fields(capsys, monkeypatch, projec
     assert any(expected in f["message"] for f in out["findings"])
 
 
+@pytest.mark.parametrize("path, meta", [
+    ("docs/adr/A00012-x.md", "id: A00012\n" + ADR),
+    ("docs/adr/A0013-x.md", "id: A0013\n" + ADR + "supersedes: A00012\n"),
+    ("docs/product/ideas/I0004-x.md", "id: I0004\ntitle: X\nstatus: planned\nsource: owner\ndate: 2026-11-21\n"
+     "change: C00007-x\n"),
+])
+def test_a_padding_zero_past_four_digits_is_reported(capsys, monkeypatch, project, path, meta):
+    write(project, path, f"---\n{meta}---\n")
+    code, out = run_check(project, capsys, monkeypatch)
+    assert code == 1
+    assert any("0012" in f["message"] or "C0007" in f["message"] for f in out["findings"])
+
+
+def test_change_folder_without_a_topic_is_told_the_change_id(capsys, monkeypatch, project):
+    write(project, "docs/changes/C0007/plan.md", "---\nid: C0007\ntitle: X\npath: change\nstatus: draft\n---\n")
+    code, out = run_check(project, capsys, monkeypatch)
+    assert code == 1
+    assert any("must be the change ID, as `C0007-topic`" in f["message"] for f in out["findings"])
+
+
+@pytest.mark.parametrize("folder", ["docs/changes/0004-checks", "docs/changes/archive/0004-checks"])
+def test_change_folder_with_only_deltas_carries_the_change_id(capsys, monkeypatch, project, folder):
+    write(project, f"{folder}/delta/check.md", "---\ncapability: check\n---\n")
+    write(project, f"{folder}/delta/cli.md", "---\ncapability: cli\n---\n")
+    code, out = run_check(project, capsys, monkeypatch)
+    assert code == 1
+    (finding,) = out["findings"]
+    assert "C0004-topic" in finding["message"]
+
+
+def test_change_folder_with_only_deltas_in_the_new_form_passes(capsys, monkeypatch, project):
+    write(project, "docs/changes/archive/C0004-checks/delta/check.md", "---\ncapability: check\n---\n")
+    code, out = run_check(project, capsys, monkeypatch)
+    assert (code, out["findings"]) == (0, [])
+
+
 @pytest.mark.parametrize("text, named", [
     ("# No front matter\n", "no front matter"),
     ("---\nid: A0012\n", "not closed"),

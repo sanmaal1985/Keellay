@@ -1,4 +1,4 @@
-"""Scenarios of the `paths` delta (change 0004) as tests."""
+"""Scenarios of the `paths` spec as tests."""
 
 import json
 import re

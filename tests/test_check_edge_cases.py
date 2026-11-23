@@ -1,4 +1,4 @@
-"""Cases found by the fresh-context review of change 0004: encodings, odd paths, crashes and code examples."""
+"""Edge cases of `keellay check`: encodings, odd paths, crashes and code examples."""
 
 import json
 import subprocess
