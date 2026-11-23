@@ -49,6 +49,19 @@ ATTRIBUTION = re.compile(
 ADDRESS = re.compile(r"<[^>]*>")
 NOREPLY = re.compile(r"^[^@\s]+@users\.noreply\.github\.com$", re.IGNORECASE)
 GITHUB_COMMITTER = "noreply@github.com"  # the committer of commits made on github.com
+# GitHub accounts of AI coding agents: their noreply address passes NOREPLY, but as a commit author they become a
+# Co-authored-by line at the squash merge. Logins as GitHub lists them; other bots (dependabot[bot]) are let in.
+AI_ACCOUNTS = frozenset({
+    "claude[bot]",
+    "copilot",  # the Copilot coding agent's commits use the login Copilot (account copilot-swe-agent[bot])
+    "copilot-swe-agent[bot]",
+    "chatgpt-codex-connector[bot]",
+    "openai-codex[bot]",
+    "cursor[bot]",
+    "devin-ai-integration[bot]",
+    "google-labs-jules[bot]",
+    "gemini-code-assist[bot]",
+})
 MAX_COMMITS = 250  # GitHub lists at most this many commits of a pull request
 FIX_COMMITS = ("rewrite these commits before the merge: set user.email to your GitHub noreply address "
                "(<id>+<login>@users.noreply.github.com); remove the attribution lines with "
@@ -75,6 +88,18 @@ class Commit:
     committer_email: str
 
 
+def _identity_problem(email: str, role: str, github_may_commit: bool = False) -> str | None:
+    email = email.strip()
+    if github_may_commit and email.lower() == GITHUB_COMMITTER:
+        return None
+    if not NOREPLY.match(email):
+        return f"the {role} is not a GitHub noreply address"
+    login = email.partition("@")[0].partition("+")[2] or email.partition("@")[0]  # <id>+<login>, or the old <login>
+    if login.lower() in AI_ACCOUNTS:
+        return f"the {role} is the GitHub account of an AI agent ({login})"
+    return None
+
+
 def check_commits(commits: list[Commit]) -> list[str]:
     """One error per commit that would put AI attribution into main, then how to fix them; empty when none would.
 
@@ -87,11 +112,8 @@ def check_commits(commits: list[Commit]) -> list[str]:
         lines = [ADDRESS.sub("<...>", line.strip()) for line in commit.message.splitlines() if ATTRIBUTION.search(line)]
         if lines:
             problems.append("AI attribution in the message: " + "; ".join(f"'{line}'" for line in lines))
-        if not NOREPLY.match(commit.author_email.strip()):
-            problems.append("the author is not a GitHub noreply address")
-        committer = commit.committer_email.strip()
-        if not (NOREPLY.match(committer) or committer.lower() == GITHUB_COMMITTER):
-            problems.append("the committer is not a GitHub noreply address")
+        problems += [problem for problem in (_identity_problem(commit.author_email, "author"),
+                                             _identity_problem(commit.committer_email, "committer", True)) if problem]
         if problems:
             subject = commit.message.strip().partition("\n")[0]
             errors.append(f"commit {commit.sha[:7]} '{subject}': " + "; ".join(problems))

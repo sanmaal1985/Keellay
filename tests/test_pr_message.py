@@ -183,6 +183,22 @@ def test_no_commits_pass():
     assert check_commits([]) == []
 
 
+def test_ai_agent_accounts_fail_as_author_and_committer():
+    for address in ("209825114+claude[bot]@users.noreply.github.com",
+                    "198982749+Copilot@users.noreply.github.com",
+                    "161369871+google-labs-jules[bot]@users.noreply.github.com",
+                    "claude[bot]@users.noreply.github.com"):
+        errors = check_commits([_commit(author=address, committer=address)])
+        assert "the author is the GitHub account of an AI agent" in errors[0], address
+        assert "the committer is the GitHub account of an AI agent" in errors[0], address
+
+
+def test_other_bots_and_logins_that_mention_an_agent_pass():
+    for address in ("41898282+github-actions[bot]@users.noreply.github.com",
+                    "12345+claude-fan@users.noreply.github.com"):
+        assert check_commits([_commit(author=address)]) == [], address
+
+
 def test_each_attribution_line_fails():
     for line in ("Co-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>",
                  "co-authored-by: claude <noreply@anthropic.com>",
