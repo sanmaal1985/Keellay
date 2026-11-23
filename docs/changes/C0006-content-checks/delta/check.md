@@ -45,8 +45,8 @@ plan does not have, and an open change past `draft` whose plan has no phase.
 The CLI shall report, as check `ideas`, an idea with status `assessed` and no `verdict`; an idea with status
 `planned`, `done` or `declined`, no `verdict` and an empty Assessment section; a `declined` idea with an empty Outcome
 section; a `change` that names no change, open or archived; a `done` idea whose `change` names a change that is not
-`closed`; and a `prd` that names no area of the PRD. When the project's `changes` section is outside its root, the
-plans are checked in their own repository, and an idea's `change` is not checked.
+`closed`; and a `prd` that names no area of the PRD; where the project's `changes` section is outside its root, the
+CLI shall not check an idea's `change`.
 
 #### Scenario: assessed without a verdict
 
