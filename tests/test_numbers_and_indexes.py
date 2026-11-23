@@ -57,28 +57,39 @@ def findings_of(out: dict, check: str) -> list[dict]:
 
 
 def test_two_changes_with_one_number(capsys, monkeypatch, project):
-    write(project, "docs/changes/0007-a/plan.md", plan("0007-a"))
-    write(project, "docs/changes/archive/0007-b/plan.md", plan("0007-b", "closed"))
+    write(project, "docs/changes/C0007-a/plan.md", plan("C0007-a"))
+    write(project, "docs/changes/archive/C0007-b/plan.md", plan("C0007-b", "closed"))
     write(project, "docs/changes/README.md", "| ID | Title | Path | Status |\n|---|---|---|---|\n"
-          "| [0007](0007-a/plan.md) | T | feature | in-progress |\n")
+          "| [C0007](C0007-a/plan.md) | T | feature | in-progress |\n")
     code, out = run_check(project, capsys, monkeypatch)
     assert code == 1
     (finding,) = findings_of(out, "numbers")
-    assert "0007-a" in finding["file"] + finding["message"]
-    assert "0007-b" in finding["file"] + finding["message"]
+    assert "C0007-a" in finding["file"] + finding["message"]
+    assert "C0007-b" in finding["file"] + finding["message"]
 
 
-@pytest.mark.parametrize("folder, make", [
-    ("docs/product/ideas", lambda n: idea(n, "new")),
-    ("docs/adr", lambda n: adr(n, "proposed")),
-    ("docs/lessons", lambda n: lesson(n, "retired")),
+def test_one_number_in_two_kinds_is_not_a_clash(capsys, monkeypatch, project):
+    write(project, "docs/changes/C0006-a/plan.md", plan("C0006-a"))
+    write(project, "docs/changes/README.md", "| ID | Title | Path | Status |\n|---|---|---|---|\n"
+          "| [C0006](C0006-a/plan.md) | T | feature | in-progress |\n")
+    write(project, "docs/product/ideas/I0006-b.md", idea("I0006", "new"))
+    write(project, "docs/product/README.md", "Ideas, open:\n\n| Idea | Title | Status |\n|---|---|---|\n"
+          "| [I0006](ideas/I0006-b.md) | T | new |\n")
+    code, out = run_check(project, capsys, monkeypatch)
+    assert findings_of(out, "numbers") == []
+
+
+@pytest.mark.parametrize("folder, letter, make", [
+    ("docs/product/ideas", "I", lambda n: idea(n, "new")),
+    ("docs/adr", "A", lambda n: adr(n, "proposed")),
+    ("docs/lessons", "L", lambda n: lesson(n, "retired")),
 ])
-def test_two_files_with_one_number(capsys, monkeypatch, project, folder, make):
-    write(project, f"{folder}/0003-a.md", make("0003"))
-    write(project, f"{folder}/0003-b.md", make("0003"))
+def test_two_files_with_one_number(capsys, monkeypatch, project, folder, letter, make):
+    write(project, f"{folder}/{letter}0003-a.md", make(letter + "0003"))
+    write(project, f"{folder}/{letter}0003-b.md", make(letter + "0003"))
     if folder.endswith("ideas"):
         write(project, "docs/product/README.md", "Ideas, open:\n\n| Idea | Title | Status |\n|---|---|---|\n"
-              "| [0003](ideas/0003-a.md) | T | new |\n| [0003](ideas/0003-b.md) | T | new |\n")
+              "| [I0003](ideas/I0003-a.md) | T | new |\n| [I0003](ideas/I0003-b.md) | T | new |\n")
     code, out = run_check(project, capsys, monkeypatch)
     assert code == 1
     assert len(findings_of(out, "numbers")) == 1
@@ -111,18 +122,18 @@ IDEAS_INDEX = ("# Product\n\nIdeas, open (in order of priority):\n\n"
 
 
 def test_ideas_in_the_right_tables_pass(capsys, monkeypatch, project):
-    write(project, "docs/product/ideas/0001-a.md", idea("0001", "declined"))
-    write(project, "docs/product/ideas/0002-b.md", idea("0002", "planned"))
+    write(project, "docs/product/ideas/I0001-a.md", idea("I0001", "declined"))
+    write(project, "docs/product/ideas/I0002-b.md", idea("I0002", "planned"))
     write(project, "docs/product/README.md", IDEAS_INDEX.format(
-        open="| [0002](ideas/0002-b.md) | B | planned | | |", closed="| [0001](ideas/0001-a.md) | A | declined |"))
+        open="| [0002](ideas/I0002-b.md) | B | planned | | |", closed="| [0001](ideas/I0001-a.md) | A | declined |"))
     code, out = run_check(project, capsys, monkeypatch)
     assert (code, out["findings"]) == (0, [])
 
 
 def test_idea_in_the_wrong_table(capsys, monkeypatch, project):
-    write(project, "docs/product/ideas/0001-a.md", idea("0001", "declined"))
+    write(project, "docs/product/ideas/I0001-a.md", idea("I0001", "declined"))
     write(project, "docs/product/README.md", IDEAS_INDEX.format(
-        open="| [0001](ideas/0001-a.md) | A | declined | | |", closed=""))
+        open="| [0001](ideas/I0001-a.md) | A | declined | | |", closed=""))
     code, out = run_check(project, capsys, monkeypatch)
     assert code == 1
     (finding,) = findings_of(out, "index")
@@ -131,7 +142,7 @@ def test_idea_in_the_wrong_table(capsys, monkeypatch, project):
 
 
 def test_idea_not_listed(capsys, monkeypatch, project):
-    write(project, "docs/product/ideas/0001-a.md", idea("0001", "new"))
+    write(project, "docs/product/ideas/I0001-a.md", idea("I0001", "new"))
     write(project, "docs/product/README.md", IDEAS_INDEX.format(open="", closed=""))
     code, out = run_check(project, capsys, monkeypatch)
     assert code == 1
@@ -139,8 +150,8 @@ def test_idea_not_listed(capsys, monkeypatch, project):
 
 
 def test_idea_listed_twice(capsys, monkeypatch, project):
-    write(project, "docs/product/ideas/0001-a.md", idea("0001", "new"))
-    row = "| [0001](ideas/0001-a.md) | A | new | | |"
+    write(project, "docs/product/ideas/I0001-a.md", idea("I0001", "new"))
+    row = "| [0001](ideas/I0001-a.md) | A | new | | |"
     write(project, "docs/product/README.md", IDEAS_INDEX.format(open=f"{row}\n{row}", closed=""))
     code, out = run_check(project, capsys, monkeypatch)
     assert code == 1
@@ -148,9 +159,9 @@ def test_idea_listed_twice(capsys, monkeypatch, project):
 
 
 def test_closed_change_still_listed(capsys, monkeypatch, project):
-    write(project, "docs/changes/archive/0003-a/plan.md", plan("0003-a", "closed"))
+    write(project, "docs/changes/archive/C0003-a/plan.md", plan("C0003-a", "closed"))
     write(project, "docs/changes/README.md", "| ID | Title | Path | Status |\n|---|---|---|---|\n"
-          "| [0003](0003-a/plan.md) | A | feature | closed |\n")
+          "| [C0003](C0003-a/plan.md) | A | feature | closed |\n")
     code, out = run_check(project, capsys, monkeypatch)
     assert code == 1
     (finding,) = findings_of(out, "index")
@@ -158,46 +169,46 @@ def test_closed_change_still_listed(capsys, monkeypatch, project):
 
 
 def test_change_listed_with_another_status(capsys, monkeypatch, project):
-    write(project, "docs/changes/0004-a/plan.md", plan("0004-a", "in-progress"))
+    write(project, "docs/changes/C0004-a/plan.md", plan("C0004-a", "in-progress"))
     write(project, "docs/changes/README.md", "| ID | Title | Path | Status |\n|---|---|---|---|\n"
-          "| [0004](0004-a/plan.md) | A | feature | review |\n")
+          "| [C0004](C0004-a/plan.md) | A | feature | review |\n")
     code, out = run_check(project, capsys, monkeypatch)
     assert code == 1
     assert "review" in findings_of(out, "index")[0]["message"]
 
 
 def test_open_change_without_an_index(capsys, monkeypatch, project):
-    write(project, "docs/changes/0004-a/plan.md", plan("0004-a"))
+    write(project, "docs/changes/C0004-a/plan.md", plan("C0004-a"))
     code, out = run_check(project, capsys, monkeypatch)
     assert code == 1
     assert findings_of(out, "index")[0]["file"] == "docs/changes/README.md"
 
 
 def test_adr_index(capsys, monkeypatch, project):
-    write(project, "docs/adr/0001-a.md", adr("0001", "superseded"))
-    write(project, "docs/adr/0002-b.md", adr("0002", "accepted"))
-    write(project, "docs/adr/0003-c.md", adr("0003", "proposed"))
+    write(project, "docs/adr/A0001-a.md", adr("A0001", "superseded"))
+    write(project, "docs/adr/A0002-b.md", adr("A0002", "accepted"))
+    write(project, "docs/adr/A0003-c.md", adr("A0003", "proposed"))
     write(project, "docs/adr/README.md", "# Decisions\n\nIn force:\n\n| ADR | Decision |\n|---|---|\n"
-          "| [0002](0002-b.md) | B |\n\nReplaced:\n\n| ADR | Replaced by |\n|---|---|\n| [0001](0001-a.md) | 0002 |\n")
+          "| [A0002](A0002-b.md) | B |\n\nReplaced:\n\n| ADR | Replaced by |\n|---|---|\n| [A0001](A0001-a.md) | A0002 |\n")
     code, out = run_check(project, capsys, monkeypatch)
     assert (code, out["findings"]) == (0, [])
 
 
 def test_superseded_adr_still_in_force(capsys, monkeypatch, project):
-    write(project, "docs/adr/0001-a.md", adr("0001", "superseded"))
+    write(project, "docs/adr/A0001-a.md", adr("A0001", "superseded"))
     write(project, "docs/adr/README.md", "# Decisions\n\nIn force:\n\n| ADR | Decision |\n|---|---|\n"
-          "| [0001](0001-a.md) | A |\n")
+          "| [A0001](A0001-a.md) | A |\n")
     code, out = run_check(project, capsys, monkeypatch)
     assert code == 1
     assert "In force" in findings_of(out, "index")[0]["message"]
 
 
 def test_lesson_index(capsys, monkeypatch, project):
-    write(project, "docs/lessons/0001-a.md", lesson("0001", "mechanized"))
-    write(project, "docs/lessons/0002-b.md", lesson("0002", "active"))
+    write(project, "docs/lessons/L0001-a.md", lesson("L0001", "mechanized"))
+    write(project, "docs/lessons/L0002-b.md", lesson("L0002", "active"))
     write(project, "docs/lessons/README.md", "# Lessons\n\nActive (read before working):\n\n"
-          "| Lesson | Rule | Count |\n|---|---|---|\n| [0001](0001-a.md) | A | 1 |\n\n"
-          "Mechanized:\n\n| Lesson | Mechanism |\n|---|---|\n| [0002](0002-b.md) | hook |\n")
+          "| Lesson | Rule | Count |\n|---|---|---|\n| [L0001](L0001-a.md) | A | 1 |\n\n"
+          "Mechanized:\n\n| Lesson | Mechanism |\n|---|---|\n| [L0002](L0002-b.md) | hook |\n")
     code, out = run_check(project, capsys, monkeypatch)
     assert code == 1
     assert len(findings_of(out, "index")) == 2

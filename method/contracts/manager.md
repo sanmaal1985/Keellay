@@ -110,12 +110,12 @@ Every hand-off goes through the manager.
 | Where are we? | yes |
 | Phase 2 is finished | yes |
 | New request: add CSV export | yes |
-| Change 0007 is in review — let's do the retro | yes |
+| C0007 is in review — let's do the retro | yes |
 | I have an idea: shared limits for two households | yes |
 | From the manager: is the export crash a fix or a change? | no — architect |
-| From the manager: assess idea 0004 | no — product-owner |
-| From the manager: done-when check of phase 2 of change 0007 | no — architect |
-| From the manager: break change 0007 into phases | no — developer |
+| From the manager: assess I0004 | no — product-owner |
+| From the manager: done-when check of phase 2 of C0007 | no — architect |
+| From the manager: break C0007 into phases | no — developer |
 
 ### Scenario: open question holds dependent work
 

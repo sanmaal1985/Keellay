@@ -10,20 +10,21 @@ change stays in that change's Decisions section.
 
 ## File
 
-`docs/adr/<number>-<topic>.md`, with a four-digit sequential number that is never reused.
+`docs/adr/<number>-<topic>.md`, where the number is `A` and four digits (`A0012`), sequential and never reused (see
+[Numbers](README.md)).
 
 ```markdown
 ---
-id: 0012
+id: A0012
 title: Sessions expire after inactivity, not after a fixed time
 status: accepted         # proposed | accepted | superseded
 date: 2026-11-20
 decided-by: owner
-supersedes: 0004         # optional; a list when it replaces several: [0004, 0007]
+supersedes: A0004        # optional; a list when it replaces several: [A0004, A0007]
 superseded-by:           # set only when a later ADR replaces this one
 ---
 
-# 0012 Sessions expire after inactivity, not after a fixed time
+# A0012 Sessions expire after inactivity, not after a fixed time
 
 ## Context
 
@@ -65,13 +66,13 @@ In force:
 
 | ADR | Decision |
 |---|---|
-| [0012](0012-session-inactivity-timeout.md) | Sessions expire after inactivity, not after a fixed time |
+| [A0012](A0012-session-inactivity-timeout.md) | Sessions expire after inactivity, not after a fixed time |
 
 Replaced:
 
 | ADR | Replaced by |
 |---|---|
-| [0004](0004-session-lifetime.md) | 0012 |
+| [A0004](A0004-session-lifetime.md) | A0012 |
 ```
 
 ## Checked by

@@ -33,6 +33,11 @@ def test_type_must_match_the_branch():
 
 
 def test_first_commit_of_another_type_falls_back_to_the_topic():
+    result = fix_message("whatever", "x", "docs/C0007-session-expiry", ["feat: session expiry", "docs: b"])
+    assert result.title == "docs: session expiry"
+
+
+def test_branch_with_a_bare_number_still_gives_its_topic():
     result = fix_message("whatever", "x", "docs/0007-session-expiry", ["feat: session expiry", "docs: b"])
     assert result.title == "docs: session expiry"
 

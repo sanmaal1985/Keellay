@@ -6,11 +6,12 @@ checklist item or, weakest, a rule in the constitution or the agent instructions
 
 ## File
 
-`docs/lessons/<number>-<topic>.md`, with a four-digit sequential number that is never reused.
+`docs/lessons/<number>-<topic>.md`, where the number is `L` and four digits (`L0003`), sequential and never reused
+(see [Numbers](README.md)).
 
 ```markdown
 ---
-id: 0003
+id: L0003
 title: A migration ran without a backup
 status: active           # active | mechanized | retired
 count: 2                 # times it happened
@@ -19,12 +20,12 @@ last: 2026-04-15
 mechanism:               # what enforces it once mechanized: a hook, check, role skill rule, checklist item or rule
 ---
 
-# 0003 A migration ran without a backup
+# L0003 A migration ran without a backup
 
 ## Occurrences
 
-- 2026-03-02, change 0011: a schema migration ran on the staging database before its backup finished.
-- 2026-04-15, change 0019: ...
+- 2026-03-02, C0011: a schema migration ran on the staging database before its backup finished.
+- 2026-04-15, C0019: ...
 
 ## Gap
 
@@ -65,13 +66,13 @@ Active (read before working):
 
 | Lesson | Rule | Count |
 |---|---|---|
-| [0003](0003-migration-without-backup.md) | A migration runs only after its backup is verified | 2 |
+| [L0003](L0003-migration-without-backup.md) | A migration runs only after its backup is verified | 2 |
 
 Mechanized:
 
 | Lesson | Mechanism |
 |---|---|
-| [0001](0001-secrets-in-logs.md) | log redaction check in CI |
+| [L0001](L0001-secrets-in-logs.md) | log redaction check in CI |
 ```
 
 ## Checked by
