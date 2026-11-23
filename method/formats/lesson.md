@@ -7,7 +7,7 @@ checklist item or, weakest, a rule in the constitution or the agent instructions
 ## File
 
 `docs/lessons/<number>-<topic>.md`, where the number is `L` and at least four digits (`L0003`), sequential and
-never reused (see [Numbers](README.md)).
+never reused (see Numbers in the formats' README).
 
 ```markdown
 ---
