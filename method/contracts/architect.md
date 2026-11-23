@@ -83,8 +83,7 @@ Every hand-off goes through the manager.
 
 1. [instruction] The path follows the criteria in `levels.md`; the proposal names the criterion that decided it, and
    no plan is drafted before the owner confirms the path.
-2. [check] Every phase has Role, Depends on and Done when, and every role is a known one (`keellay check`, planned:
-   changes).
+2. [check] Every phase has Role, Depends on and Done when, and every role is a known one (`keellay check`: phases).
 3. [instruction] The review of the phases rejects a done-when that someone who did not do the work cannot verify, a
    phase that is not a vertical slice, and a cut that leaves part of the scope or the delta uncovered; it answers the
    developer's `[architect]` questions.

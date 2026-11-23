@@ -132,7 +132,7 @@ def test_build_and_dist_folders_are_project_files(capsys, project):
 
 
 @pytest.mark.parametrize("text", [
-    "[Owner, 2026-11-21]:\nall options as recommended.\n",
+    "[Draft, 2026-11-21]:\nall items as listed.\n",
     "[label]: missing.md and more words\n",
     "Items [a\n\nb](missing.md)\n",
 ])
