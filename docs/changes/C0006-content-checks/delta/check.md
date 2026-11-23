@@ -45,7 +45,8 @@ plan does not have, and an open change past `draft` whose plan has no phase.
 The CLI shall report, as check `ideas`, an idea with status `assessed` and no `verdict`; an idea with status
 `planned`, `done` or `declined`, no `verdict` and an empty Assessment section; a `declined` idea with an empty Outcome
 section; a `change` that names no change, open or archived; a `done` idea whose `change` names a change that is not
-`closed`; and a `prd` that names no area of the PRD.
+`closed`; and a `prd` that names no area of the PRD. When the project's `changes` section is outside its root, the
+plans are checked in their own repository, and an idea's `change` is not checked.
 
 #### Scenario: assessed without a verdict
 
@@ -64,6 +65,12 @@ section; a `change` that names no change, open or archived; a `done` idea whose 
 - GIVEN an idea with `change: C0042-x` and no change `C0042-x` in `docs/changes/` or its archive
 - WHEN `keellay check` runs
 - THEN there is an `ideas` error that names `C0042-x`
+
+#### Scenario: plans in another repository
+
+- GIVEN a project whose `changes` section is `../other/changes`, and a `done` idea with `change: C0042-x`
+- WHEN `keellay check` runs
+- THEN there is no `ideas` finding for it
 
 #### Scenario: unknown PRD area
 
