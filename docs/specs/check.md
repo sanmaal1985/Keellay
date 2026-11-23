@@ -44,8 +44,8 @@ and `ok` with exit code 0 otherwise.
 The CLI shall report, as check `front-matter`, every change plan, idea, ADR, lesson, PRD, living spec, delta and
 constitution whose front matter is missing, is not valid YAML, lacks a field its format requires, has a value its format
 does not allow, or has a number that does not match its file name. A number is the letter of its kind and at least four
-digits, zero-padded to four: `C` for a change, `I` for an idea, `A` for an ADR, `L` for a lesson (`C0007`, `I0026`,
-`A0037`, `L0013`). A change, idea, ADR or lesson whose file or folder name does not start with its number (for a change,
+digits, zero-padded to four: `C` for a change, `I` for an idea, `A` for an ADR, `L` for a lesson (`C0007`, `I0004`,
+`A0012`, `L0003`). A change, idea, ADR or lesson whose file or folder name does not start with its number (for a change,
 a folder that is not its change ID, `C0007-topic`, also one that holds only deltas), a number field (`id`, `supersedes`,
 `superseded-by`) and an idea's `change`, a change ID, that is bare (`0012`), carries another kind's letter or pads past
 four digits (`A00012`), are reported. Values are read as strings, so `A0012` stays `A0012`.

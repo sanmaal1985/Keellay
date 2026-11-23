@@ -16,7 +16,7 @@ from keellay.paths import Project
 
 INDEX = "README.md"
 # The letter of each numbered kind: a number is the letter and at least four digits, zero-padded to four (`C0007`,
-# `I0026`, `A0037`, `L0013`), so numbering goes on after 9999 (`I10000`).
+# `I0004`, `A0012`, `L0003`), so numbering goes on after 9999 (`I10000`).
 LETTERS = {"change": "C", "idea": "I", "adr": "A", "lesson": "L"}
 # Any letters before the digits are taken here, so that a bare or wrongly lettered name is reported with the form it
 # should have, instead of as a name without a number.
