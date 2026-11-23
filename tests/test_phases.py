@@ -77,7 +77,8 @@ def test_plan_without_phases(capsys, monkeypatch, project):
     code, out = run_check(project, capsys, monkeypatch)
     [finding] = phases_findings(out)
     assert finding["file"] == "docs/changes/C0008-b/plan.md"
-    assert "approved" in finding["message"]
+    assert finding["line"] == 11  # the `## Phases` heading
+    assert "is `approved` and has no phase;" in finding["message"]
 
 
 def test_plan_without_a_phases_section(capsys, monkeypatch, project):
@@ -85,7 +86,8 @@ def test_plan_without_a_phases_section(capsys, monkeypatch, project):
           "---\nid: C0007-a\ntitle: T\npath: change\nstatus: in-progress\napproved: 2026-11-21\n---\n\n# T\n")
     code, out = run_check(project, capsys, monkeypatch)
     [finding] = phases_findings(out)
-    assert finding["line"] is None
+    assert finding["line"] == 5
+    assert "no `## Phases` section" in finding["message"]
 
 
 def test_depends_on_a_missing_phase(capsys, monkeypatch, project):

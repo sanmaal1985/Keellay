@@ -44,9 +44,12 @@ def _check_plan(plan: Artifact, text: str) -> list[Finding]:
     if found is None or not found[1]:
         status = plan.meta.get("status")
         if status and status != "draft":
-            line = found[0] if found else None
-            return [_finding(plan, line, f"the plan is `{status}` and has no phase; phases are cut before the owner "
-                                         f"approves the plan")]
+            if found is None:
+                # No section to point at: the status line is what makes the missing phases a finding.
+                return [_finding(plan, _status_line(text), f"the plan is `{status}` and has no `## Phases` section; "
+                                                           f"phases are cut before the owner approves the plan")]
+            return [_finding(plan, found[0], f"the plan is `{status}` and has no phase; phases are cut before the "
+                                             f"owner approves the plan")]
         return []
     phases = found[1]
     numbers = {phase.number for phase in phases if phase.number}
@@ -90,6 +93,19 @@ def _phases(text: str) -> tuple[int, list[Phase]] | None:
             value = item.group(2).strip().strip("`").strip()
             phases[-1].fields.setdefault(item.group(1), (value, index + 1))
     return start + 1, phases
+
+
+def _status_line(text: str) -> int | None:
+    """The line of `status:` in the front matter, or None when the front matter has none."""
+    lines = text.splitlines()
+    if not lines or lines[0].strip() != "---":
+        return None
+    for index, line in enumerate(lines[1:], start=2):
+        if line.strip() == "---":
+            return None
+        if re.match(r"^status\s*:", line):
+            return index
+    return None
 
 
 def _finding(plan: Artifact, line: int | None, message: str) -> Finding:
