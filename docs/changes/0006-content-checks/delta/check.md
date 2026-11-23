@@ -11,7 +11,7 @@ capability: check
 The CLI shall report, as check `phases`, every phase of an open change's plan (a `###` heading under `## Phases`)
 that lacks a `Role`, `Depends on` or `Done when` line, whose role is neither a core role (`architect`, `developer`,
 `product-owner`, `manager`) nor an instance of one (`<core role>-<qualifier>`), or that depends on a phase number the
-plan does not have.
+plan does not have, and an open change past `draft` whose plan has no phase.
 
 #### Scenario: phase without done-when
 
@@ -25,6 +25,14 @@ plan does not have.
 - WHEN `keellay check` runs
 - THEN there is a `phases` error that names `tester`
 - AND there is no finding for `developer-flutter`
+
+#### Scenario: plan without phases
+
+- GIVEN an open change with `status: draft` and no phase heading, and another with `status: approved` and no phase
+  heading
+- WHEN `keellay check` runs
+- THEN there is a `phases` error for the approved one
+- AND there is no `phases` finding for the draft
 
 #### Scenario: archived plan
 
