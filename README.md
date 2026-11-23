@@ -55,11 +55,19 @@ missing:
 
 - a title that is not `<type>: <summary>` becomes the first commit's subject, or else the branch topic;
 - an empty description becomes the body of the only commit, or a list of the commits with their bodies;
-- AI attribution lines are removed from the description;
+- AI attribution lines are removed from the description, also on a branch outside the naming convention, where CI
+  changes nothing else;
 - description lines longer than 72 characters are wrapped, list items with a hanging indent, because GitHub wraps the
   commit body at 72 itself; write a list item or paragraph as one line and let CI wrap it;
 - on `fix/` branches the `Current:`, `Expected:` and `Unchanged:` lines of [the bugfix format](method/formats/bugfix.md)
   are required.
+
+Commits cannot be fixed by CI, so on every branch it fails a pull request with a commit that would bring AI
+attribution into `main`: an attribution line in the message (`Co-Authored-By: Claude`, `Claude-Session:` and the
+like), or an author or committer that is not a GitHub noreply address (`<id>+<login>@users.noreply.github.com`; the
+committer may also be GitHub itself, for commits made on github.com) or is the GitHub account of an AI coding agent
+(`claude[bot]`, `Copilot` and the like; other bots such as `dependabot[bot]` pass). At a squash merge GitHub turns
+every commit author other than the merger into a `Co-authored-by` line, so the author counts as much as the message.
 
 ## Principles (draft)
 

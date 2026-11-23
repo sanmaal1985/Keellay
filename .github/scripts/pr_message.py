@@ -1,7 +1,8 @@
 """Make a pull request's title and description a good squash-merge commit message.
 
 The repository squash-merges with the PR title as the commit title and the PR description as the commit body, so
-this script fixes both before the merge:
+this script fixes both before the merge. On a branch outside the naming convention (a bot's, for example) it only
+removes AI attribution lines from the description; on the others:
 
 - the title is `<type>: <summary>`, with the type of the branch (`docs/13-architecture` -> `docs`); a title that
   already has that form is kept, otherwise it becomes the subject of the branch's first commit when that has the
@@ -14,6 +15,13 @@ this script fixes both before the merge:
   headings are left as they are;
 - on a `fix/` branch the description must have the Current, Expected and Unchanged lines (method/formats/bugfix.md);
   they cannot be made up, so their absence is an error.
+
+It also checks the PR's commits, on every branch: public commits carry no AI attribution. A commit fails when its
+message has an attribution line (a co-author line naming an AI agent's GitHub account counts), or when its author or
+committer is not a GitHub noreply address (the committer may also be GitHub itself, for commits made on github.com)
+or is the GitHub account of an AI agent. The commit's author matters as much as its message: at a
+squash merge GitHub turns every commit author other than the merger into a `Co-authored-by` line. Commits cannot be
+fixed from here, so this is an error that names each commit.
 
 Before writing, the script reads the PR again and writes nothing when the title or description changed since its
 first read: runs overlap, and the run started by that edit handles the newer text.
@@ -32,7 +40,38 @@ from dataclasses import dataclass, field
 TYPES = ("feat", "fix", "docs", "ci", "chore", "refactor", "test")
 BRANCH = re.compile(r"^(?P<type>[a-z]+)/(?P<rest>.+)$")
 TITLE = re.compile(r"^(?P<type>[a-z]+): \S")
-ATTRIBUTION = re.compile(r"^\s*Co-Authored-By:\s*Claude|Generated with \[?Claude Code", re.IGNORECASE)
+# Each alternative matches a whole line in the shape of a trailer, so that prose about these lines (and a wrapped
+# line that happens to start with their words) is not taken for them: this check blocks merges.
+ATTRIBUTION = re.compile(
+    r"^\s*Co-Authored-By:\s*Claude\b[^<]*<[^>]*>\s*$"              # Co-Authored-By: Claude Opus 5.5 <...>
+    r"|^\s*Co-Authored-By:[^<]*<[^>]*@anthropic\.com>\s*$"         # any co-author with an Anthropic address
+    r"|^\s*Claude-Session:\s*https?://\S+\s*$"                     # the session trailer of cloud sessions
+    r"|^\W*Generated with \[?Claude Code\]?(?:\([^)\s]*\))?\s*$",  # with or without the emoji and the link
+    re.IGNORECASE)
+CO_AUTHOR = re.compile(r"^\s*Co-Authored-By:[^<]*<([^>]*)>\s*$", re.IGNORECASE)
+ADDRESS = re.compile(r"<[^>]*>")
+NOREPLY = re.compile(r"^[^@\s]+@users\.noreply\.github\.com$", re.IGNORECASE)
+GITHUB_COMMITTER = "noreply@github.com"  # the committer of commits made on github.com
+# GitHub accounts of AI coding agents: their noreply address passes NOREPLY, but as a commit author they become a
+# Co-authored-by line at the squash merge. Logins as GitHub lists them; other bots (dependabot[bot]) are let in.
+AI_ACCOUNTS = frozenset({
+    "claude[bot]",
+    "copilot",  # the Copilot coding agent's commits use the login Copilot (account copilot-swe-agent[bot])
+    "copilot-swe-agent[bot]",
+    "chatgpt-codex-connector[bot]",
+    "openai-codex[bot]",
+    "cursor[bot]",
+    "devin-ai-integration[bot]",
+    "google-labs-jules[bot]",
+    "gemini-code-assist[bot]",
+})
+MAX_COMMITS = 250  # GitHub lists at most this many commits of a pull request
+FIX_COMMITS = ("rewrite these commits before the merge, on top of the target repository's main (origin/main, or "
+               "upstream/main in a fork): set user.email to your GitHub noreply address "
+               "(<id>+<login>@users.noreply.github.com); remove the attribution lines with "
+               "git rebase -i origin/main (reword); reset the author with "
+               "git rebase origin/main --exec \"git commit --amend --no-edit --reset-author\"; "
+               "then push the branch with --force-with-lease")
 TRIPLE = ("Current", "Expected", "Unchanged")
 WIDTH = 72  # GitHub wraps the squash commit body at this width
 LIST_ITEM = re.compile(r"^\s*(?:[-*+]|\d+[.)])\s+")
@@ -43,6 +82,67 @@ class Result:
     title: str
     body: str
     errors: list[str] = field(default_factory=list)
+
+
+@dataclass
+class Commit:
+    sha: str
+    message: str
+    author_email: str
+    committer_email: str
+
+
+def _ai_account(email: str) -> str | None:
+    """The login of an AI agent's GitHub account behind a noreply address, else None."""
+    email = email.strip()
+    if not NOREPLY.match(email):
+        return None
+    local = email.partition("@")[0]
+    login = local.partition("+")[2] or local  # <id>+<login>, or the old <login>
+    return login if login.lower() in AI_ACCOUNTS else None
+
+
+def _is_attribution(line: str) -> bool:
+    """An attribution trailer, or a co-author line that names an AI agent's GitHub account."""
+    co_author = CO_AUTHOR.match(line)
+    return bool(ATTRIBUTION.search(line) or (co_author and _ai_account(co_author[1])))
+
+
+def _identity_problem(email: str, role: str, github_may_commit: bool = False) -> str | None:
+    email = email.strip()
+    if github_may_commit and email.lower() == GITHUB_COMMITTER:
+        return None
+    if not NOREPLY.match(email):
+        return f"the {role} is not a GitHub noreply address"
+    if login := _ai_account(email):
+        return f"the {role} is the GitHub account of an AI agent ({login})"
+    return None
+
+
+def check_commits(commits: list[Commit]) -> list[str]:
+    """One error per commit that would put AI attribution into main, then how to fix them; empty when none would.
+
+    No address is printed, not even inside a quoted attribution line: a personal one would only be repeated in a
+    public log.
+    """
+    errors = []
+    for commit in commits:
+        problems = []
+        lines = [ADDRESS.sub("<...>", line.strip()) for line in commit.message.splitlines() if _is_attribution(line)]
+        if lines:
+            problems.append("AI attribution in the message: " + "; ".join(f"'{line}'" for line in lines))
+        problems += [problem for problem in (_identity_problem(commit.author_email, "author"),
+                                             _identity_problem(commit.committer_email, "committer", True)) if problem]
+        if problems:
+            subject = commit.message.strip().partition("\n")[0]
+            errors.append(f"commit {commit.sha[:7]} '{subject}': " + "; ".join(problems))
+    if errors:
+        errors.append(FIX_COMMITS)
+    if len(commits) >= MAX_COMMITS:
+        # GitHub returns no more than MAX_COMMITS, so the ones after them cannot be read: fail rather than pass unseen.
+        errors.insert(0, f"the pull request has {MAX_COMMITS} or more commits, and GitHub lists only {MAX_COMMITS}; "
+                         "the rest cannot be checked: split the pull request or squash its commits")
+    return errors
 
 
 def _topic(rest: str) -> str:
@@ -56,7 +156,9 @@ def _valid_title(title: str, branch_type: str) -> bool:
 
 
 def _without_attribution(text: str) -> str:
-    return "\n".join(line for line in text.splitlines() if not ATTRIBUTION.search(line)).strip()
+    # split("\n"), not splitlines(): the text is already LF, and splitlines() would also break it at form feeds and
+    # Unicode separators, rewriting a description that has no attribution at all.
+    return "\n".join(line for line in text.split("\n") if not _is_attribution(line)).strip()
 
 
 def _split(message: str) -> tuple[str, str]:
@@ -105,8 +207,11 @@ def fix_message(title: str, body: str | None, branch: str, commit_messages: list
     body = body or ""
     branch_match = BRANCH.match(branch)
     if not branch_match or branch_match["type"] not in TYPES:
-        # Not a branch named by the convention (e.g. a bot's branch): leave it alone.
-        return Result(title, body)
+        # Not a branch named by the convention (e.g. a bot's branch): only the attribution lines go, since the
+        # description becomes the squash commit's body on every branch; the rest is left as it was written.
+        written = body.replace("\r\n", "\n")
+        cleaned = _without_attribution(written)
+        return Result(title, cleaned if cleaned != written.strip() else body)
     branch_type = branch_match["type"]
     commits = [_split(message) for message in commit_messages]
     result = Result(title.strip(), body)
@@ -150,9 +255,13 @@ def main() -> int:
     repo, number = os.environ["GITHUB_REPOSITORY"], os.environ["PR_NUMBER"]
     pr = json.loads(_gh("api", f"repos/{repo}/pulls/{number}"))
     commits = json.loads(_gh("api", "--paginate", "--slurp", f"repos/{repo}/pulls/{number}/commits"))
-    messages = [c["commit"]["message"] for page in commits for c in page]
+    commits = [Commit(c["sha"], c["commit"]["message"], c["commit"]["author"]["email"],
+                      c["commit"]["committer"]["email"]) for page in commits for c in page]
 
-    result = fix_message(pr["title"], pr["body"], pr["head"]["ref"], messages)
+    # On every branch, also outside the naming convention, where fix_message only removes attribution lines.
+    commit_errors = check_commits(commits)
+    result = fix_message(pr["title"], pr["body"], pr["head"]["ref"], [c.message for c in commits])
+    result.errors = commit_errors + result.errors
     changes = {}
     if result.title != pr["title"]:
         changes["title"] = result.title
@@ -162,11 +271,19 @@ def main() -> int:
     if changes:
         latest = json.loads(_gh("api", f"repos/{repo}/pulls/{number}"))
         if changed_meanwhile(pr, latest):
+            # The newer run handles the title and description, but the commits are the same: their errors stand, or
+            # this run's ci-ok would pass a pull request that the newer run fails.
             print("the title or description changed while this run worked; the run started by that edit fixes it")
-            return 0
+            for error in commit_errors:
+                print(f"::error::{error}")
+            return 1 if commit_errors else 0
         if pr["head"]["repo"]["full_name"] != repo:
-            # A fork's token cannot edit the PR; say what to change instead.
-            result.errors.append(f"set the title to '{result.title}'; write a description without AI attribution lines")
+            # A fork's token cannot edit the PR; say what to change instead, only for what would change.
+            todo = [f"set the title to '{result.title}'"] if "title" in changes else []
+            if "body" in changes:
+                todo.append("set the description to the text below:\n" + result.body if result.body
+                            else "clear the description")
+            result.errors.append("; ".join(todo))
         else:
             _gh("api", "-X", "PATCH", f"repos/{repo}/pulls/{number}", "--input", "-", stdin=json.dumps(changes))
             print(f"updated the PR ({', '.join(changes)}): title '{result.title}'")
