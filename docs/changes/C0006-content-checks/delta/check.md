@@ -61,9 +61,9 @@ section; a `change` that names no change, open or archived; a `done` idea whose 
 
 #### Scenario: change that does not exist
 
-- GIVEN an idea with `change: 0042-x` and no change `0042-x` in `docs/changes/` or its archive
+- GIVEN an idea with `change: C0042-x` and no change `C0042-x` in `docs/changes/` or its archive
 - WHEN `keellay check` runs
-- THEN there is an `ideas` error that names `0042-x`
+- THEN there is an `ideas` error that names `C0042-x`
 
 #### Scenario: unknown PRD area
 
@@ -75,8 +75,8 @@ section; a `change` that names no change, open or archived; a `done` idea whose 
 
 The CLI shall report, as check `lessons`, a lesson whose `count` differs from the number of items under its
 Occurrences heading; a `mechanized` lesson with an empty `mechanism`; and an `active` lesson with a `count` of 2 or
-more whose last occurrence names a change (`change <number>`) that is `closed` while that change's Decisions section
-does not name the lesson (`lesson <number>`), which is where the owner's waiver is recorded.
+more whose last occurrence names a change by its ID (`C0007`) that is `closed` while that change's Decisions section
+does not name the lesson by its ID (`L0003`), which is where the owner's waiver is recorded.
 
 #### Scenario: count and occurrences disagree
 
@@ -86,14 +86,14 @@ does not name the lesson (`lesson <number>`), which is where the owner's waiver 
 
 #### Scenario: repeated lesson closed without a mechanism
 
-- GIVEN an active lesson with `count: 2` whose last occurrence names change 0007, and change 0007 closed with no
+- GIVEN an active lesson with `count: 2` whose last occurrence names change C0007, and change C0007 closed with no
   mention of the lesson in its Decisions
 - WHEN `keellay check` runs
-- THEN there is a `lessons` error for the lesson that names change 0007
+- THEN there is a `lessons` error for the lesson that names change C0007
 
 #### Scenario: waived mechanism
 
-- GIVEN the same lesson, and change 0007's Decisions name the lesson with the owner's waiver
+- GIVEN the same lesson, and change C0007's Decisions name the lesson with the owner's waiver
 - WHEN `keellay check` runs
 - THEN there is no `lessons` finding for it
 
@@ -105,13 +105,13 @@ The CLI shall report, as check `adr`, an ADR whose `supersedes` names an ADR tha
 
 #### Scenario: one side of the link missing
 
-- GIVEN ADR 0012 with `supersedes: 0004`, and ADR 0004 with `status: superseded` and an empty `superseded-by`
+- GIVEN ADR A0012 with `supersedes: A0004`, and ADR A0004 with `status: superseded` and an empty `superseded-by`
 - WHEN `keellay check` runs
-- THEN there is an `adr` error for ADR 0004 that names 0012
+- THEN there is an `adr` error for ADR A0004 that names A0012
 
 #### Scenario: one ADR supersedes several
 
-- GIVEN ADR 0012 with `supersedes: [0004, 0007]`, and ADRs 0004 and 0007 both `superseded` by 0012
+- GIVEN ADR A0012 with `supersedes: [A0004, A0007]`, and ADRs A0004 and A0007 both `superseded` by A0012
 - WHEN `keellay check` runs
 - THEN there is no `adr` finding
 
