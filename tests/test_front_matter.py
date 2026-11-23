@@ -112,6 +112,15 @@ def test_number_and_file_name_disagree(capsys, monkeypatch, project):
     assert "L0004" in finding["message"] and "L0003" in finding["message"]
 
 
+def test_number_past_9999_passes(capsys, monkeypatch, project):
+    write(project, "docs/product/ideas/I10000-x.md",
+          "---\nid: I10000\ntitle: X\nstatus: new\nsource: owner\ndate: 2026-11-21\n---\n")
+    write(project, "docs/changes/C10000-x/plan.md", "---\nid: C10000-x\ntitle: X\npath: change\nstatus: draft\n---\n")
+    write(project, "docs/adr/A10000-x.md", f"---\nid: A10000\n{ADR}supersedes: [A0012, A10001]\n---\n")
+    code, out = run_check(project, capsys, monkeypatch)
+    assert (code, out["findings"]) == (0, [])
+
+
 def test_numbers_keep_their_leading_zeros(capsys, monkeypatch, project):
     write(project, "docs/adr/A0012-x.md", f"---\nid: A0012\n{ADR}---\n")
     code, out = run_check(project, capsys, monkeypatch)

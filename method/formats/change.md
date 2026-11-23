@@ -5,8 +5,8 @@ A change is one unit of work that the owner approved: a folder with a plan and, 
 
 ## Identity
 
-- **ID:** `<number>-<topic>`, e.g. `C0007-session-expiry`. The number is `C` and four digits, sequential per project
-  and never reused (see [Numbers](README.md)); the topic is lowercase words joined by hyphens.
+- **ID:** `<number>-<topic>`, e.g. `C0007-session-expiry`. The number is `C` and at least four digits, sequential
+  per project and never reused (see [Numbers](README.md)); the topic is lowercase words joined by hyphens.
 - **Claiming a number:** the row in the changes index claims it. When two branches claim the same number, the check
   fails on the second one and it takes the next free number.
 - **Branch:** `<type>/<id>`, e.g. `feat/C0007-session-expiry`. Types follow commit messages: `feat`, `fix`, `docs`,

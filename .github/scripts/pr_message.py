@@ -148,9 +148,10 @@ def check_commits(commits: list[Commit]) -> list[str]:
 def _topic(rest: str) -> str:
     """`C0007-session-expiry` -> `session expiry`, `13-architecture` -> `architecture`, `ci-ok` -> `ci ok`.
 
-    A change number is `C` and four digits; branches opened before that, with a bare number, still give their topic.
+    A change number is `C` and at least four digits; branches opened before that, with a bare number, still give their
+    topic.
     """
-    return re.sub(r"^(?:C\d{4}|\d+)(-|$)", "", rest).replace("-", " ").strip()
+    return re.sub(r"^(?:C\d{4,}|\d+)(-|$)", "", rest).replace("-", " ").strip()
 
 
 def _valid_title(title: str, branch_type: str) -> bool:

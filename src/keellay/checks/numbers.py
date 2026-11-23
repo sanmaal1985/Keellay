@@ -22,7 +22,7 @@ def _number(artifact: Artifact) -> str | None:
     if artifact.name_id is None:
         return None
     # The whole number with its letter (`C0007`); a misnamed file is reported by `front-matter`.
-    match = re.match(r"^([A-Za-z]*\d{4})(?:-|$)", artifact.name_id)
+    match = re.match(r"^([A-Za-z]*\d{4,})(?:-|$)", artifact.name_id)
     return match.group(1) if match else None
 
 

@@ -43,8 +43,8 @@ and `ok` with exit code 0 otherwise.
 
 The CLI shall report, as check `front-matter`, every change plan, idea, ADR, lesson, PRD, living spec, delta and
 constitution whose front matter is missing, is not valid YAML, lacks a field its format requires, has a value its
-format does not allow, or has a number that does not match its file name. A number is the letter of its kind and four
-digits: `C` for a change, `I` for an idea, `A` for an ADR, `L` for a lesson (`C0007`, `I0026`, `A0037`, `L0013`); a
+format does not allow, or has a number that does not match its file name. A number is the letter of its kind and at
+least four digits, zero-padded to four: `C` for a change, `I` for an idea, `A` for an ADR, `L` for a lesson (`C0007`, `I0026`, `A0037`, `L0013`); a
 change, idea, ADR or lesson whose file or folder name does not start with its number, and a number field (`id`,
 `supersedes`, `superseded-by`, an idea's `change`) that is bare (`0012`) or carries another kind's letter, are
 reported. Values are read as strings, so `A0012` stays `A0012`.
@@ -60,6 +60,12 @@ reported. Values are read as strings, so `A0012` stays `A0012`.
 - GIVEN `docs/lessons/L0003-x.md` whose front matter has `id: L0004`
 - WHEN `keellay check` runs
 - THEN there is a `front-matter` error for that file
+
+#### Scenario: number past 9999
+
+- GIVEN `docs/product/ideas/I10000-x.md` whose front matter has `id: I10000`
+- WHEN `keellay check` runs
+- THEN there is no `front-matter` finding for that file
 
 #### Scenario: bare number
 

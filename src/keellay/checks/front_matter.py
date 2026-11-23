@@ -37,14 +37,14 @@ def date(value) -> str | None:
 
 def _expected(letter: str, value) -> str:
     """The form a number should have, from what was written: `0012` -> `A0012`, `C0004` -> `A0004`."""
-    digits = re.search(r"\d{4}$", value) if isinstance(value, str) else None
+    digits = re.search(r"\d{4,}$", value) if isinstance(value, str) else None
     return f"{letter}{digits.group(0)}" if digits else f"{letter}0007"
 
 
 def number(letter: str) -> Rule:
-    """A number of one kind: its letter and four digits (`A0012`)."""
+    """A number of one kind: its letter and at least four digits (`A0012`, `A10000`)."""
     def rule(value) -> str | None:
-        return None if isinstance(value, str) and re.fullmatch(rf"{letter}\d{{4}}", value) else \
+        return None if isinstance(value, str) and re.fullmatch(rf"{letter}\d{{4,}}", value) else \
             f"is {value!r}; expected a number of the form {_expected(letter, value)}"
     return rule
 
@@ -63,7 +63,7 @@ def numbers(letter: str) -> Rule:
     return rule
 
 
-CHANGE_ID = re.compile(r"C\d{4}-[a-z0-9]+(?:-[a-z0-9]+)*")
+CHANGE_ID = re.compile(r"C\d{4,}-[a-z0-9]+(?:-[a-z0-9]+)*")
 
 
 def change_id(value) -> str | None:
@@ -123,7 +123,7 @@ def check(artifacts: list[Artifact]) -> list[Finding]:
 def _name_has_number(artifact: Artifact, letter: str) -> bool:
     if artifact.kind == "change":  # the folder name is the change ID
         return bool(CHANGE_ID.fullmatch(artifact.name_id))
-    return bool(re.fullmatch(rf"{letter}\d{{4}}", artifact.name_id))
+    return bool(re.fullmatch(rf"{letter}\d{{4,}}", artifact.name_id))
 
 
 def _check_one(artifact: Artifact) -> list[Finding]:
