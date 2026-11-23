@@ -95,6 +95,14 @@ def test_depends_on_a_missing_phase(capsys, monkeypatch, project):
     assert "phase 2 depends on phase 3" in finding["message"]
 
 
+def test_depends_on_with_an_artifact_id_reads_only_phase_numbers(capsys, monkeypatch, project):
+    write(project, "docs/changes/C0007-a/plan.md",
+          plan("C0007-a", phase(1), phase(2, depends="1 (after C0007)"), phase(3, depends="4, after A0012")))
+    code, out = run_check(project, capsys, monkeypatch)
+    [finding] = phases_findings(out)
+    assert "phase 3 depends on phase 4," in finding["message"]
+
+
 def test_complete_plan_has_no_finding(capsys, monkeypatch, project):
     write(project, "docs/changes/C0007-a/plan.md",
           plan("C0007-a", phase(1, role="architect"), phase(2, role="`product-owner`", depends="1"),

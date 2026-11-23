@@ -18,6 +18,8 @@ FIELDS = ("Role", "Depends on", "Done when")
 _ROLE = re.compile(r"^(?:%s)(?:-[a-z0-9]+(?:-[a-z0-9]+)*)?$" % "|".join(re.escape(role) for role in CORE_ROLES))
 _FIELD = re.compile(r"^[-*]\s+(Role|Depends on|Done when)\s*:(.*)$")
 _NUMBERED_HEADING = re.compile(r"^###\s+(\d+)\.")
+# A phase number stands alone: the digits of an artifact ID such as `C0007` in the same line are not one.
+_PHASE_NUMBER = re.compile(r"(?<![A-Za-z0-9])\d+(?![A-Za-z0-9])")
 
 
 @dataclass
@@ -60,7 +62,7 @@ def _check_plan(plan: Artifact, text: str) -> list[Finding]:
                                                      f"{', '.join(CORE_ROLES)} or an instance `<core role>-<qualifier>`"))
         if "Depends on" in phase.fields:
             value, line = phase.fields["Depends on"]
-            for number in re.findall(r"\d+", value):
+            for number in _PHASE_NUMBER.findall(value):
                 if number.lstrip("0") not in {n.lstrip("0") for n in numbers}:
                     findings.append(_finding(plan, line, f"{phase.name} depends on phase {number}, which the plan "
                                                          f"does not have"))
