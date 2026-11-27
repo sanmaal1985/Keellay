@@ -10,21 +10,29 @@ from keellay.cli import main
 
 # Kind -> (path, valid front matter). Each is the format's own example, so a format change shows up here.
 VALID = {
-    "change": ("docs/changes/C0007-session-expiry/plan.md",
-               "id: C0007-session-expiry\ntitle: Session expires\npath: feature\nstatus: in-progress\n"
-               "approved: 2026-11-20\n"),
-    "archived change": ("docs/changes/archive/C0006-export/plan.md",
-                        "id: C0006-export\ntitle: Export\npath: change\nstatus: dropped\napproved:\n"),
-    "idea": ("docs/product/ideas/I0004-shared-limits.md",
-             "id: I0004\ntitle: Shared limits\nstatus: assessed\nverdict: clarify\nsource: owner\ndate: 2026-11-21\n"
-             "prd: PRD-limits\nchange:\n"),
+    "change": (
+        "docs/changes/C0007-session-expiry/plan.md",
+        "id: C0007-session-expiry\ntitle: Session expires\npath: feature\nstatus: in-progress\napproved: 2026-11-20\n",
+    ),
+    "archived change": (
+        "docs/changes/archive/C0006-export/plan.md",
+        "id: C0006-export\ntitle: Export\npath: change\nstatus: dropped\napproved:\n",
+    ),
+    "idea": (
+        "docs/product/ideas/I0004-shared-limits.md",
+        "id: I0004\ntitle: Shared limits\nstatus: assessed\nverdict: clarify\nsource: owner\ndate: 2026-11-21\n"
+        "prd: PRD-limits\nchange:\n",
+    ),
     "prd": ("docs/product/prd.md", "product: Family budget\nupdated: 2026-11-21\n"),
-    "adr": ("docs/adr/A0012-expiry.md",
-            "id: A0012\ntitle: Sessions expire\nstatus: accepted\ndate: 2026-11-20\ndecided-by: owner\n"
-            "supersedes: [A0004, A0007]\nsuperseded-by:\n"),
-    "lesson": ("docs/lessons/L0003-backup.md",
-               "id: L0003\ntitle: No backup\nstatus: active\ncount: 2\nfirst: 2026-03-02\nlast: 2026-04-15\n"
-               "mechanism:\n"),
+    "adr": (
+        "docs/adr/A0012-expiry.md",
+        "id: A0012\ntitle: Sessions expire\nstatus: accepted\ndate: 2026-11-20\ndecided-by: owner\n"
+        "supersedes: [A0004, A0007]\nsuperseded-by:\n",
+    ),
+    "lesson": (
+        "docs/lessons/L0003-backup.md",
+        "id: L0003\ntitle: No backup\nstatus: active\ncount: 2\nfirst: 2026-03-02\nlast: 2026-04-15\nmechanism:\n",
+    ),
     "spec": ("docs/specs/auth-session.md", "capability: auth-session\nprefix: auth\n"),
     "delta": ("docs/changes/C0007-session-expiry/delta/auth-session.md", "capability: auth-session\n"),
     "constitution": ("docs/constitution.md", "project: Family budget\nupdated: 2026-11-21\n"),
@@ -32,16 +40,24 @@ VALID = {
 
 # Kind -> (front matter that breaks one rule, what the message names).
 BROKEN = {
-    "change": ("id: C0007-session-expiry\ntitle: Session expires\npath: epic\nstatus: in-progress\napproved:\n",
-               "epic"),
+    "change": (
+        "id: C0007-session-expiry\ntitle: Session expires\npath: epic\nstatus: in-progress\napproved:\n",
+        "epic",
+    ),
     "archived change": ("id: C0006-export\ntitle: Export\npath: change\nstatus: finished\n", "finished"),
-    "idea": ("id: I0004\ntitle: Shared limits\nstatus: started\nverdict:\nsource: owner\ndate: 2026-11-21\n"
-             "change:\n", "started"),
+    "idea": (
+        "id: I0004\ntitle: Shared limits\nstatus: started\nverdict:\nsource: owner\ndate: 2026-11-21\nchange:\n",
+        "started",
+    ),
     "prd": ("product: Family budget\nupdated: 21.11.2026\n", "21.11.2026"),
-    "adr": ("id: A0012\ntitle: Sessions expire\nstatus: accepted\ndate: 2026-11-20\ndecided-by: owner\n"
-            "supersedes: [4]\n", "supersedes"),
-    "lesson": ("id: L0003\ntitle: No backup\nstatus: active\ncount: two\nfirst: 2026-03-02\nlast: 2026-04-15\n"
-               "mechanism:\n", "two"),
+    "adr": (
+        "id: A0012\ntitle: Sessions expire\nstatus: accepted\ndate: 2026-11-20\ndecided-by: owner\nsupersedes: [4]\n",
+        "supersedes",
+    ),
+    "lesson": (
+        "id: L0003\ntitle: No backup\nstatus: active\ncount: two\nfirst: 2026-03-02\nlast: 2026-04-15\nmechanism:\n",
+        "two",
+    ),
     "spec": ("capability: auth-session\n", "prefix"),
     "delta": ("capability: auth\n", "auth-session"),
     "constitution": ("project:\nupdated: 2026-11-21\n", "project"),
@@ -93,8 +109,11 @@ def test_broken_front_matter_is_reported(capsys, monkeypatch, project, kind):
 
 
 def test_unknown_status_names_the_value_and_its_line(capsys, monkeypatch, project):
-    write(project, "docs/product/ideas/I0004-x.md",
-          "---\nid: I0004\ntitle: X\nstatus: started\nverdict:\nsource: owner\ndate: 2026-11-21\nchange:\n---\n")
+    write(
+        project,
+        "docs/product/ideas/I0004-x.md",
+        "---\nid: I0004\ntitle: X\nstatus: started\nverdict:\nsource: owner\ndate: 2026-11-21\nchange:\n---\n",
+    )
     code, out = run_check(project, capsys, monkeypatch)
     assert code == 1
     (finding,) = out["findings"]
@@ -103,8 +122,11 @@ def test_unknown_status_names_the_value_and_its_line(capsys, monkeypatch, projec
 
 
 def test_number_and_file_name_disagree(capsys, monkeypatch, project):
-    write(project, "docs/lessons/L0003-x.md", "---\nid: L0004\ntitle: X\nstatus: active\ncount: 1\n"
-          "first: 2026-11-21\nlast: 2026-11-21\nmechanism:\n---\n")
+    write(
+        project,
+        "docs/lessons/L0003-x.md",
+        "---\nid: L0004\ntitle: X\nstatus: active\ncount: 1\nfirst: 2026-11-21\nlast: 2026-11-21\nmechanism:\n---\n",
+    )
     code, out = run_check(project, capsys, monkeypatch)
     assert code == 1
     (finding,) = out["findings"]
@@ -113,8 +135,11 @@ def test_number_and_file_name_disagree(capsys, monkeypatch, project):
 
 
 def test_number_past_9999_passes(capsys, monkeypatch, project):
-    write(project, "docs/product/ideas/I10000-x.md",
-          "---\nid: I10000\ntitle: X\nstatus: new\nsource: owner\ndate: 2026-11-21\n---\n")
+    write(
+        project,
+        "docs/product/ideas/I10000-x.md",
+        "---\nid: I10000\ntitle: X\nstatus: new\nsource: owner\ndate: 2026-11-21\n---\n",
+    )
     write(project, "docs/changes/C10000-x/plan.md", "---\nid: C10000-x\ntitle: X\npath: change\nstatus: draft\n---\n")
     write(project, "docs/adr/A10000-x.md", f"---\nid: A10000\n{ADR}supersedes: [A0012, A10001]\n---\n")
     code, out = run_check(project, capsys, monkeypatch)
@@ -143,13 +168,22 @@ def test_another_kinds_letter_is_reported(capsys, monkeypatch, project):
     assert "supersedes" in finding["message"] and "A0004" in finding["message"]
 
 
-@pytest.mark.parametrize("path, meta, expected", [
-    ("docs/lessons/A0003-x.md", "id: A0003\ntitle: X\nstatus: active\ncount: 1\nfirst: 2026-11-21\n"
-     "last: 2026-11-21\n", "L0003"),
-    ("docs/changes/0007-x/plan.md", "id: 0007-x\ntitle: X\npath: change\nstatus: draft\n", "C0007"),
-    ("docs/product/ideas/I0004-x.md", "id: I0004\ntitle: X\nstatus: planned\nsource: owner\ndate: 2026-11-21\n"
-     "change: 0007-x\n", "C0007"),
-])
+@pytest.mark.parametrize(
+    "path, meta, expected",
+    [
+        (
+            "docs/lessons/A0003-x.md",
+            "id: A0003\ntitle: X\nstatus: active\ncount: 1\nfirst: 2026-11-21\nlast: 2026-11-21\n",
+            "L0003",
+        ),
+        ("docs/changes/0007-x/plan.md", "id: 0007-x\ntitle: X\npath: change\nstatus: draft\n", "C0007"),
+        (
+            "docs/product/ideas/I0004-x.md",
+            "id: I0004\ntitle: X\nstatus: planned\nsource: owner\ndate: 2026-11-21\nchange: 0007-x\n",
+            "C0007",
+        ),
+    ],
+)
 def test_wrong_or_missing_letter_in_names_and_fields(capsys, monkeypatch, project, path, meta, expected):
     write(project, path, f"---\n{meta}---\n")
     code, out = run_check(project, capsys, monkeypatch)
@@ -157,12 +191,17 @@ def test_wrong_or_missing_letter_in_names_and_fields(capsys, monkeypatch, projec
     assert any(expected in f["message"] for f in out["findings"])
 
 
-@pytest.mark.parametrize("path, meta", [
-    ("docs/adr/A00012-x.md", "id: A00012\n" + ADR),
-    ("docs/adr/A0013-x.md", "id: A0013\n" + ADR + "supersedes: A00012\n"),
-    ("docs/product/ideas/I0004-x.md", "id: I0004\ntitle: X\nstatus: planned\nsource: owner\ndate: 2026-11-21\n"
-     "change: C00007-x\n"),
-])
+@pytest.mark.parametrize(
+    "path, meta",
+    [
+        ("docs/adr/A00012-x.md", "id: A00012\n" + ADR),
+        ("docs/adr/A0013-x.md", "id: A0013\n" + ADR + "supersedes: A00012\n"),
+        (
+            "docs/product/ideas/I0004-x.md",
+            "id: I0004\ntitle: X\nstatus: planned\nsource: owner\ndate: 2026-11-21\nchange: C00007-x\n",
+        ),
+    ],
+)
 def test_a_padding_zero_past_four_digits_is_reported(capsys, monkeypatch, project, path, meta):
     write(project, path, f"---\n{meta}---\n")
     code, out = run_check(project, capsys, monkeypatch)
@@ -193,12 +232,15 @@ def test_change_folder_with_only_deltas_in_the_new_form_passes(capsys, monkeypat
     assert (code, out["findings"]) == (0, [])
 
 
-@pytest.mark.parametrize("text, named", [
-    ("# No front matter\n", "no front matter"),
-    ("---\nid: A0012\n", "not closed"),
-    ("---\nid: [A0012\n---\n", "not valid YAML"),
-    ("---\n- id\n---\n", "mapping"),
-])
+@pytest.mark.parametrize(
+    "text, named",
+    [
+        ("# No front matter\n", "no front matter"),
+        ("---\nid: A0012\n", "not closed"),
+        ("---\nid: [A0012\n---\n", "not valid YAML"),
+        ("---\n- id\n---\n", "mapping"),
+    ],
+)
 def test_unreadable_front_matter(capsys, monkeypatch, project, text, named):
     write(project, "docs/adr/A0012-x.md", text)
     code, out = run_check(project, capsys, monkeypatch)

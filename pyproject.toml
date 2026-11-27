@@ -25,7 +25,10 @@ classifiers = [
 keellay = "keellay.cli:main"
 
 [dependency-groups]
-dev = ["pytest"]
+dev = [
+    "pytest",
+    "ruff==0.17.6",
+]
 
 [tool.hatch.build.targets.wheel]
 packages = ["src/keellay"]
@@ -39,3 +42,15 @@ include = ["src", "method", "tests", "README.md", "LICENSE"]
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]
+
+# ruff is pinned above, so a new release cannot fail CI on code that has not changed.
+[tool.ruff]
+line-length = 120
+target-version = "py311"
+src = ["src", "tests"]
+extend-include = [".github/scripts/*.py"]
+
+[tool.ruff.lint]
+# pycodestyle, pyflakes, import order, bugbear, pyupgrade, simplify, pathlib, ruff's own, comprehensions,
+# misc, returns.
+select = ["E", "W", "F", "I", "B", "UP", "SIM", "PTH", "RUF", "C4", "PIE", "RET"]

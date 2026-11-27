@@ -46,14 +46,20 @@ def _areas(prd: Artifact, text: str, required: tuple[str, ...]) -> tuple[set[str
         if line.startswith("### "):
             heading = _HEADING.match(line)
             if heading is None:
-                findings.append(_finding(prd, number, f"area heading `{line.strip()}` is not "
-                                                      f"`### PRD-<topic>: <outcome>`"))
+                findings.append(
+                    _finding(prd, number, f"area heading `{line.strip()}` is not `### PRD-<topic>: <outcome>`")
+                )
                 areas.append(("", number, {}))  # its lines are not taken for the area above
                 continue
             area = heading.group(1)
             if area in first:
-                findings.append(_finding(prd, number, f"{area} is used by two headings, at lines {first[area]} and "
-                                                      f"{number}; an area ID is unique"))
+                findings.append(
+                    _finding(
+                        prd,
+                        number,
+                        f"{area} is used by two headings, at lines {first[area]} and {number}; an area ID is unique",
+                    )
+                )
             first.setdefault(area, number)
             areas.append((area, number, {}))
             continue
@@ -74,8 +80,9 @@ def _areas(prd: Artifact, text: str, required: tuple[str, ...]) -> tuple[set[str
             words = value.split()
             status = words[0].strip("`") if words else ""
             if status not in STATUSES:
-                findings.append(_finding(prd, line, f"{area}: Status is {_quoted(status)}; expected one of "
-                                                    f"{', '.join(STATUSES)}"))
+                findings.append(
+                    _finding(prd, line, f"{area}: Status is {_quoted(status)}; expected one of {', '.join(STATUSES)}")
+                )
     return set(first), findings
 
 

@@ -74,11 +74,25 @@ def _requirement_ids(artifacts: list[Artifact], source: Source) -> list[Finding]
             requirement = match.group(1)
             own_form = rf"REQ-{re.escape(prefix)}-\d{{3}}" if isinstance(prefix, str) and prefix else None
             if own_form and not re.fullmatch(own_form, requirement):
-                findings.append(Finding(CHECK, "error", spec.file, line_number,
-                                        f"{requirement} does not have the form REQ-{prefix}-<nnn> of this spec"))
+                findings.append(
+                    Finding(
+                        CHECK,
+                        "error",
+                        spec.file,
+                        line_number,
+                        f"{requirement} does not have the form REQ-{prefix}-<nnn> of this spec",
+                    )
+                )
             if requirement in seen:
-                findings.append(Finding(CHECK, "error", spec.file, line_number,
-                                        f"{requirement} is already used on line {seen[requirement]}"))
+                findings.append(
+                    Finding(
+                        CHECK,
+                        "error",
+                        spec.file,
+                        line_number,
+                        f"{requirement} is already used on line {seen[requirement]}",
+                    )
+                )
             else:
                 seen[requirement] = line_number
     return findings

@@ -15,7 +15,8 @@ from keellay.checks.source import Source
 CHECK = "phases"
 CORE_ROLES = ("architect", "developer", "product-owner", "manager")
 FIELDS = ("Role", "Depends on", "Done when")
-_ROLE = re.compile(r"^(?:%s)(?:-[a-z0-9]+(?:-[a-z0-9]+)*)?$" % "|".join(re.escape(role) for role in CORE_ROLES))
+_CORE = "|".join(re.escape(role) for role in CORE_ROLES)
+_ROLE = re.compile(rf"^(?:{_CORE})(?:-[a-z0-9]+(?:-[a-z0-9]+)*)?$")
 _FIELD = re.compile(r"^[-*]\s+(Role|Depends on|Done when)\s*:(.*)$")
 _NUMBERED_HEADING = re.compile(r"^###\s+(\d+)\.")
 # A phase number stands alone: the digits of an artifact ID such as `C0007` in the same line are not one, and neither
@@ -48,11 +49,22 @@ def _check_plan(plan: Artifact, text: str) -> list[Finding]:
         if status and status != "draft":
             if found is None:
                 # No section to point at: the status line is what makes the missing phases a finding.
-                return [_finding(plan, plan.meta_lines.get("status"), f"the plan is `{status}` and has no `## Phases` "
-                                                                      f"section; phases are cut before the owner "
-                                                                      f"approves the plan")]
-            return [_finding(plan, found[0], f"the plan is `{status}` and has no phase; phases are cut before the "
-                                             f"owner approves the plan")]
+                return [
+                    _finding(
+                        plan,
+                        plan.meta_lines.get("status"),
+                        f"the plan is `{status}` and has no `## Phases` "
+                        f"section; phases are cut before the owner "
+                        f"approves the plan",
+                    )
+                ]
+            return [
+                _finding(
+                    plan,
+                    found[0],
+                    f"the plan is `{status}` and has no phase; phases are cut before the owner approves the plan",
+                )
+            ]
         return []
     phases = found[1]
     numbers = {phase.number for phase in phases if phase.number}
@@ -64,14 +76,21 @@ def _check_plan(plan: Artifact, text: str) -> list[Finding]:
         if "Role" in phase.fields:
             role, line = phase.fields["Role"]
             if not _ROLE.match(role):
-                findings.append(_finding(plan, line, f"{phase.name}: unknown role `{role}`; a role is one of "
-                                                     f"{', '.join(CORE_ROLES)} or an instance `<core role>-<qualifier>`"))
+                findings.append(
+                    _finding(
+                        plan,
+                        line,
+                        f"{phase.name}: unknown role `{role}`; a role is one of "
+                        f"{', '.join(CORE_ROLES)} or an instance `<core role>-<qualifier>`",
+                    )
+                )
         if "Depends on" in phase.fields:
             value, line = phase.fields["Depends on"]
             for number in _PHASE_NUMBER.findall(_DATE.sub(" ", value)):
                 if number.lstrip("0") not in {n.lstrip("0") for n in numbers}:
-                    findings.append(_finding(plan, line, f"{phase.name} depends on phase {number}, which the plan "
-                                                         f"does not have"))
+                    findings.append(
+                        _finding(plan, line, f"{phase.name} depends on phase {number}, which the plan does not have")
+                    )
     return findings
 
 

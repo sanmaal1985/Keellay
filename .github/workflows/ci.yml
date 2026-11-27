@@ -83,13 +83,32 @@ jobs:
       - name: Check
         run: uv run keellay check
 
+  # The Python code keeps the project's lint rules and format; the tools and their settings come from pyproject.toml
+  # and uv.lock, so a run here matches a run on a developer's machine.
+  lint:
+    name: lint
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+
+      - uses: astral-sh/setup-uv@68559e99cc807c1eb7e9238fd43a15bba460eec2 # v10.3.3
+
+      - name: Install
+        run: uv sync --locked
+
+      - name: Lint
+        run: uv run ruff check
+
+      - name: Format
+        run: uv run ruff format --check
+
   # The one required status check for main: it passes only when every matrix job passed, the PR message is fine and
-  # the project's checks pass, so jobs can change without editing the ruleset. `always()` makes it run (and fail) when
-  # a job fails, instead of being skipped.
+  # the project's checks and lint pass, so jobs can change without editing the ruleset. `always()` makes it run (and
+  # fail) when a job fails, instead of being skipped.
   ci-ok:
     name: ci-ok
     if: always()
-    needs: [test-and-build, pr-message, check]
+    needs: [test-and-build, pr-message, check, lint]
     runs-on: ubuntu-latest
     steps:
       - name: All jobs passed
@@ -97,3 +116,4 @@ jobs:
           test "${{ needs.test-and-build.result }}" = "success"
           test "${{ needs.pr-message.result }}" = "success"
           test "${{ needs.check.result }}" = "success"
+          test "${{ needs.lint.result }}" = "success"

@@ -25,26 +25,45 @@ def check(artifacts: list[Artifact]) -> list[Finding]:
     replaced = {(new, old) for old, adr in adrs.items() for new in _ids(adr.meta, "superseded-by") if new != old}
     for new, old in sorted(replaces - replaced):
         if old in adrs:
-            findings.append(_finding(adrs[old], "superseded-by", f"{new} supersedes {old}, but {old}'s "
-                                                                f"`superseded-by` does not name {new}"))
+            findings.append(
+                _finding(
+                    adrs[old],
+                    "superseded-by",
+                    f"{new} supersedes {old}, but {old}'s `superseded-by` does not name {new}",
+                )
+            )
         else:
             findings.append(_finding(adrs[new], "supersedes", f"`supersedes` names {old}, which is not an ADR here"))
     for new, old in sorted(replaced - replaces):
         if new in adrs:
-            findings.append(_finding(adrs[new], "supersedes", f"{old} is superseded by {new}, but {new}'s "
-                                                             f"`supersedes` does not name {old}"))
+            findings.append(
+                _finding(
+                    adrs[new],
+                    "supersedes",
+                    f"{old} is superseded by {new}, but {new}'s `supersedes` does not name {old}",
+                )
+            )
         else:
-            findings.append(_finding(adrs[old], "superseded-by", f"`superseded-by` names {new}, which is not an ADR "
-                                                                 f"here"))
+            findings.append(
+                _finding(adrs[old], "superseded-by", f"`superseded-by` names {new}, which is not an ADR here")
+            )
     for adr_id, adr in sorted(adrs.items()):
         status = adr.meta.get("status")
         superseded_by = _ids(adr.meta, "superseded-by")
         if status == "superseded" and not superseded_by and not any(old == adr_id for _, old in replaces):
-            findings.append(_finding(adr, "status", "the ADR is `superseded` and `superseded-by` does not name the "
-                                                    "ADR that replaced it"))
+            findings.append(
+                _finding(
+                    adr, "status", "the ADR is `superseded` and `superseded-by` does not name the ADR that replaced it"
+                )
+            )
         if superseded_by and status != "superseded":
-            findings.append(_finding(adr, "status", f"`superseded-by` names {', '.join(superseded_by)} but the "
-                                                    f"status is `{status}`, not `superseded`"))
+            findings.append(
+                _finding(
+                    adr,
+                    "status",
+                    f"`superseded-by` names {', '.join(superseded_by)} but the status is `{status}`, not `superseded`",
+                )
+            )
     return findings
 
 

@@ -78,13 +78,16 @@ def test_config_overrides_level_and_sections(capsys, tmp_path, monkeypatch):
     assert out["sections"]["lessons"] == {"path": None, "exists": False}
 
 
-@pytest.mark.parametrize("config, named", [
-    ('level = "medium"\n', "medium"),
-    ('[sections]\ntasks = "docs/tasks"\n', "tasks"),
-    ('[sections]\nadr = 3\n', "adr"),
-    ('[sections]\nadr = true\n', "adr"),
-    ('level = \n', "TOML"),
-])
+@pytest.mark.parametrize(
+    "config, named",
+    [
+        ('level = "medium"\n', "medium"),
+        ('[sections]\ntasks = "docs/tasks"\n', "tasks"),
+        ("[sections]\nadr = 3\n", "adr"),
+        ("[sections]\nadr = true\n", "adr"),
+        ("level = \n", "TOML"),
+    ],
+)
 def test_invalid_config(capsys, tmp_path, monkeypatch, config, named):
     git_init(tmp_path)
     write_config(tmp_path, config)

@@ -18,8 +18,11 @@ _CHANGE_NUMBER = re.compile(r"(?<![A-Za-z0-9])C(\d{4,})(?![0-9])")
 
 
 def check(artifacts: list[Artifact], source: Source) -> list[Finding]:
-    plans = {_number(plan.name_id): plan for plan in artifacts
-             if plan.kind == "change" and plan.name_id and _number(plan.name_id) is not None}
+    plans = {
+        _number(plan.name_id): plan
+        for plan in artifacts
+        if plan.kind == "change" and plan.name_id and _number(plan.name_id) is not None
+    }
     findings = []
     for lesson in artifacts:
         if lesson.kind == "lesson" and lesson.meta is not None:
@@ -49,11 +52,16 @@ def _check_lesson(lesson: Artifact, source: Source, plans: dict[int, Artifact]) 
     items = occurrences.items() if occurrences else []
     if count.isdigit() and int(count) != len(items):
         where = "under Occurrences" if occurrences else "(there is no `## Occurrences` section)"
-        findings.append(finding(lines.get("count"), f"`count` is {int(count)} but there are {len(items)} "
-                                                    f"occurrences {where}"))
+        findings.append(
+            finding(lines.get("count"), f"`count` is {int(count)} but there are {len(items)} occurrences {where}")
+        )
     if status == "mechanized" and not _value(meta, "mechanism"):
-        findings.append(finding(lines.get("mechanism", lines.get("status")),
-                                "the lesson is `mechanized` and `mechanism` is empty; name what enforces the rule"))
+        findings.append(
+            finding(
+                lines.get("mechanism", lines.get("status")),
+                "the lesson is `mechanized` and `mechanism` is empty; name what enforces the rule",
+            )
+        )
     if status == "active" and count.isdigit() and int(count) >= 2 and items:
         line, last = items[-1]
         change = _CHANGE_NUMBER.search(last)
@@ -61,11 +69,19 @@ def _check_lesson(lesson: Artifact, source: Source, plans: dict[int, Artifact]) 
         if plan is not None and _value(plan.meta or {}, "status") == "closed":
             lesson_id = _value(meta, "id") or lesson.name_id or ""
             decisions = section(source.read(plan.file), "Decisions")
-            waived = decisions is not None and lesson_id and re.search(
-                rf"(?<![A-Za-z0-9]){re.escape(lesson_id)}(?![0-9])", decisions.text())
+            waived = (
+                decisions is not None
+                and lesson_id
+                and re.search(rf"(?<![A-Za-z0-9]){re.escape(lesson_id)}(?![0-9])", decisions.text())
+            )
             if not waived:
-                findings.append(finding(line, f"the lesson repeated in change {plan.name_id}, which closed with the "
-                                              f"lesson still `active` and no waiver for {lesson_id} in its Decisions; "
-                                              f"mechanize the lesson, or record the owner's waiver in those "
-                                              f"Decisions by naming {lesson_id}"))
+                findings.append(
+                    finding(
+                        line,
+                        f"the lesson repeated in change {plan.name_id}, which closed with the "
+                        f"lesson still `active` and no waiver for {lesson_id} in its Decisions; "
+                        f"mechanize the lesson, or record the owner's waiver in those "
+                        f"Decisions by naming {lesson_id}",
+                    )
+                )
     return findings

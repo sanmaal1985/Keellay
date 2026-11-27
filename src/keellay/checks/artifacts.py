@@ -81,8 +81,11 @@ def section_path(project: Project, name: str) -> str | None:
 def _files_in(source: Source, folder: str) -> list[str]:
     """Markdown files directly in the folder, without its index."""
     prefix = prefix_of(folder)
-    return [name for name in source.files_under(folder)
-            if name.endswith(".md") and "/" not in name[len(prefix):] and posixpath.basename(name) != INDEX]
+    return [
+        name
+        for name in source.files_under(folder)
+        if name.endswith(".md") and "/" not in name[len(prefix) :] and posixpath.basename(name) != INDEX
+    ]
 
 
 def _numbered(source: Source, folder: str, kind: str) -> list[Artifact]:
@@ -98,7 +101,7 @@ def _changes(source: Source, changes: str) -> list[Artifact]:
     artifacts = []
     prefix = prefix_of(changes)
     for name in source.files_under(changes):
-        parts = name[len(prefix):].split("/")
+        parts = name[len(prefix) :].split("/")
         archived = parts[0] == "archive"
         if archived:
             parts = parts[1:]

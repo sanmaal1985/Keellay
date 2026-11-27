@@ -74,12 +74,13 @@ def _problems(artifact: Artifact, requirement: Requirement, strict: bool, source
     findings = []
     statement, scenarios = _split(requirement.body)
     if not any(_SHALL.search(text) for _, text in statement if not _VERIFIED_BY.match(text)):
-        findings.append(_finding(artifact, requirement.line, f"{requirement.id} has no statement with \"shall\""))
+        findings.append(_finding(artifact, requirement.line, f'{requirement.id} has no statement with "shall"'))
     if not scenarios:
         findings.append(_finding(artifact, requirement.line, f"{requirement.id} has no `#### Scenario:`"))
     elif not any(_has_steps(steps) for steps in scenarios):
-        findings.append(_finding(artifact, requirement.line,
-                                 f"{requirement.id} has no scenario with a WHEN and a THEN line"))
+        findings.append(
+            _finding(artifact, requirement.line, f"{requirement.id} has no scenario with a WHEN and a THEN line")
+        )
     if strict:
         findings += _verified_by(artifact, requirement, statement, source)
     return findings
@@ -109,16 +110,25 @@ def _has_steps(lines: list[str]) -> bool:
     return {"WHEN", "THEN"} <= steps
 
 
-def _verified_by(artifact: Artifact, requirement: Requirement, statement: list[tuple[int, str]],
-                 source: Source) -> list[Finding]:
+def _verified_by(
+    artifact: Artifact, requirement: Requirement, statement: list[tuple[int, str]], source: Source
+) -> list[Finding]:
     start = next((index for index, (_, text) in enumerate(statement) if _VERIFIED_BY.match(text)), None)
     if start is None:
         later = next((number for number, text in requirement.body if _VERIFIED_BY.match(text)), None)
         if later is not None:
-            return [_finding(artifact, later, f"{requirement.id}: the `Verified by` line goes before the first "
-                                              f"scenario, after the statement")]
-        return [_finding(artifact, requirement.line, f"{requirement.id} has no `Verified by` line, which level strict "
-                                                     f"requires")]
+            return [
+                _finding(
+                    artifact,
+                    later,
+                    f"{requirement.id}: the `Verified by` line goes before the first scenario, after the statement",
+                )
+            ]
+        return [
+            _finding(
+                artifact, requirement.line, f"{requirement.id} has no `Verified by` line, which level strict requires"
+            )
+        ]
     number = statement[start][0]
     paragraph = []
     for _, text in statement[start:]:  # a long list of tests wraps onto the next lines
@@ -132,8 +142,9 @@ def _verified_by(artifact: Artifact, requirement: Requirement, statement: list[t
     for test in tests:
         path = test.split("::", 1)[0].strip()
         if not source.is_file(path):
-            findings.append(_finding(artifact, number, f"{requirement.id}: `Verified by` names {path}, which does "
-                                                       f"not exist"))
+            findings.append(
+                _finding(artifact, number, f"{requirement.id}: `Verified by` names {path}, which does not exist")
+            )
     return findings
 
 

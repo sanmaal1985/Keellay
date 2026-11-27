@@ -21,7 +21,7 @@ from keellay.paths import Project
 
 CHECK = "deltas"
 TOUCHING = ("ADDED", "MODIFIED", "REMOVED")
-SECTIONS = TOUCHING + ("Purpose",)
+SECTIONS = (*TOUCHING, "Purpose")
 _SECTION = re.compile(r"^##\s+(.*?)\s*$")
 
 
@@ -42,8 +42,14 @@ def check(project: Project, artifacts: list[Artifact], source: Source) -> list[F
         for number, line in enumerate(without_code_blocks(text), start=1):
             section = _SECTION.match(line)
             if section and section.group(1) not in SECTIONS:
-                findings.append(_finding(delta, number, f"section `## {section.group(1)}` is not one of "
-                                                        f"{', '.join(SECTIONS)}; its requirements are not read"))
+                findings.append(
+                    _finding(
+                        delta,
+                        number,
+                        f"section `## {section.group(1)}` is not one of "
+                        f"{', '.join(SECTIONS)}; its requirements are not read",
+                    )
+                )
         for requirement in parse(text):
             if requirement.section not in TOUCHING:
                 continue
@@ -51,26 +57,48 @@ def check(project: Project, artifacts: list[Artifact], source: Source) -> list[F
             where = requirement.section
             if spec is None:
                 if where != "ADDED":
-                    findings.append(_finding(delta, requirement.line, f"{requirement.id} is under {where}, but "
-                                                                      f"capability {capability} has no spec yet"))
+                    findings.append(
+                        _finding(
+                            delta,
+                            requirement.line,
+                            f"{requirement.id} is under {where}, but capability {capability} has no spec yet",
+                        )
+                    )
             elif where == "ADDED" and requirement.id in in_spec:
-                findings.append(_finding(delta, requirement.line, f"{requirement.id} is under ADDED, but {spec.file} "
-                                                                  f"already has it"))
+                findings.append(
+                    _finding(
+                        delta, requirement.line, f"{requirement.id} is under ADDED, but {spec.file} already has it"
+                    )
+                )
             elif where != "ADDED" and requirement.id not in in_spec:
-                findings.append(_finding(delta, requirement.line, f"{requirement.id} is under {where}, but {spec.file} "
-                                                                  f"does not have it"))
+                findings.append(
+                    _finding(
+                        delta, requirement.line, f"{requirement.id} is under {where}, but {spec.file} does not have it"
+                    )
+                )
         if spec is None and not meta.get("prefix"):
-            findings.append(_finding(delta, delta.meta_lines.get("capability", 1),
-                                     f"capability {capability} has no spec yet, so the delta starts one and needs "
-                                     f"`prefix` in its front matter"))
+            findings.append(
+                _finding(
+                    delta,
+                    delta.meta_lines.get("capability", 1),
+                    f"capability {capability} has no spec yet, so the delta starts one and needs "
+                    f"`prefix` in its front matter",
+                )
+            )
     for requirement, uses in touched.items():
         changes = sorted({_change(delta) for delta, _ in uses})
         if len(changes) < 2:
             continue
         for delta, line in uses:
             others = ", ".join(change for change in changes if change != _change(delta))
-            findings.append(_finding(delta, line, f"{requirement} is also touched by open change {others}; one "
-                                                  f"requirement is changed by one open change at a time"))
+            findings.append(
+                _finding(
+                    delta,
+                    line,
+                    f"{requirement} is also touched by open change {others}; one "
+                    f"requirement is changed by one open change at a time",
+                )
+            )
     return findings
 
 

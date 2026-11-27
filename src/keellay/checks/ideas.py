@@ -71,13 +71,23 @@ def _check_idea(idea: Artifact, text: str, changes: dict | None, areas: set[str]
         elif status in ("planned", "done", "declined"):
             assessment = section(text, "Assessment")
             if assessment is None or assessment.is_empty():
-                findings.append(finding("verdict", f"the idea is `{status}` with no `verdict` and an empty Assessment; "
-                                                   f"a skipped verdict is explained there"))
+                findings.append(
+                    finding(
+                        "verdict",
+                        f"the idea is `{status}` with no `verdict` and an empty Assessment; "
+                        f"a skipped verdict is explained there",
+                    )
+                )
     if status == "declined":
         outcome = section(text, "Outcome")
         if outcome is None or outcome.is_empty():
-            findings.append(finding("status", "the idea is `declined` and its Outcome does not say why",
-                                    outcome.line if outcome else None))
+            findings.append(
+                finding(
+                    "status",
+                    "the idea is `declined` and its Outcome does not say why",
+                    outcome.line if outcome else None,
+                )
+            )
     change = _value(meta, "change")
     if change and CHANGE_ID.fullmatch(change) and changes is not None:
         if change not in changes:
@@ -85,8 +95,13 @@ def _check_idea(idea: Artifact, text: str, changes: dict | None, areas: set[str]
         elif status == "done" and changes[change] is not None:
             change_status = _value(changes[change].meta or {}, "status")
             if change_status != "closed":
-                findings.append(finding("change", f"the idea is `done` but its change `{change}` is "
-                                                  f"`{change_status or 'without a status'}`, not `closed`"))
+                findings.append(
+                    finding(
+                        "change",
+                        f"the idea is `done` but its change `{change}` is "
+                        f"`{change_status or 'without a status'}`, not `closed`",
+                    )
+                )
     prd = _value(meta, "prd")
     if prd and areas is not None and re.fullmatch(r"PRD-[a-z0-9]+(?:-[a-z0-9]+)*", prd) and prd not in areas:
         findings.append(finding("prd", f"`prd` names `{prd}`, which is not an area of the PRD"))
