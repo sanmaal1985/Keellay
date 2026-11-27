@@ -6,8 +6,8 @@ from pathlib import Path
 
 import pytest
 
-from conftest import add_constitution
 from keellay.cli import main
+from tests.helpers import add_constitution
 
 ADR = "---\nid: A0001\ntitle: X\nstatus: accepted\ndate: 2026-11-21\ndecided-by: owner\n---\n\n# A0001\n"
 ADR_INDEX = "# Decisions\n\nIn force:\n\n| ADR | Decision |\n|---|---|\n| [A0001](A0001-x.md) | X |\n"
@@ -61,7 +61,7 @@ def test_byte_order_mark_is_not_a_missing_front_matter(capsys, project):
 @pytest.mark.parametrize("staged", [False, True])
 def test_file_that_is_not_utf8_is_read_not_a_crash(capsys, project, staged):
     write(project, "docs/adr/A0001-x.md", ADR)
-    write(project, "docs/adr/README.md", ADR_INDEX + "\nРешения: [нет](missing.md)\n", encoding="cp1251")
+    write(project, "docs/adr/README.md", ADR_INDEX + "\nРешения: [нет](missing.md)\n", encoding="cp1251")  # noqa: RUF001 - Cyrillic text on purpose: a file in cp1251
     git(project, "add", "-A")
     code, out = run(capsys, "check", *(["--staged"] if staged else []))
     assert code == 1
@@ -98,7 +98,7 @@ def test_staged_with_a_merge_conflict_is_not_a_crash(capsys, project):
     write(project, "docs/adr/README.md", "# Decisions, main\n")
     git(project, "commit", "-q", "-am", "main")
     subprocess.run(["git", "merge", "-q", "other"], cwd=project, capture_output=True)
-    code, out = run(capsys, "check", "--staged")
+    _, out = run(capsys, "check", "--staged")
     assert out["command"] == "check"
     assert out["status"] in ("ok", "failed")
 
@@ -118,10 +118,14 @@ def test_image_inside_a_link(capsys, project):
 
 
 def test_requirement_headings_in_code_blocks_are_examples(capsys, project):
-    write(project, "docs/specs/merge.md", "---\ncapability: merge\nprefix: merge\n---\n\n# Merge\n\n"
-          "## Requirements\n\n### REQ-merge-001: Merge\n\nThe CLI shall merge.\n\n"
-          "#### Scenario: merge\n\n- WHEN it merges\n- THEN it is merged\n\n"
-          "```markdown\n### REQ-auth-003: Example\n### REQ-merge-001: Example\n```\n")
+    write(
+        project,
+        "docs/specs/merge.md",
+        "---\ncapability: merge\nprefix: merge\n---\n\n# Merge\n\n"
+        "## Requirements\n\n### REQ-merge-001: Merge\n\nThe CLI shall merge.\n\n"
+        "#### Scenario: merge\n\n- WHEN it merges\n- THEN it is merged\n\n"
+        "```markdown\n### REQ-auth-003: Example\n### REQ-merge-001: Example\n```\n",
+    )
     write(project, "docs/specs/README.md", "| Capability | Covers |\n|---|---|\n| [merge](merge.md) | Merge |\n")
     code, out = run(capsys, "check")
     assert (code, out["findings"]) == (0, [])
@@ -135,11 +139,14 @@ def test_build_and_dist_folders_are_project_files(capsys, project):
     assert (code, out["findings"]) == (0, [])
 
 
-@pytest.mark.parametrize("text", [
-    "[Draft, 2026-11-21]:\nall items as listed.\n",
-    "[label]: missing.md and more words\n",
-    "Items [a\n\nb](missing.md)\n",
-])
+@pytest.mark.parametrize(
+    "text",
+    [
+        "[Draft, 2026-11-21]:\nall items as listed.\n",
+        "[label]: missing.md and more words\n",
+        "Items [a\n\nb](missing.md)\n",
+    ],
+)
 def test_text_that_only_looks_like_a_link(capsys, project, text):
     write(project, "docs/adr/README.md", text)
     code, out = run(capsys, "check")
@@ -148,7 +155,7 @@ def test_text_that_only_looks_like_a_link(capsys, project, text):
 
 def test_reference_definition_with_a_title_is_checked(capsys, project):
     write(project, "docs/adr/README.md", '[label]: missing.md "Title"\n')
-    code, out = run(capsys, "check")
+    code, _out = run(capsys, "check")
     assert code == 1
 
 
@@ -191,12 +198,18 @@ def test_staged_reads_the_staged_config(capsys, project):
     assert code == 1
 
 
-@pytest.mark.parametrize("path, meta", [
-    ("docs/product/ideas/I0001-x.md", "id: I0001\ntitle: X\nstatus: new\nsource: owner\ndate: 2026-11-21\n"),
-    ("docs/lessons/L0001-x.md", "id: L0001\ntitle: X\nstatus: active\ncount: 1\nfirst: 2026-11-21\nlast: 2026-11-21\n"),
-    ("docs/changes/C0001-x/plan.md", "id: C0001-x\ntitle: X\npath: change\nstatus: draft\n"),
-])
+@pytest.mark.parametrize(
+    "path, meta",
+    [
+        ("docs/product/ideas/I0001-x.md", "id: I0001\ntitle: X\nstatus: new\nsource: owner\ndate: 2026-11-21\n"),
+        (
+            "docs/lessons/L0001-x.md",
+            "id: L0001\ntitle: X\nstatus: active\ncount: 1\nfirst: 2026-11-21\nlast: 2026-11-21\n",
+        ),
+        ("docs/changes/C0001-x/plan.md", "id: C0001-x\ntitle: X\npath: change\nstatus: draft\n"),
+    ],
+)
 def test_fields_set_later_may_be_left_out(capsys, project, path, meta):
     write(project, path, f"---\n{meta}---\n")
-    code, out = run(capsys, "check")
+    _, out = run(capsys, "check")
     assert [f for f in out["findings"] if f["check"] == "front-matter"] == []

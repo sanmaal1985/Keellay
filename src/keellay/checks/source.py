@@ -107,7 +107,7 @@ class StagedFiles(Source):
                 contents[name] = ""  # unmerged: no stage-0 entry to read
                 continue
             size = int(header[2])
-            contents[name] = decode(out[offset:offset + size])
+            contents[name] = decode(out[offset : offset + size])
             offset += size + 1  # the blob is followed by a newline
         return contents
 
@@ -119,6 +119,12 @@ class StagedFiles(Source):
 
 
 def is_git_repository(root: Path) -> bool:
-    result = subprocess.run(["git", "rev-parse", "--is-inside-work-tree"], cwd=root, capture_output=True,
-                            encoding="utf-8", errors="replace", check=False)
+    result = subprocess.run(
+        ["git", "rev-parse", "--is-inside-work-tree"],
+        cwd=root,
+        capture_output=True,
+        encoding="utf-8",
+        errors="replace",
+        check=False,
+    )
     return result.returncode == 0 and result.stdout.strip() == "true"

@@ -8,6 +8,7 @@ import subprocess
 import tomllib
 from dataclasses import dataclass
 from pathlib import Path
+from typing import Any
 
 CONFIG_FILE = Path(".keellay") / "config.toml"
 
@@ -42,7 +43,7 @@ class Project:
     root: Path
     level: str
     sections: dict[str, Section]
-    config: dict
+    config: dict[str, Any]
 
 
 def find_root(cwd: Path | None = None) -> Path:
@@ -50,8 +51,14 @@ def find_root(cwd: Path | None = None) -> Path:
     cwd = Path.cwd() if cwd is None else cwd
     try:
         # Git prints the path in UTF-8 whatever the system code page is, so a folder named in Cyrillic stays intact.
-        result = subprocess.run(["git", "rev-parse", "--show-toplevel"], cwd=cwd, capture_output=True,
-                                encoding="utf-8", errors="replace", check=False)
+        result = subprocess.run(
+            ["git", "rev-parse", "--show-toplevel"],
+            cwd=cwd,
+            capture_output=True,
+            encoding="utf-8",
+            errors="replace",
+            check=False,
+        )
     except OSError:
         return cwd.resolve()
     if result.returncode != 0 or not result.stdout.strip():
@@ -75,8 +82,9 @@ def load_project(root: Path | None = None, config_text: str | None = None, confi
     sections = {name: Section(path) for name, path in DEFAULT_SECTIONS.items()}
     for name, value in mapped.items():
         if name not in DEFAULT_SECTIONS:
-            raise ConfigError(f"{CONFIG_FILE.as_posix()}: unknown section {name!r}; expected one of "
-                              f"{', '.join(DEFAULT_SECTIONS)}")
+            raise ConfigError(
+                f"{CONFIG_FILE.as_posix()}: unknown section {name!r}; expected one of {', '.join(DEFAULT_SECTIONS)}"
+            )
         if value is False:
             sections[name] = Section(None)
         elif isinstance(value, str) and value.strip():
@@ -86,14 +94,14 @@ def load_project(root: Path | None = None, config_text: str | None = None, confi
     return Project(root=root, level=level, sections=sections, config=config)
 
 
-def _read_config(root: Path) -> dict:
+def _read_config(root: Path) -> dict[str, Any]:
     path = root / CONFIG_FILE
     if not path.is_file():
         return {}
     return _parse_config(path.read_bytes().decode("utf-8-sig", errors="replace"))
 
 
-def _parse_config(text: str | None) -> dict:
+def _parse_config(text: str | None) -> dict[str, Any]:
     if text is None:
         return {}
     try:

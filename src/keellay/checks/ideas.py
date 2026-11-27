@@ -12,7 +12,7 @@ import posixpath
 import re
 
 from keellay.checks import Finding
-from keellay.checks.artifacts import Artifact, section_path
+from keellay.checks.artifacts import Artifact, FrontMatter, section_path
 from keellay.checks.front_matter import CHANGE_ID
 from keellay.checks.markdown import section, without_code_blocks
 from keellay.checks.source import Source
@@ -37,7 +37,7 @@ def known_changes(artifacts: list[Artifact]) -> dict[str, Artifact | None]:
     """Change ID -> its plan, or None for a change folder that holds only deltas."""
     changes: dict[str, Artifact | None] = {}
     for artifact in artifacts:
-        if artifact.kind == "change":
+        if artifact.kind == "change" and artifact.name_id:
             changes[artifact.name_id] = artifact
     for artifact in artifacts:
         if artifact.kind == "delta" and artifact.folder:
@@ -52,13 +52,15 @@ def _areas(artifacts: list[Artifact], source: Source) -> set[str] | None:
     return {match.group(1) for line in without_code_blocks(source.read(prd.file)) if (match := _AREA.match(line))}
 
 
-def _value(meta: dict, name: str) -> str:
+def _value(meta: FrontMatter, name: str) -> str:
     value = meta.get(name)
     return value.strip() if isinstance(value, str) else ""
 
 
-def _check_idea(idea: Artifact, text: str, changes: dict | None, areas: set[str] | None) -> list[Finding]:
-    meta, lines = idea.meta, idea.meta_lines
+def _check_idea(
+    idea: Artifact, text: str, changes: dict[str, Artifact | None] | None, areas: set[str] | None
+) -> list[Finding]:
+    meta, lines = idea.meta or {}, idea.meta_lines
 
     def finding(field: str, message: str, line: int | None = None) -> Finding:
         return Finding(CHECK, "error", idea.file, line or lines.get(field, lines.get("status", 1)), message)
@@ -71,22 +73,37 @@ def _check_idea(idea: Artifact, text: str, changes: dict | None, areas: set[str]
         elif status in ("planned", "done", "declined"):
             assessment = section(text, "Assessment")
             if assessment is None or assessment.is_empty():
-                findings.append(finding("verdict", f"the idea is `{status}` with no `verdict` and an empty Assessment; "
-                                                   f"a skipped verdict is explained there"))
+                findings.append(
+                    finding(
+                        "verdict",
+                        f"the idea is `{status}` with no `verdict` and an empty Assessment; "
+                        f"a skipped verdict is explained there",
+                    )
+                )
     if status == "declined":
         outcome = section(text, "Outcome")
         if outcome is None or outcome.is_empty():
-            findings.append(finding("status", "the idea is `declined` and its Outcome does not say why",
-                                    outcome.line if outcome else None))
+            findings.append(
+                finding(
+                    "status",
+                    "the idea is `declined` and its Outcome does not say why",
+                    outcome.line if outcome else None,
+                )
+            )
     change = _value(meta, "change")
     if change and CHANGE_ID.fullmatch(change) and changes is not None:
         if change not in changes:
             findings.append(finding("change", f"`change` names `{change}`, which is not a change, open or archived"))
-        elif status == "done" and changes[change] is not None:
-            change_status = _value(changes[change].meta or {}, "status")
+        elif status == "done" and (plan := changes[change]) is not None:
+            change_status = _value(plan.meta or {}, "status")
             if change_status != "closed":
-                findings.append(finding("change", f"the idea is `done` but its change `{change}` is "
-                                                  f"`{change_status or 'without a status'}`, not `closed`"))
+                findings.append(
+                    finding(
+                        "change",
+                        f"the idea is `done` but its change `{change}` is "
+                        f"`{change_status or 'without a status'}`, not `closed`",
+                    )
+                )
     prd = _value(meta, "prd")
     if prd and areas is not None and re.fullmatch(r"PRD-[a-z0-9]+(?:-[a-z0-9]+)*", prd) and prd not in areas:
         findings.append(finding("prd", f"`prd` names `{prd}`, which is not an area of the PRD"))

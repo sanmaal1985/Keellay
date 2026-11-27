@@ -25,7 +25,12 @@ classifiers = [
 keellay = "keellay.cli:main"
 
 [dependency-groups]
-dev = ["pytest"]
+dev = [
+    "mypy==2.4.1",
+    "pytest",
+    "ruff==0.17.6",
+    "types-pyyaml==6.0.12.20261122",
+]
 
 [tool.hatch.build.targets.wheel]
 packages = ["src/keellay"]
@@ -39,3 +44,30 @@ include = ["src", "method", "tests", "README.md", "LICENSE"]
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]
+
+# ruff, mypy and the PyYAML stubs are pinned above, so a new release cannot fail CI on code that has not changed.
+[tool.ruff]
+line-length = 120
+target-version = "py311"
+src = ["src", "tests"]
+extend-include = [".github/scripts/*.py"]
+
+[tool.ruff.lint]
+# pycodestyle, pyflakes, import order, bugbear, pyupgrade, simplify, pathlib, ruff's own, comprehensions,
+# misc, returns.
+select = ["E", "W", "F", "I", "B", "UP", "SIM", "PTH", "RUF", "C4", "PIE", "RET"]
+
+[tool.mypy]
+strict = true
+python_version = "3.11"
+files = ["src", "tests", ".github/scripts"]
+mypy_path = "src"
+
+# Test functions and their helpers need no annotations: pytest calls them with fixtures, and annotating every one adds
+# little. Their bodies are still checked. Any code in `tests` may call an untyped helper, an annotated test too.
+# `tests` is a package (its empty `__init__.py`), so this one pattern covers every test file, a new one included.
+[[tool.mypy.overrides]]
+module = ["tests.*"]
+disallow_untyped_defs = false
+disallow_incomplete_defs = false
+disallow_untyped_calls = false

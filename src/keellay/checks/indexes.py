@@ -39,8 +39,9 @@ RULES = {
     "specs": IndexRule("spec", False, None),
     "adr": IndexRule("adr", False, {"In force": ("accepted",), "Replaced": ("superseded",)}),
     "lessons": IndexRule("lesson", False, {"Active": ("active",), "Mechanized": ("mechanized",)}),
-    "product": IndexRule("idea", False, {"Ideas, open": ("new", "assessed", "planned"),
-                                         "Ideas, closed": ("done", "declined")}),
+    "product": IndexRule(
+        "idea", False, {"Ideas, open": ("new", "assessed", "planned"), "Ideas, closed": ("done", "declined")}
+    ),
 }
 
 
@@ -61,14 +62,22 @@ def _status(artifact: Artifact) -> str | None:
     return status if isinstance(status, str) else None
 
 
-def _check_index(folder: str, source: Source, rule: IndexRule, items: list[Artifact],
-                 every: list[Artifact]) -> list[Finding]:
+def _check_index(
+    folder: str, source: Source, rule: IndexRule, items: list[Artifact], every: list[Artifact]
+) -> list[Finding]:
     index = prefix_of(folder) + INDEX
     expected = [item for item in items if rule.tables is None or _status(item) in _all_statuses(rule)]
     if not source.is_file(index):
         if expected:
-            return [Finding(CHECK, "error", index, None, f"the index is missing; it must list {len(expected)} "
-                                                         f"{rule.kind} file(s)")]
+            return [
+                Finding(
+                    CHECK,
+                    "error",
+                    index,
+                    None,
+                    f"the index is missing; it must list {len(expected)} {rule.kind} file(s)",
+                )
+            ]
         return []
 
     def finding(line: int | None, message: str) -> Finding:
@@ -76,7 +85,8 @@ def _check_index(folder: str, source: Source, rule: IndexRule, items: list[Artif
 
     by_file = {item.file: item for item in items}
     other_files = {artifact.file for artifact in every if artifact.kind == rule.kind} - set(by_file)
-    findings, listed = [], {}
+    findings: list[Finding] = []
+    listed: dict[str, int] = {}
     for table in _tables(source.read(index)):
         statuses = _statuses_for(rule, table.label)
         if rule.tables is not None and statuses is None:
@@ -109,6 +119,8 @@ def _check_index(folder: str, source: Source, rule: IndexRule, items: list[Artif
 
 
 def _all_statuses(rule: IndexRule) -> set[str]:
+    if rule.tables is None:
+        return set()
     return {status for statuses in rule.tables.values() for status in statuses}
 
 

@@ -6,8 +6,8 @@ from pathlib import Path
 
 import pytest
 
-from conftest import CONSTITUTION, add_constitution
 from keellay.cli import EXIT_CONFIG_ERROR, EXIT_FINDINGS, main
+from tests.helpers import CONSTITUTION, add_constitution
 
 
 def run(capsys, *argv):
@@ -58,36 +58,49 @@ def test_broken_link_is_reported_as_an_error(capsys, project):
     code, out = run(capsys, "check")
     assert code == EXIT_FINDINGS == 1
     assert out["status"] == "failed"
-    assert out["findings"] == [{"check": "links", "severity": "error", "file": "docs/adr/README.md", "line": 3,
-                                "message": "link to A0009-missing.md points to nothing"}]
+    assert out["findings"] == [
+        {
+            "check": "links",
+            "severity": "error",
+            "file": "docs/adr/README.md",
+            "line": 3,
+            "message": "link to A0009-missing.md points to nothing",
+        }
+    ]
 
 
 # REQ-check-006
 
 
-@pytest.mark.parametrize("text", [
-    "```markdown\n[plan](C0007-x/plan.md)\n```\n",
-    "~~~\n[plan](C0007-x/plan.md)\n~~~\n",
-    "  ```\n  [plan](C0007-x/plan.md)\n  ```\n",
-    "See `[plan](C0007-x/plan.md)` in the format.\n",
-    "[site](https://example.com/missing) and [mail](mailto:someone@example.com)\n",
-    "[here](#requirements)\n",
-    "[outside](../../../other-repo/file.md)\n",
-])
+@pytest.mark.parametrize(
+    "text",
+    [
+        "```markdown\n[plan](C0007-x/plan.md)\n```\n",
+        "~~~\n[plan](C0007-x/plan.md)\n~~~\n",
+        "  ```\n  [plan](C0007-x/plan.md)\n  ```\n",
+        "See `[plan](C0007-x/plan.md)` in the format.\n",
+        "[site](https://example.com/missing) and [mail](mailto:someone@example.com)\n",
+        "[here](#requirements)\n",
+        "[outside](../../../other-repo/file.md)\n",
+    ],
+)
 def test_links_that_are_not_checked(capsys, project, text):
     write(project, "docs/changes/README.md", text)
     code, out = run(capsys, "check")
     assert (code, out["findings"]) == (0, [])
 
 
-@pytest.mark.parametrize("text", [
-    "[plan](C0007-x/plan.md)\n",
-    "![diagram](img/flow.png)\n",
-    "[plan](<C0007 x/plan.md>)\n",
-    "[plan](C0007-x/plan.md \"title\")\n",
-    "[plan]: C0007-x/plan.md\n",
-    "```\n[ok](README.md)\n```\n[plan](C0007-x/plan.md)\n",
-])
+@pytest.mark.parametrize(
+    "text",
+    [
+        "[plan](C0007-x/plan.md)\n",
+        "![diagram](img/flow.png)\n",
+        "[plan](<C0007 x/plan.md>)\n",
+        '[plan](C0007-x/plan.md "title")\n',
+        "[plan]: C0007-x/plan.md\n",
+        "```\n[ok](README.md)\n```\n[plan](C0007-x/plan.md)\n",
+    ],
+)
 def test_links_that_are_checked(capsys, project, text):
     write(project, "docs/changes/README.md", text)
     code, out = run(capsys, "check")
@@ -120,7 +133,7 @@ def test_files_outside_sections_and_extra_paths_are_not_read(capsys, project):
 def test_a_section_mapped_elsewhere_is_read_there(capsys, project):
     write(project, ".keellay/config.toml", '[sections]\nadr = "decisions"\n')
     write(project, "decisions/README.md", "[missing](0001-x.md)\n")
-    code, out = run(capsys, "check")
+    _, out = run(capsys, "check")
     assert [f["file"] for f in out["findings"]] == ["decisions/README.md"]
 
 
@@ -149,7 +162,7 @@ def test_staged_treats_unstaged_files_as_absent(capsys, project):
     write(project, "docs/adr/README.md", "[A0001](A0001-x.md)\n")
     git_add(project, "docs/adr/README.md")
     write(project, "docs/adr/A0001-x.md", "# A0001, not staged\n")
-    code, out = run(capsys, "check", "--staged")
+    code, _out = run(capsys, "check", "--staged")
     assert code == 1
 
 
@@ -164,12 +177,15 @@ def test_staged_outside_git_is_an_error(capsys, tmp_path, monkeypatch):
 # REQ-check-008
 
 
-@pytest.mark.parametrize("config, named", [
-    ('[sections]\ntasks = "docs/tasks"\n', "tasks"),
-    ('level = "medium"\n', "medium"),
-    ('[check]\nlinks = "method"\n', "links"),
-    ('[check]\nlinks = [1]\n', "links"),
-])
+@pytest.mark.parametrize(
+    "config, named",
+    [
+        ('[sections]\ntasks = "docs/tasks"\n', "tasks"),
+        ('level = "medium"\n', "medium"),
+        ('[check]\nlinks = "method"\n', "links"),
+        ("[check]\nlinks = [1]\n", "links"),
+    ],
+)
 def test_invalid_config(capsys, project, config, named):
     write(project, ".keellay/config.toml", config)
     code, out = run(capsys, "check")

@@ -6,6 +6,7 @@ commit, and returns findings; the command reports them as one JSON object.
 
 import posixpath
 from dataclasses import asdict, dataclass
+from typing import Any
 
 from keellay.checks.source import Source
 from keellay.paths import CONFIG_FILE, ConfigError, Project
@@ -21,11 +22,11 @@ class Finding:
     line: int | None
     message: str
 
-    def to_json(self) -> dict:
+    def to_json(self) -> dict[str, Any]:
         return asdict(self)
 
 
-def check_settings(project: Project) -> dict:
+def check_settings(project: Project) -> dict[str, list[str]]:
     """The `[check]` table of the config, validated; a bad value is a config error, not a finding."""
     settings = project.config.get("check", {})
     if not isinstance(settings, dict):
@@ -39,8 +40,21 @@ def check_settings(project: Project) -> dict:
 
 def run_checks(project: Project, source: Source) -> list[Finding]:
     # Imported here: each check module imports `Finding` from this package.
-    from keellay.checks import (adr, artifacts, constitution, deltas, front_matter, ideas, indexes, lessons, links,
-                                numbers, phases, prd, requirements)
+    from keellay.checks import (
+        adr,
+        artifacts,
+        constitution,
+        deltas,
+        front_matter,
+        ideas,
+        indexes,
+        lessons,
+        links,
+        numbers,
+        phases,
+        prd,
+        requirements,
+    )
 
     settings = check_settings(project)
     found = artifacts.find(project, source)

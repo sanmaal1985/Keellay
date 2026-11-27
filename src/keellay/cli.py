@@ -3,10 +3,11 @@
 import argparse
 import json
 import sys
+from typing import Any
 
 from keellay import __version__
 from keellay.checks import run_checks
-from keellay.checks.source import StagedFiles, WorkingTree, is_git_repository
+from keellay.checks.source import Source, StagedFiles, WorkingTree, is_git_repository
 from keellay.method_files import method_dir
 from keellay.paths import CONFIG_FILE, ConfigError, find_root, load_project
 
@@ -21,7 +22,7 @@ PLANNED = {
 }
 
 
-def _emit(payload: dict) -> None:
+def _emit(payload: dict[str, Any]) -> None:
     # ASCII with \u escapes: the console's code page cannot garble or reject a file name, and JSON parsers decode it.
     json.dump(payload, sys.stdout, ensure_ascii=True)
     sys.stdout.write("\n")
@@ -29,8 +30,9 @@ def _emit(payload: dict) -> None:
 
 def _info() -> int:
     path, bundled = method_dir()
-    _emit({"command": "info", "status": "ok", "version": __version__, "method_dir": str(path),
-           "method_bundled": bundled})
+    _emit(
+        {"command": "info", "status": "ok", "version": __version__, "method_dir": str(path), "method_bundled": bundled}
+    )
     return EXIT_OK
 
 
@@ -44,8 +46,15 @@ def _paths() -> int:
     for name, section in project.sections.items():
         resolved = section.resolve(project.root)
         sections[name] = {"path": section.path, "exists": resolved is not None and resolved.exists()}
-    _emit({"command": "paths", "status": "ok", "root": project.root.as_posix(), "level": project.level,
-           "sections": sections})
+    _emit(
+        {
+            "command": "paths",
+            "status": "ok",
+            "root": project.root.as_posix(),
+            "level": project.level,
+            "sections": sections,
+        }
+    )
     return EXIT_OK
 
 
@@ -54,6 +63,7 @@ def _check(staged: bool) -> int:
         _emit({"command": "check", "status": "error", "message": message})
         return EXIT_CONFIG_ERROR
 
+    source: Source
     try:
         if staged:
             root = find_root()
@@ -71,8 +81,13 @@ def _check(staged: bool) -> int:
     except RuntimeError as problem:  # git failed while reading the index
         return error(str(problem))
     failed = any(finding.severity == "error" for finding in findings)
-    _emit({"command": "check", "status": "failed" if failed else "ok",
-           "findings": [finding.to_json() for finding in findings]})
+    _emit(
+        {
+            "command": "check",
+            "status": "failed" if failed else "ok",
+            "findings": [finding.to_json() for finding in findings],
+        }
+    )
     return EXIT_FINDINGS if failed else EXIT_OK
 
 

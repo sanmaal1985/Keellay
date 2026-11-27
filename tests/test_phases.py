@@ -3,6 +3,7 @@
 import json
 import subprocess
 from pathlib import Path
+from typing import Any
 
 import pytest
 
@@ -43,7 +44,7 @@ def project(tmp_path):
     return tmp_path
 
 
-def phases_findings(out: dict) -> list[dict]:
+def phases_findings(out: dict[str, Any]) -> list[dict[str, Any]]:
     return [finding for finding in out["findings"] if finding["check"] == "phases"]
 
 
@@ -57,9 +58,12 @@ def test_phase_without_done_when(capsys, monkeypatch, project):
 
 
 def test_unknown_role_and_an_instance(capsys, monkeypatch, project):
-    write(project, "docs/changes/C0007-a/plan.md",
-          plan("C0007-a", phase(1, role="tester"), phase(2, role="developer-flutter", depends="1")))
-    code, out = run_check(project, capsys, monkeypatch)
+    write(
+        project,
+        "docs/changes/C0007-a/plan.md",
+        plan("C0007-a", phase(1, role="tester"), phase(2, role="developer-flutter", depends="1")),
+    )
+    _, out = run_check(project, capsys, monkeypatch)
     [finding] = phases_findings(out)
     assert "`tester`" in finding["message"]
     assert "developer-flutter" not in finding["message"]
@@ -67,14 +71,14 @@ def test_unknown_role_and_an_instance(capsys, monkeypatch, project):
 
 def test_archived_plan(capsys, monkeypatch, project):
     write(project, "docs/changes/archive/C0007-a/plan.md", plan("C0007-a", phase(1, done=None), status="closed"))
-    code, out = run_check(project, capsys, monkeypatch)
+    _, out = run_check(project, capsys, monkeypatch)
     assert phases_findings(out) == []
 
 
 def test_plan_without_phases(capsys, monkeypatch, project):
     write(project, "docs/changes/C0007-a/plan.md", plan("C0007-a", status="draft"))
     write(project, "docs/changes/C0008-b/plan.md", plan("C0008-b", status="approved"))
-    code, out = run_check(project, capsys, monkeypatch)
+    _, out = run_check(project, capsys, monkeypatch)
     [finding] = phases_findings(out)
     assert finding["file"] == "docs/changes/C0008-b/plan.md"
     assert finding["line"] == 11  # the `## Phases` heading
@@ -82,9 +86,12 @@ def test_plan_without_phases(capsys, monkeypatch, project):
 
 
 def test_plan_without_a_phases_section(capsys, monkeypatch, project):
-    write(project, "docs/changes/C0007-a/plan.md",
-          "---\nid: C0007-a\ntitle: T\npath: change\nstatus: in-progress\napproved: 2026-11-21\n---\n\n# T\n")
-    code, out = run_check(project, capsys, monkeypatch)
+    write(
+        project,
+        "docs/changes/C0007-a/plan.md",
+        "---\nid: C0007-a\ntitle: T\npath: change\nstatus: in-progress\napproved: 2026-11-21\n---\n\n# T\n",
+    )
+    _, out = run_check(project, capsys, monkeypatch)
     [finding] = phases_findings(out)
     assert finding["line"] == 5
     assert "no `## Phases` section" in finding["message"]
@@ -92,46 +99,63 @@ def test_plan_without_a_phases_section(capsys, monkeypatch, project):
 
 def test_depends_on_a_missing_phase(capsys, monkeypatch, project):
     write(project, "docs/changes/C0007-a/plan.md", plan("C0007-a", phase(1), phase(2, depends="1, 3")))
-    code, out = run_check(project, capsys, monkeypatch)
+    _, out = run_check(project, capsys, monkeypatch)
     [finding] = phases_findings(out)
     assert "phase 2 depends on phase 3" in finding["message"]
 
 
 def test_depends_on_with_an_artifact_id_reads_only_phase_numbers(capsys, monkeypatch, project):
-    write(project, "docs/changes/C0007-a/plan.md",
-          plan("C0007-a", phase(1), phase(2, depends="1 (after C0007)"), phase(3, depends="4, after A0012")))
-    code, out = run_check(project, capsys, monkeypatch)
+    write(
+        project,
+        "docs/changes/C0007-a/plan.md",
+        plan("C0007-a", phase(1), phase(2, depends="1 (after C0007)"), phase(3, depends="4, after A0012")),
+    )
+    _, out = run_check(project, capsys, monkeypatch)
     [finding] = phases_findings(out)
     assert "phase 3 depends on phase 4," in finding["message"]
 
 
 def test_depends_on_with_a_date_reads_only_phase_numbers(capsys, monkeypatch, project):
-    write(project, "docs/changes/C0007-a/plan.md",
-          plan("C0007-a", phase(1), phase(2, depends="1 (after the 2026-11-23 sync)"),
-               phase(3, depends="5, not before 2026-12-01")))
-    code, out = run_check(project, capsys, monkeypatch)
+    write(
+        project,
+        "docs/changes/C0007-a/plan.md",
+        plan(
+            "C0007-a",
+            phase(1),
+            phase(2, depends="1 (after the 2026-11-23 sync)"),
+            phase(3, depends="5, not before 2026-12-01"),
+        ),
+    )
+    _, out = run_check(project, capsys, monkeypatch)
     [finding] = phases_findings(out)
     assert "phase 3 depends on phase 5," in finding["message"]
 
 
 def test_complete_plan_has_no_finding(capsys, monkeypatch, project):
-    write(project, "docs/changes/C0007-a/plan.md",
-          plan("C0007-a", phase(1, role="architect"), phase(2, role="`product-owner`", depends="1"),
-               phase(3, role="manager", depends="1, 2")))
-    code, out = run_check(project, capsys, monkeypatch)
+    write(
+        project,
+        "docs/changes/C0007-a/plan.md",
+        plan(
+            "C0007-a",
+            phase(1, role="architect"),
+            phase(2, role="`product-owner`", depends="1"),
+            phase(3, role="manager", depends="1, 2"),
+        ),
+    )
+    _, out = run_check(project, capsys, monkeypatch)
     assert phases_findings(out) == []
 
 
 def test_fields_in_a_code_block_or_nested_do_not_count(capsys, monkeypatch, project):
     nested = "### 1. Phase 1\n\n- Steps:\n  - Role: developer\n\n```markdown\n- Depends on: —\n```\n\n"
     write(project, "docs/changes/C0007-a/plan.md", plan("C0007-a", nested))
-    code, out = run_check(project, capsys, monkeypatch)
+    _, out = run_check(project, capsys, monkeypatch)
     messages = sorted(finding["message"] for finding in phases_findings(out))
     assert len(messages) == 3
 
 
 def test_core_role_with_an_empty_qualifier_is_unknown(capsys, monkeypatch, project):
     write(project, "docs/changes/C0007-a/plan.md", plan("C0007-a", phase(1, role="developer-")))
-    code, out = run_check(project, capsys, monkeypatch)
+    _, out = run_check(project, capsys, monkeypatch)
     [finding] = phases_findings(out)
     assert "`developer-`" in finding["message"]

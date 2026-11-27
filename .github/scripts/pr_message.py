@@ -36,6 +36,7 @@ import subprocess
 import sys
 import textwrap
 from dataclasses import dataclass, field
+from typing import Any
 
 TYPES = ("feat", "fix", "docs", "ci", "chore", "refactor", "test")
 BRANCH = re.compile(r"^(?P<type>[a-z]+)/(?P<rest>.+)$")
@@ -43,35 +44,40 @@ TITLE = re.compile(r"^(?P<type>[a-z]+): \S")
 # Each alternative matches a whole line in the shape of a trailer, so that prose about these lines (and a wrapped
 # line that happens to start with their words) is not taken for them: this check blocks merges.
 ATTRIBUTION = re.compile(
-    r"^\s*Co-Authored-By:\s*Claude\b[^<]*<[^>]*>\s*$"              # Co-Authored-By: Claude Opus 5.5 <...>
-    r"|^\s*Co-Authored-By:[^<]*<[^>]*@anthropic\.com>\s*$"         # any co-author with an Anthropic address
-    r"|^\s*Claude-Session:\s*https?://\S+\s*$"                     # the session trailer of cloud sessions
+    r"^\s*Co-Authored-By:\s*Claude\b[^<]*<[^>]*>\s*$"  # Co-Authored-By: Claude Opus 5.5 <...>
+    r"|^\s*Co-Authored-By:[^<]*<[^>]*@anthropic\.com>\s*$"  # any co-author with an Anthropic address
+    r"|^\s*Claude-Session:\s*https?://\S+\s*$"  # the session trailer of cloud sessions
     r"|^\W*Generated with \[?Claude Code\]?(?:\([^)\s]*\))?\s*$",  # with or without the emoji and the link
-    re.IGNORECASE)
+    re.IGNORECASE,
+)
 CO_AUTHOR = re.compile(r"^\s*Co-Authored-By:[^<]*<([^>]*)>\s*$", re.IGNORECASE)
 ADDRESS = re.compile(r"<[^>]*>")
 NOREPLY = re.compile(r"^[^@\s]+@users\.noreply\.github\.com$", re.IGNORECASE)
 GITHUB_COMMITTER = "noreply@github.com"  # the committer of commits made on github.com
 # GitHub accounts of AI coding agents: their noreply address passes NOREPLY, but as a commit author they become a
 # Co-authored-by line at the squash merge. Logins as GitHub lists them; other bots (dependabot[bot]) are let in.
-AI_ACCOUNTS = frozenset({
-    "claude[bot]",
-    "copilot",  # the Copilot coding agent's commits use the login Copilot (account copilot-swe-agent[bot])
-    "copilot-swe-agent[bot]",
-    "chatgpt-codex-connector[bot]",
-    "openai-codex[bot]",
-    "cursor[bot]",
-    "devin-ai-integration[bot]",
-    "google-labs-jules[bot]",
-    "gemini-code-assist[bot]",
-})
+AI_ACCOUNTS = frozenset(
+    {
+        "claude[bot]",
+        "copilot",  # the Copilot coding agent's commits use the login Copilot (account copilot-swe-agent[bot])
+        "copilot-swe-agent[bot]",
+        "chatgpt-codex-connector[bot]",
+        "openai-codex[bot]",
+        "cursor[bot]",
+        "devin-ai-integration[bot]",
+        "google-labs-jules[bot]",
+        "gemini-code-assist[bot]",
+    }
+)
 MAX_COMMITS = 250  # GitHub lists at most this many commits of a pull request
-FIX_COMMITS = ("rewrite these commits before the merge, on top of the target repository's main (origin/main, or "
-               "upstream/main in a fork): set user.email to your GitHub noreply address "
-               "(<id>+<login>@users.noreply.github.com); remove the attribution lines with "
-               "git rebase -i origin/main (reword); reset the author with "
-               "git rebase origin/main --exec \"git commit --amend --no-edit --reset-author\"; "
-               "then push the branch with --force-with-lease")
+FIX_COMMITS = (
+    "rewrite these commits before the merge, on top of the target repository's main (origin/main, or "
+    "upstream/main in a fork): set user.email to your GitHub noreply address "
+    "(<id>+<login>@users.noreply.github.com); remove the attribution lines with "
+    "git rebase -i origin/main (reword); reset the author with "
+    'git rebase origin/main --exec "git commit --amend --no-edit --reset-author"; '
+    "then push the branch with --force-with-lease"
+)
 TRIPLE = ("Current", "Expected", "Unchanged")
 WIDTH = 72  # GitHub wraps the squash commit body at this width
 LIST_ITEM = re.compile(r"^\s*(?:[-*+]|\d+[.)])\s+")
@@ -131,8 +137,14 @@ def check_commits(commits: list[Commit]) -> list[str]:
         lines = [ADDRESS.sub("<...>", line.strip()) for line in commit.message.splitlines() if _is_attribution(line)]
         if lines:
             problems.append("AI attribution in the message: " + "; ".join(f"'{line}'" for line in lines))
-        problems += [problem for problem in (_identity_problem(commit.author_email, "author"),
-                                             _identity_problem(commit.committer_email, "committer", True)) if problem]
+        problems += [
+            problem
+            for problem in (
+                _identity_problem(commit.author_email, "author"),
+                _identity_problem(commit.committer_email, "committer", True),
+            )
+            if problem
+        ]
         if problems:
             subject = commit.message.strip().partition("\n")[0]
             errors.append(f"commit {commit.sha[:7]} '{subject}': " + "; ".join(problems))
@@ -140,8 +152,11 @@ def check_commits(commits: list[Commit]) -> list[str]:
         errors.append(FIX_COMMITS)
     if len(commits) >= MAX_COMMITS:
         # GitHub returns no more than MAX_COMMITS, so the ones after them cannot be read: fail rather than pass unseen.
-        errors.insert(0, f"the pull request has {MAX_COMMITS} or more commits, and GitHub lists only {MAX_COMMITS}; "
-                         "the rest cannot be checked: split the pull request or squash its commits")
+        errors.insert(
+            0,
+            f"the pull request has {MAX_COMMITS} or more commits, and GitHub lists only {MAX_COMMITS}; "
+            "the rest cannot be checked: split the pull request or squash its commits",
+        )
     return errors
 
 
@@ -156,7 +171,7 @@ def _topic(rest: str) -> str:
 
 def _valid_title(title: str, branch_type: str) -> bool:
     match = TITLE.match(title)
-    return bool(match) and match["type"] == branch_type
+    return match is not None and match["type"] == branch_type
 
 
 def _without_attribution(text: str) -> str:
@@ -189,17 +204,22 @@ def _wrap(text: str) -> str:
         if stripped.startswith(("```", "~~~")):
             in_code = not in_code
         item = LIST_ITEM.match(line)
-        if (in_code or stripped.startswith(("```", "~~~", "|", "#")) or len(line) <= WIDTH
-                or (line.startswith(("    ", "\t")) and not item)):
+        if (
+            in_code
+            or stripped.startswith(("```", "~~~", "|", "#"))
+            or len(line) <= WIDTH
+            or (line.startswith(("    ", "\t")) and not item)
+        ):
             lines.append(line)
             continue
         if item:
-            first, rest, content = item.group(0), " " * len(item.group(0)), line[item.end():]
+            first, rest, content = item.group(0), " " * len(item.group(0)), line[item.end() :]
         else:
-            first = rest = line[:len(line) - len(stripped)]
+            first = rest = line[: len(line) - len(stripped)]
             content = stripped
-        lines += textwrap.wrap(content, WIDTH, initial_indent=first, subsequent_indent=rest,
-                               break_long_words=False, break_on_hyphens=False)
+        lines += textwrap.wrap(
+            content, WIDTH, initial_indent=first, subsequent_indent=rest, break_long_words=False, break_on_hyphens=False
+        )
     return "\n".join(lines)
 
 
@@ -234,15 +254,17 @@ def fix_message(title: str, body: str | None, branch: str, commit_messages: list
         result.body = new_body
 
     if branch_type == "fix":
-        missing = [name for name in TRIPLE
-                   if not re.search(rf"^\s*{name}:\s*\S", result.body, re.MULTILINE)]
+        missing = [name for name in TRIPLE if not re.search(rf"^\s*{name}:\s*\S", result.body, re.MULTILINE)]
         if missing:
-            result.errors.append("a fix needs the lines " + ", ".join(f"'{name}: ...'" for name in missing)
-                                 + " in the PR description (method/formats/bugfix.md)")
+            result.errors.append(
+                "a fix needs the lines "
+                + ", ".join(f"'{name}: ...'" for name in missing)
+                + " in the PR description (method/formats/bugfix.md)"
+            )
     return result
 
 
-def changed_meanwhile(read: dict, latest: dict) -> bool:
+def changed_meanwhile(read: dict[str, Any], latest: dict[str, Any]) -> bool:
     """True when the PR's title or description changed after this run read it.
 
     Each edit starts its own run, and runs overlap: a run that read the PR before an edit must not write over it, or
@@ -259,8 +281,11 @@ def main() -> int:
     repo, number = os.environ["GITHUB_REPOSITORY"], os.environ["PR_NUMBER"]
     pr = json.loads(_gh("api", f"repos/{repo}/pulls/{number}"))
     commits = json.loads(_gh("api", "--paginate", "--slurp", f"repos/{repo}/pulls/{number}/commits"))
-    commits = [Commit(c["sha"], c["commit"]["message"], c["commit"]["author"]["email"],
-                      c["commit"]["committer"]["email"]) for page in commits for c in page]
+    commits = [
+        Commit(c["sha"], c["commit"]["message"], c["commit"]["author"]["email"], c["commit"]["committer"]["email"])
+        for page in commits
+        for c in page
+    ]
 
     # On every branch, also outside the naming convention, where fix_message only removes attribution lines.
     commit_errors = check_commits(commits)
@@ -285,8 +310,9 @@ def main() -> int:
             # A fork's token cannot edit the PR; say what to change instead, only for what would change.
             todo = [f"set the title to '{result.title}'"] if "title" in changes else []
             if "body" in changes:
-                todo.append("set the description to the text below:\n" + result.body if result.body
-                            else "clear the description")
+                todo.append(
+                    "set the description to the text below:\n" + result.body if result.body else "clear the description"
+                )
             result.errors.append("; ".join(todo))
         else:
             _gh("api", "-X", "PATCH", f"repos/{repo}/pulls/{number}", "--input", "-", stdin=json.dumps(changes))
