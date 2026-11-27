@@ -25,5 +25,5 @@ Verified by: `tests/test_cli.py::test_info_finds_the_method`,
 
 - GIVEN a project whose root path contains `ё`
 - WHEN `keellay paths` runs
-- THEN standard output contains only ASCII characters, with `ё` written as `ё`
+- THEN standard output contains only ASCII characters, with `ё` written as `\u0451`
 - AND the parsed `root` contains `ё`

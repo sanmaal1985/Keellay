@@ -177,8 +177,9 @@ missing at its resolved path, a constitution without one of the sections `Projec
 
 The CLI shall report, as check `deltas`, a requirement under MODIFIED or REMOVED of an open change's delta whose ID is
 not in the living spec of the delta's capability, a requirement under ADDED whose ID is already in that spec, a delta
-for a capability without a spec that has MODIFIED or REMOVED requirements or no `prefix`, and a requirement ID touched
-by the deltas of two open changes, reported for both.
+for a capability without a spec that has MODIFIED or REMOVED requirements or no `prefix`, a `##` section of a delta
+other than `ADDED`, `MODIFIED`, `REMOVED` and `Purpose`, and a requirement ID touched by the deltas of two open
+changes, reported for both.
 
 #### Scenario: modified requirement that does not exist
 
@@ -191,6 +192,12 @@ by the deltas of two open changes, reported for both.
 - GIVEN two open changes whose deltas both have `REQ-check-003` under MODIFIED
 - WHEN `keellay check` runs
 - THEN there is a `deltas` error that names `REQ-check-003` and both changes
+
+#### Scenario: unknown section
+
+- GIVEN an open change whose delta has a section `## Added`
+- WHEN `keellay check` runs
+- THEN there is a `deltas` error at that heading that names `## Added`
 
 #### Scenario: archived delta
 

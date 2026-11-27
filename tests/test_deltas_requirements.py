@@ -151,6 +151,29 @@ def test_specs_in_another_repository_are_not_checked_here(capsys, monkeypatch, p
     assert of(out, "deltas") == []
 
 
+def test_unknown_section(capsys, monkeypatch, project):
+    write(project, SPEC, spec(requirement("REQ-check-001")))
+    write(project, "docs/changes/C0001-x/delta/check.md",
+          delta({"Added": [requirement("REQ-check-002")], "ADDED": [requirement("REQ-check-003")]}))
+    code, out = run_check(project, capsys, monkeypatch)
+    [finding] = of(out, "deltas")
+    assert "`## Added`" in finding["message"] and finding["line"] == 7  # the heading
+
+
+def test_purpose_section_of_a_new_capability_is_known(capsys, monkeypatch, project):
+    text = delta({"ADDED": [requirement("REQ-export-001")]}, capability="export", prefix="export")
+    write(project, "docs/changes/C0001-x/delta/export.md", text.replace("## ADDED", "## Purpose\n\nWhy.\n\n## ADDED"))
+    code, out = run_check(project, capsys, monkeypatch)
+    assert of(out, "deltas") == []
+
+
+def test_delta_without_front_matter_is_left_to_the_front_matter_check(capsys, monkeypatch, project):
+    write(project, SPEC, spec(requirement("REQ-check-001")))
+    write(project, "docs/changes/C0001-x/delta/Bad Name.md", "# Delta\n\n## MODIFIED\n\n" + requirement("REQ-check-9"))
+    code, out = run_check(project, capsys, monkeypatch)
+    assert of(out, "deltas") == [] and of(out, "front-matter")
+
+
 # REQ-check-016: requirements
 
 
@@ -212,6 +235,15 @@ def test_no_verified_by_at_strict(capsys, monkeypatch, project):
     code, out = run_check(project, capsys, monkeypatch)
     [finding] = of(out, "requirements")
     assert "`Verified by`" in finding["message"] and "strict" in finding["message"]
+
+
+def test_verified_by_after_the_scenarios(capsys, monkeypatch, project):
+    write(project, ".keellay/config.toml", 'level = "strict"\n')
+    write(project, "tests/test_a.py", "")
+    write(project, SPEC, spec(requirement("REQ-check-001") + "Verified by: `tests/test_a.py::test_x`\n\n"))
+    code, out = run_check(project, capsys, monkeypatch)
+    [finding] = of(out, "requirements")
+    assert "goes before the first scenario" in finding["message"] and finding["line"] == 22  # the Verified by line
 
 
 def test_wrapped_verified_by_with_existing_tests(capsys, monkeypatch, project):

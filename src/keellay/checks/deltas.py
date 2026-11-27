@@ -3,20 +3,26 @@ two open changes.
 
 A delta changes the spec `<specs>/<capability>.md`, the capability taken from its front matter or else its file name.
 MODIFIED and REMOVED name requirements the spec has; ADDED ones it does not have yet. A delta for a capability with no
-spec starts one, so it only adds and carries the spec's `prefix`. Archived deltas are merged history and are not
-checked. When the specs are in another repository, the deltas are there too and are checked there.
+spec starts one, so it only adds and carries the spec's `prefix`. A `##` section other than these and Purpose would
+hide its requirements from both checks, so it is reported. Archived deltas are merged history and are not checked, nor
+is a delta whose front matter cannot be read: `front-matter` reports it. When the specs are in another repository,
+the deltas are there too and are checked there.
 """
 
+import re
 from collections import defaultdict
 
 from keellay.checks import Finding
 from keellay.checks.artifacts import Artifact, section_path
+from keellay.checks.markdown import without_code_blocks
 from keellay.checks.requirements import parse
 from keellay.checks.source import Source
 from keellay.paths import Project
 
 CHECK = "deltas"
 TOUCHING = ("ADDED", "MODIFIED", "REMOVED")
+SECTIONS = TOUCHING + ("Purpose",)
+_SECTION = re.compile(r"^##\s+(.*?)\s*$")
 
 
 def check(project: Project, artifacts: list[Artifact], source: Source) -> list[Finding]:
@@ -26,13 +32,19 @@ def check(project: Project, artifacts: list[Artifact], source: Source) -> list[F
     findings: list[Finding] = []
     touched: dict[str, list[tuple[Artifact, int]]] = defaultdict(list)
     for delta in artifacts:
-        if delta.kind != "delta" or delta.archived:
+        if delta.kind != "delta" or delta.archived or delta.meta is None:
             continue
-        meta = delta.meta or {}
+        meta = delta.meta
         capability = meta.get("capability") or delta.name_id
         spec = specs.get(capability)
         in_spec = {requirement.id for requirement in parse(source.read(spec.file))} if spec else set()
-        for requirement in parse(source.read(delta.file)):
+        text = source.read(delta.file)
+        for number, line in enumerate(without_code_blocks(text), start=1):
+            section = _SECTION.match(line)
+            if section and section.group(1) not in SECTIONS:
+                findings.append(_finding(delta, number, f"section `## {section.group(1)}` is not one of "
+                                                        f"{', '.join(SECTIONS)}; its requirements are not read"))
+        for requirement in parse(text):
             if requirement.section not in TOUCHING:
                 continue
             touched[requirement.id].append((delta, requirement.line))
@@ -63,7 +75,8 @@ def check(project: Project, artifacts: list[Artifact], source: Source) -> list[F
 
 
 def _change(delta: Artifact) -> str:
-    return (delta.folder or delta.file).rsplit("/", 1)[-1]
+    assert delta.folder is not None  # every delta is found in a change folder
+    return delta.folder.rsplit("/", 1)[-1]
 
 
 def _finding(artifact: Artifact, line: int | None, message: str) -> Finding:

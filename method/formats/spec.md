@@ -57,8 +57,9 @@ Verified by: `tests/session/test_expiry.py::test_inactive_session_ends`
 
 - **Scenarios:** at least one, as GIVEN (optional) / WHEN / THEN lines; AND continues the line above it. Each scenario
   should be checkable by a test.
-- **Verified by:** tests that check the requirement. Optional at level standard, required at strict; level light
-  has no living specs.
+- **Verified by:** tests that check the requirement, each in backticks as `<test file>::<test>`, on the line after
+  the statement and before the first scenario. Optional at level standard, required at strict; level light has no
+  living specs.
 
 ## Index: docs/specs/README.md
 

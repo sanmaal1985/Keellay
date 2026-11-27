@@ -113,6 +113,10 @@ def _verified_by(artifact: Artifact, requirement: Requirement, statement: list[t
                  source: Source) -> list[Finding]:
     start = next((index for index, (_, text) in enumerate(statement) if _VERIFIED_BY.match(text)), None)
     if start is None:
+        later = next((number for number, text in requirement.body if _VERIFIED_BY.match(text)), None)
+        if later is not None:
+            return [_finding(artifact, later, f"{requirement.id}: the `Verified by` line goes before the first "
+                                              f"scenario, after the statement")]
         return [_finding(artifact, requirement.line, f"{requirement.id} has no `Verified by` line, which level strict "
                                                      f"requires")]
     number = statement[start][0]
