@@ -74,6 +74,6 @@ What the system does now, one file per capability.
 
 ## Checked by
 
-`keellay check`: front matter; one index row per spec; IDs are unique and use the spec's prefix. Planned: IDs are not
-reused (compared with git history); every requirement has a statement with "shall" and at least one scenario; at
-strict, every requirement has a "Verified by" line pointing to an existing test.
+`keellay check`: front matter; one index row per spec; IDs are unique and use the spec's prefix; every requirement
+has a statement with "shall" and at least one scenario with a WHEN and a THEN line; at strict, every requirement has
+a "Verified by" line whose test files exist. Planned: IDs are not reused (compared with git history).

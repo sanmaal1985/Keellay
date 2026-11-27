@@ -12,7 +12,8 @@ The CLI shall print the result of every command as one JSON object on one line o
 `command` and `status`, in ASCII, with every other character written as a `\u` escape.
 
 Verified by: `tests/test_cli.py::test_info_finds_the_method`,
-`tests/test_cli.py::test_planned_commands_report_not_implemented`, `tests/test_cli.py::test_output_is_ascii_with_escapes`
+`tests/test_cli.py::test_planned_commands_report_not_implemented`,
+`tests/test_cli.py::test_output_is_ascii_with_escapes`
 
 #### Scenario: any command
 

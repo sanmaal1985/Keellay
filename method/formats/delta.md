@@ -70,6 +70,7 @@ implementing pull request (see File).
 
 ## Checked by
 
-`keellay check`: front matter. Planned: every MODIFIED and REMOVED ID exists in the living spec; every ADDED ID does
-not; no two open changes touch the same ID (reported when the second delta is written); the requirement rules from
+`keellay check`: front matter; in an open change's delta, every MODIFIED and REMOVED ID exists in the living spec and
+every ADDED ID does not; a delta for a capability without a spec only adds and has `prefix`; no two open changes
+touch the same ID (reported for both, as soon as the second delta is written); the requirement rules from
 [spec.md](spec.md) hold for ADDED and MODIFIED.

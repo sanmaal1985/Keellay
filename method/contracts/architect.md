@@ -95,8 +95,8 @@ Every hand-off goes through the manager.
 6. [instruction] Fixes made after the review at close that change a rule, a decision or more than wording get a
    re-review in a fresh context, limited to what changed and to whether the findings are closed; smaller fixes are
    listed in Close.
-7. [check] A requirement touched by two open changes is flagged when the second delta is written (`keellay check`,
-   planned: deltas).
+7. [check] A requirement touched by two open changes is flagged when the second delta is written (`keellay check`:
+   deltas).
 8. [check] An accepted ADR is not edited; a changed decision is a new ADR that supersedes it (`keellay check`,
    planned: ADRs).
 9. [instruction] A decision that matters after the change closes becomes an ADR; one that matters only inside the
