@@ -105,6 +105,15 @@ def test_depends_on_with_an_artifact_id_reads_only_phase_numbers(capsys, monkeyp
     assert "phase 3 depends on phase 4," in finding["message"]
 
 
+def test_depends_on_with_a_date_reads_only_phase_numbers(capsys, monkeypatch, project):
+    write(project, "docs/changes/C0007-a/plan.md",
+          plan("C0007-a", phase(1), phase(2, depends="1 (after the 2026-11-23 sync)"),
+               phase(3, depends="5, not before 2026-12-01")))
+    code, out = run_check(project, capsys, monkeypatch)
+    [finding] = phases_findings(out)
+    assert "phase 3 depends on phase 5," in finding["message"]
+
+
 def test_complete_plan_has_no_finding(capsys, monkeypatch, project):
     write(project, "docs/changes/C0007-a/plan.md",
           plan("C0007-a", phase(1, role="architect"), phase(2, role="`product-owner`", depends="1"),
