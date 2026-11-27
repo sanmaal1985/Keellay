@@ -108,7 +108,8 @@ does not name the lesson by its ID (`L0003`), which is where the owner's waiver 
 
 The CLI shall report, as check `adr`, an ADR whose `supersedes` names an ADR that does not name it back in
 `superseded-by`, an ADR whose `superseded-by` names an ADR that does not name it in `supersedes`, an ADR with status
-`superseded` and no `superseded-by`, and an ADR with a `superseded-by` whose status is not `superseded`.
+`superseded` and no `superseded-by`, an ADR with a `superseded-by` whose status is not `superseded`, and an ADR
+that names itself in `supersedes` or `superseded-by`.
 
 #### Scenario: one side of the link missing
 
@@ -121,6 +122,12 @@ The CLI shall report, as check `adr`, an ADR whose `supersedes` names an ADR tha
 - GIVEN ADR A0012 with `supersedes: [A0004, A0007]`, and ADRs A0004 and A0007 both `superseded` by A0012
 - WHEN `keellay check` runs
 - THEN there is no `adr` finding
+
+#### Scenario: ADR that supersedes itself
+
+- GIVEN an ADR `A0001` with `supersedes: A0001`
+- WHEN `keellay check` runs
+- THEN there is an `adr` error that says `A0001` names itself
 
 ### REQ-check-013: PRD areas
 
@@ -153,7 +160,8 @@ path, is not one the plan names, unless the `/` joins it to an ID the plan names
 
 Where the project has a constitution section, the CLI shall report, as check `constitution`, a constitution file
 missing at its resolved path, a constitution without one of the sections `Project`, `Owner`, `Read first` and
-`Rules`, and an `AGENTS.md` that is missing or does not link to the constitution.
+`Rules`, and an `AGENTS.md` that is missing or does not link to the constitution; where the constitution section is
+outside the project's root, the CLI shall check neither the constitution nor `AGENTS.md`.
 
 #### Scenario: missing section
 
@@ -173,13 +181,21 @@ missing at its resolved path, a constitution without one of the sections `Projec
 - WHEN `keellay check` runs
 - THEN there is no `constitution` finding
 
+#### Scenario: constitution in another repository
+
+- GIVEN `.keellay/config.toml` with `constitution = "../other/docs/constitution.md"` under
+  `[sections]`, and no `AGENTS.md`
+- WHEN `keellay check` runs
+- THEN there is no `constitution` finding
+
 ### REQ-check-015: Deltas against the spec
 
 The CLI shall report, as check `deltas`, a requirement under MODIFIED or REMOVED of an open change's delta whose ID is
 not in the living spec of the delta's capability, a requirement under ADDED whose ID is already in that spec, a delta
 for a capability without a spec that has MODIFIED or REMOVED requirements or no `prefix`, a `##` section of a delta
 other than `ADDED`, `MODIFIED`, `REMOVED` and `Purpose`, and a requirement ID touched by the deltas of two open
-changes, reported for both.
+changes, reported for both; where the project's `specs` section is outside its root, the CLI shall not check
+deltas.
 
 #### Scenario: modified requirement that does not exist
 
@@ -204,6 +220,13 @@ changes, reported for both.
 - GIVEN a delta in `docs/changes/archive/` whose ADDED requirement is now in the spec
 - WHEN `keellay check` runs
 - THEN there is no `deltas` finding for it
+
+#### Scenario: specs in another repository
+
+- GIVEN `.keellay/config.toml` with `specs = "../other/docs/specs"` under `[sections]`, and an
+  open change whose delta has `REQ-check-042` under MODIFIED
+- WHEN `keellay check` runs
+- THEN there is no `deltas` finding
 
 ### REQ-check-016: Requirements
 
