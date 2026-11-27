@@ -51,7 +51,7 @@ id: C0007-session-expiry
 title: Session expires after inactivity
 path: feature            # change | feature
 status: in-progress
-approved: 2026-11-20     # date of the owner's yes
+approved: 2026-11-20     # date of the owner's yes; may be left out until then
 ---
 
 # C0007 Session expires after inactivity
@@ -114,6 +114,7 @@ Decisions made during the change. One that will matter after the change closes b
 - **Who writes what:** the architect writes Intent, Scope and the delta and proposes the path; the developer cuts the
   change into phases; the architect and, for a change that serves a PRD area or an idea, the product owner review the
   phases before the owner approves the plan (see the responsibility table in `method/contracts/README.md`).
+- A front matter field set later (`approved`) may be left out until it has a value.
 - A `change`-path plan may have one phase and no Decisions section.
 - At level light no plan has a delta, since there are no living specs yet (see `method/levels.md`).
 
@@ -132,5 +133,6 @@ Open changes. Closed and dropped ones are in `archive/`.
 ## Checked by
 
 `keellay check`: front matter fields and values; status matches the index row; one index row per open change; no
-duplicate numbers. Planned: every phase has Role, Depends on and Done when; roles are known; the branch name matches
-an open change (level light: advice, standard: warning, strict: error).
+duplicate numbers; in an open change's plan, every phase has Role, Depends on and Done when, its role is a core role
+or an instance of one, its Depends on names phases the plan has, and a plan past `draft` has phases. Planned: the
+branch name matches an open change (level light: advice, standard: warning, strict: error).

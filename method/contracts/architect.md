@@ -83,8 +83,7 @@ Every hand-off goes through the manager.
 
 1. [instruction] The path follows the criteria in `levels.md`; the proposal names the criterion that decided it, and
    no plan is drafted before the owner confirms the path.
-2. [check] Every phase has Role, Depends on and Done when, and every role is a known one (`keellay check`, planned:
-   changes).
+2. [check] Every phase has Role, Depends on and Done when, and every role is a known one (`keellay check`: phases).
 3. [instruction] The review of the phases rejects a done-when that someone who did not do the work cannot verify, a
    phase that is not a vertical slice, and a cut that leaves part of the scope or the delta uncovered; it answers the
    developer's `[architect]` questions.
@@ -96,8 +95,8 @@ Every hand-off goes through the manager.
 6. [instruction] Fixes made after the review at close that change a rule, a decision or more than wording get a
    re-review in a fresh context, limited to what changed and to whether the findings are closed; smaller fixes are
    listed in Close.
-7. [check] A requirement touched by two open changes is flagged when the second delta is written (`keellay check`,
-   planned: deltas).
+7. [check] A requirement touched by two open changes is flagged when the second delta is written (`keellay check`:
+   deltas).
 8. [check] An accepted ADR is not edited; a changed decision is a new ADR that supersedes it (`keellay check`,
    planned: ADRs).
 9. [instruction] A decision that matters after the change closes becomes an ADR; one that matters only inside the

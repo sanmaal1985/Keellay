@@ -60,8 +60,8 @@ An area is one outcome the product commits to; it is the unit that changes and i
 - **Status:** `planned` (committed, not started; the owner's yes to the area), `in-progress` (an approved change
   serves it, or served it without reaching its Outcome yet; set by the architect), `delivered` (set by the product
   owner when the owner says yes to close a change that reached the area's Outcome, after the business check at review;
-  otherwise the area stays `in-progress`), or `dropped` (by the owner; kept in the file with the reason, so the ID is
-  not reused).
+  otherwise the area stays `in-progress`), or `dropped` (by the owner; kept in the file with its reason after the
+  status, `- Status: dropped — no demand`, so the ID is not reused). The status is the first word of the line.
 
 ## Rules
 
@@ -76,6 +76,7 @@ The PRD is listed in the product index, `docs/product/README.md` (see [idea.md](
 
 ## Checked by
 
-`keellay check`: front matter. Planned: every area heading has a unique `PRD-` ID; each area has Outcome, In / Out
-and Status, and Measure at levels standard and strict; area IDs referenced from changes and ideas exist; an area
-removed from the file is reported (it should be `dropped` instead).
+`keellay check`: front matter; every area heading under Areas is `### PRD-<topic>: <outcome>` with a unique ID; each
+area has Outcome, In / Out and a Status of the four, and Measure at levels standard and strict; area IDs named in open
+changes' plans and in ideas exist. Planned: an area removed from the file is reported (it should be `dropped`
+instead).

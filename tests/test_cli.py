@@ -1,4 +1,5 @@
 import json
+import subprocess
 from pathlib import Path
 
 import pytest
@@ -25,6 +26,17 @@ def test_info_finds_the_method(capsys):
     assert out["status"] == "ok"
     assert out["version"] == __version__
     assert Path(out["method_dir"], "README.md").is_file()
+
+
+def test_output_is_ascii_with_escapes(capsys, monkeypatch, tmp_path):
+    root = tmp_path / "проект-ё"
+    root.mkdir()
+    subprocess.run(["git", "init", "-q", str(root)], check=True)
+    monkeypatch.chdir(root)
+    main(["paths"])
+    line = capsys.readouterr().out
+    assert line.isascii() and "\\u0451" in line
+    assert "ё" in json.loads(line)["root"]
 
 
 @pytest.mark.parametrize("command", sorted(PLANNED))

@@ -39,6 +39,9 @@ What is proposed and why, in the proposer's words. Who asked and in what context
 The owner's decision: planned (and later the change link), or declined with the reason.
 ```
 
+A front matter field set later (`verdict`, `change`) may be left out until it has a value, and so may the optional
+`prd`.
+
 ## Lifecycle
 
 `new` → `assessed` → `planned` → `done`, or `declined` from any state before `done`.
@@ -88,6 +91,6 @@ Ideas, closed:
 ## Checked by
 
 `keellay check`: front matter fields and values; numbers unique; the index lists every idea once, in the table that
-matches its status. Planned: `assessed` has a `verdict`, and a later status keeps it unless Assessment says why it was
-skipped; `declined` has an Outcome; `change` names an existing change, and `done` names a closed one; `prd` names an
-existing PRD area.
+matches its status; `assessed` has a `verdict`, and a later status keeps it unless Assessment says why it was
+skipped; `declined` has an Outcome; `change` names an existing change, open or archived, and `done` names a closed
+one; `prd` names an existing PRD area.

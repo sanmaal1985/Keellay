@@ -43,25 +43,25 @@ class Artifact:
 
 def find(project: Project, source: Source) -> list[Artifact]:
     found: list[Artifact] = []
-    constitution = _section(project, "constitution")
+    constitution = section_path(project, "constitution")
     if constitution and source.is_file(constitution):
         found.append(Artifact("constitution", constitution, None))
-    product = _section(project, "product")
+    product = section_path(project, "product")
     if product:
         prd = prefix_of(product) + "prd.md"
         if source.is_file(prd):
             found.append(Artifact("prd", prd, None))
         found += _numbered(source, prefix_of(product) + "ideas", "idea")
-    adr = _section(project, "adr")
+    adr = section_path(project, "adr")
     if adr:
         found += _numbered(source, adr, "adr")
-    lessons = _section(project, "lessons")
+    lessons = section_path(project, "lessons")
     if lessons:
         found += _numbered(source, lessons, "lesson")
-    specs = _section(project, "specs")
+    specs = section_path(project, "specs")
     if specs:
         found += [Artifact("spec", name, posixpath.basename(name)[:-3]) for name in _files_in(source, specs)]
-    changes = _section(project, "changes")
+    changes = section_path(project, "changes")
     if changes:
         found += _changes(source, changes)
     for artifact in found:
@@ -69,7 +69,7 @@ def find(project: Project, source: Source) -> list[Artifact]:
     return found
 
 
-def _section(project: Project, name: str) -> str | None:
+def section_path(project: Project, name: str) -> str | None:
     """The section's path when it is inside the root; a section in another repository is checked there."""
     path = project.sections[name].path
     if path is None:

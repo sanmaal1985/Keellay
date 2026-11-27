@@ -41,6 +41,8 @@ What to do instead, in one sentence an agent can follow.
 What will enforce the rule, or what does already. Empty while there is none.
 ```
 
+A front matter field set later (`mechanism`) may be left out until it has a value.
+
 ## Lifecycle
 
 - **active:** the rule is in force and agents read it; `count` grows with each repeat.
@@ -77,6 +79,7 @@ Mechanized:
 
 ## Checked by
 
-`keellay check`: front matter; numbers unique; the index lists active and mechanized lessons in the right tables.
-Planned: `count` equals the number of occurrences; a lesson with `count` of 2 or more is mechanized, or has an owner
-waiver, before its change closes; `mechanized` has a `mechanism`.
+`keellay check`: front matter; numbers unique; the index lists active and mechanized lessons in the right tables;
+`count` equals the number of occurrences; `mechanized` has a `mechanism`; a lesson still `active` with `count` of 2 or
+more whose last occurrence names a closed change has the owner's waiver in that change's Decisions, which name the
+lesson by its ID.

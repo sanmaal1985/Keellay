@@ -59,7 +59,7 @@ Every hand-off goes through the manager.
    phase that uses it.
 3. [instruction] A design or product question found while cutting the phases is marked `[architect]` or
    `[product-owner]` and listed for the review, not decided.
-4. [check] Every phase has Role, Depends on and Done when (`keellay check`, planned: changes).
+4. [check] Every phase has Role, Depends on and Done when (`keellay check`: phases).
 5. [instruction] The scenarios of the delta become tests, written before or together with the code that makes them
    pass.
 6. [check] A fix commit carries Current, Expected and Unchanged in its message body (`keellay check`, planned:

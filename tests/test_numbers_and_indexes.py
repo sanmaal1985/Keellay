@@ -6,6 +6,7 @@ from pathlib import Path
 
 import pytest
 
+from conftest import add_constitution
 from keellay.cli import main
 
 
@@ -26,11 +27,15 @@ def plan(change_id: str, status: str = "in-progress") -> str:
 
 
 def idea(number: str, status: str) -> str:
-    return f"---\nid: {number}\ntitle: T\nstatus: {status}\nverdict:\nsource: owner\ndate: 2026-11-21\nchange:\n---\n"
+    """An idea that is whole for its status, so that only the index is under test."""
+    verdict = "" if status == "new" else "go"
+    return (f"---\nid: {number}\ntitle: T\nstatus: {status}\nverdict: {verdict}\nsource: owner\ndate: 2026-11-21\n"
+            f"change:\n---\n\n## Assessment\n\nA.\n\n## Outcome\n\nO.\n")
 
 
-def adr(number: str, status: str = "accepted") -> str:
-    return f"---\nid: {number}\ntitle: T\nstatus: {status}\ndate: 2026-11-21\ndecided-by: owner\n---\n"
+def adr(number: str, status: str = "accepted", supersedes: str = "", superseded_by: str = "") -> str:
+    return (f"---\nid: {number}\ntitle: T\nstatus: {status}\ndate: 2026-11-21\ndecided-by: owner\n"
+            f"supersedes: {supersedes}\nsuperseded-by: {superseded_by}\n---\n")
 
 
 def lesson(number: str, status: str = "active") -> str:
@@ -46,6 +51,7 @@ def spec(capability: str, prefix: str, *requirements: str) -> str:
 @pytest.fixture
 def project(tmp_path):
     subprocess.run(["git", "init", "-q", str(tmp_path)], check=True)
+    add_constitution(tmp_path)
     return tmp_path
 
 
@@ -194,8 +200,8 @@ def test_open_change_without_an_index(capsys, monkeypatch, project):
 
 
 def test_adr_index(capsys, monkeypatch, project):
-    write(project, "docs/adr/A0001-a.md", adr("A0001", "superseded"))
-    write(project, "docs/adr/A0002-b.md", adr("A0002", "accepted"))
+    write(project, "docs/adr/A0001-a.md", adr("A0001", "superseded", superseded_by="A0002"))
+    write(project, "docs/adr/A0002-b.md", adr("A0002", "accepted", supersedes="A0001"))
     write(project, "docs/adr/A0003-c.md", adr("A0003", "proposed"))
     write(project, "docs/adr/README.md", "# Decisions\n\nIn force:\n\n| ADR | Decision |\n|---|---|\n"
           "| [A0002](A0002-b.md) | B |\n\nReplaced:\n\n| ADR | Replaced by |\n|---|---|\n"

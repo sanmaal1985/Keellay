@@ -83,7 +83,7 @@ Every hand-off goes through the manager.
 5. [instruction] No phase work starts without an approved plan whose phases have a done-when; a request to start
    one goes back to the architect.
 6. [check] A lesson that reached a count of 2 has a mechanism, or the owner's waiver for a large one, before its
-   change closes (`keellay check`, planned: lessons).
+   change closes (`keellay check`: lessons).
 7. [instruction] Before every change closes, at review and at level standard and up, the retro records what went
    wrong: a new lesson, or a new occurrence and a higher count for an existing one.
 
