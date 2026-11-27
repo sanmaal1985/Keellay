@@ -27,8 +27,8 @@ def check(project: Project, source: Source) -> list[Finding]:
         return []
     findings = []
     if not source.is_file(path):
-        findings.append(Finding(CHECK, "error", path, None, f"the constitution is missing; the project's "
-                                                            f"constitution section is {path}; {SHAPE}"))
+        findings.append(Finding(CHECK, "error", path, None, f"the constitution is missing; it is expected "
+                                                            f"at {path}; {SHAPE}"))
     else:
         text = source.read(path)
         for title in SECTIONS:

@@ -128,7 +128,7 @@ The CLI shall report, as check `prd`, an area heading under `## Areas` that is n
 area ID used by two headings, an area without an Outcome, In / Out or Status line, a Status whose first word is not
 `planned`, `in-progress`, `delivered` or `dropped`, an area without a Measure line at levels standard and strict, and
 a `PRD-` ID named in an open change's plan that is not an area of the PRD; an ID right after `/`, as in a URL or a
-path, is not one the plan names, unless the `/` joins it to an ID the plan names.
+path, is not one the plan names, unless the `/` joins it to an ID the plan names (`PRD-a/PRD-b` names both).
 
 #### Scenario: area without a status
 

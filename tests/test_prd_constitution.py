@@ -211,7 +211,8 @@ def test_constitution_missing_at_its_path(capsys, monkeypatch, project):
     code, out = run_check(project, capsys, monkeypatch)
     [finding] = of(out, "constitution")
     assert finding["file"] == "docs/constitution.md" and "missing" in finding["message"]
-    assert "method/formats/constitution.md" in finding["message"]
+    assert "expected at docs/constitution.md" in finding["message"]
+    assert "method/formats/constitution.md in the Keellay repository" in finding["message"]
 
 
 def test_agents_md_missing(capsys, monkeypatch, project):
