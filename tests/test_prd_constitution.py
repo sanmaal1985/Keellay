@@ -141,6 +141,23 @@ def test_area_id_inside_a_url_is_not_an_area_the_plan_names(capsys, monkeypatch,
     assert of(out, "prd") == []
 
 
+def test_area_id_joined_by_a_slash_to_another_is_read(capsys, monkeypatch, project):
+    write(project, PRD, prd(area()))
+    write(project, "docs/changes/C0001-x/plan.md",
+          plan("C0001-x", "Serves PRD-limits/PRD-limitz; see https://example.com/PRD-foo/PRD-bar."))
+    code, out = run_check(project, capsys, monkeypatch)
+    [finding] = of(out, "prd")
+    assert "PRD-limitz" in finding["message"]
+
+
+@pytest.mark.parametrize("status, shown", [("", "Status is empty;"), ("`planned`x", "Status is `` planned`x ``;")])
+def test_status_message_keeps_its_quotes_whole(capsys, monkeypatch, project, status, shown):
+    write(project, PRD, prd(area(status=status)))
+    code, out = run_check(project, capsys, monkeypatch)
+    [finding] = of(out, "prd")
+    assert shown in finding["message"]
+
+
 def test_heading_that_is_not_an_area_id(capsys, monkeypatch, project):
     write(project, PRD, prd(area("Limits: Limits hold")))
     code, out = run_check(project, capsys, monkeypatch)
@@ -202,7 +219,8 @@ def test_agents_md_missing(capsys, monkeypatch, project):
     code, out = run_check(project, capsys, monkeypatch)
     [finding] = of(out, "constitution")
     assert finding["file"] == "AGENTS.md" and "missing" in finding["message"]
-    assert "method/formats/constitution.md" in finding["message"]
+    assert "method/formats/constitution.md in the Keellay repository" in finding["message"]
+    assert "shape of both files" in finding["message"]
 
 
 def test_constitution_in_another_repository(capsys, monkeypatch, project):

@@ -17,7 +17,8 @@ CHECK = "constitution"
 SECTIONS = ("Project", "Owner", "Read first", "Rules")
 AGENTS = "AGENTS.md"
 # A new project meets these findings first, so they say where the shape of both files is written down.
-SHAPE = "the constitution format of the Keellay method (method/formats/constitution.md) shows its shape"
+SHAPE = ("the constitution format of the Keellay method (method/formats/constitution.md in the Keellay repository) "
+         "shows the shape of both files")
 
 
 def check(project: Project, source: Source) -> list[Finding]:

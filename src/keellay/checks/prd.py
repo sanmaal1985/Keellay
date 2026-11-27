@@ -19,8 +19,7 @@ STATUSES = ("planned", "in-progress", "delivered", "dropped")
 AREA_ID = r"PRD-[a-z0-9]+(?:-[a-z0-9]+)*"
 _HEADING = re.compile(rf"^###\s+({AREA_ID}):\s+\S")
 _LINE = re.compile(r"^[-*+]\s+(Outcome|Measure|In(?:\s*/\s*Out)?|Status)\s*:(.*)$")
-# Right after `/` the ID is part of a URL or a path (`https://example.com/PRD-foo/x`), not an area the plan names.
-_REFERENCE = re.compile(rf"(?<![A-Za-z0-9/-]){AREA_ID}(?![A-Za-z0-9-])")
+_REFERENCE = re.compile(rf"(?<![A-Za-z0-9-]){AREA_ID}(?![A-Za-z0-9-])")
 
 
 def check(project: Project, artifacts: list[Artifact], source: Source) -> list[Finding]:
@@ -75,15 +74,28 @@ def _areas(prd: Artifact, text: str, required: tuple[str, ...]) -> tuple[set[str
             words = value.split()
             status = words[0].strip("`") if words else ""
             if status not in STATUSES:
-                findings.append(_finding(prd, line, f"{area}: Status is `{status}`; expected one of "
+                findings.append(_finding(prd, line, f"{area}: Status is {_quoted(status)}; expected one of "
                                                     f"{', '.join(STATUSES)}"))
     return set(first), findings
+
+
+def _quoted(status: str) -> str:
+    """The status as a code span that stays whole, or the word `empty`."""
+    if not status:
+        return "empty"
+    return f"`` {status} ``" if "`" in status else f"`{status}`"
 
 
 def _references(plan: Artifact, text: str, areas: set[str]) -> list[Finding]:
     findings, seen = [], set()
     for number, line in enumerate(without_code_blocks(text), start=1):
+        named_end = None  # where the last ID the plan names ends on this line
         for match in _REFERENCE.finditer(line):
+            # Right after `/` an ID is part of a URL or a path (`https://example.com/PRD-foo/x`), unless the `/` joins
+            # it to an ID the plan names (`PRD-a/PRD-b`).
+            if match.start() > 0 and line[match.start() - 1] == "/" and named_end != match.start() - 1:
+                continue
+            named_end = match.end()
             area = match.group(0)
             if area not in areas and area not in seen:
                 seen.add(area)
