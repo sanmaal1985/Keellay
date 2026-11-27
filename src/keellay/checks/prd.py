@@ -1,8 +1,9 @@
 """The `prd` check: every area of the PRD has its ID, its lines and a known status, and plans name only real areas.
 
 An area is a `###` heading under `## Areas`; its lines are top-level list items (`- Status: planned`). The In / Out
-line starts with `In:` (`- In: manual entry. Out: bank import.`). Measure is optional at level light. Archived plans
-are history and are not checked. A project without a PRD file has nothing to check here.
+line starts with `In:` (`- In: manual entry. Out: bank import.`). The status is the first word of its line, so a
+dropped area keeps its reason after it. Measure is optional at level light. Archived plans are history and are not
+checked. A project without a PRD file has nothing to check here.
 """
 
 import re
@@ -18,7 +19,8 @@ STATUSES = ("planned", "in-progress", "delivered", "dropped")
 AREA_ID = r"PRD-[a-z0-9]+(?:-[a-z0-9]+)*"
 _HEADING = re.compile(rf"^###\s+({AREA_ID}):\s+\S")
 _LINE = re.compile(r"^[-*+]\s+(Outcome|Measure|In(?:\s*/\s*Out)?|Status)\s*:(.*)$")
-_REFERENCE = re.compile(rf"(?<![A-Za-z0-9-]){AREA_ID}(?![A-Za-z0-9-])")
+# Right after `/` the ID is part of a URL or a path (`https://example.com/PRD-foo/x`), not an area the plan names.
+_REFERENCE = re.compile(rf"(?<![A-Za-z0-9/-]){AREA_ID}(?![A-Za-z0-9-])")
 
 
 def check(project: Project, artifacts: list[Artifact], source: Source) -> list[Finding]:
@@ -69,7 +71,9 @@ def _areas(prd: Artifact, text: str, required: tuple[str, ...]) -> tuple[set[str
                 findings.append(_finding(prd, number, f"{area} has no `{label}` line"))
         if "Status" in fields:
             value, line = fields["Status"]
-            status = value.strip("`").strip()
+            # The status is the first word; a reason may follow it (`dropped — no demand`).
+            words = value.split()
+            status = words[0].strip("`") if words else ""
             if status not in STATUSES:
                 findings.append(_finding(prd, line, f"{area}: Status is `{status}`; expected one of "
                                                     f"{', '.join(STATUSES)}"))

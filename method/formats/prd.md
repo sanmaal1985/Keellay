@@ -60,8 +60,8 @@ An area is one outcome the product commits to; it is the unit that changes and i
 - **Status:** `planned` (committed, not started; the owner's yes to the area), `in-progress` (an approved change
   serves it, or served it without reaching its Outcome yet; set by the architect), `delivered` (set by the product
   owner when the owner says yes to close a change that reached the area's Outcome, after the business check at review;
-  otherwise the area stays `in-progress`), or `dropped` (by the owner; kept in the file with the reason, so the ID is
-  not reused).
+  otherwise the area stays `in-progress`), or `dropped` (by the owner; kept in the file with its reason after the
+  status, `- Status: dropped — no demand`, so the ID is not reused). The status is the first word of the line.
 
 ## Rules
 

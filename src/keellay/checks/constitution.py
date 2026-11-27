@@ -16,6 +16,8 @@ from keellay.paths import Project
 CHECK = "constitution"
 SECTIONS = ("Project", "Owner", "Read first", "Rules")
 AGENTS = "AGENTS.md"
+# A new project meets these findings first, so they say where the shape of both files is written down.
+SHAPE = "the constitution format of the Keellay method (method/formats/constitution.md) shows its shape"
 
 
 def check(project: Project, source: Source) -> list[Finding]:
@@ -25,7 +27,7 @@ def check(project: Project, source: Source) -> list[Finding]:
     findings = []
     if not source.is_file(path):
         findings.append(Finding(CHECK, "error", path, None, f"the constitution is missing; the project's "
-                                                            f"constitution section is {path}"))
+                                                            f"constitution section is {path}; {SHAPE}"))
     else:
         text = source.read(path)
         for title in SECTIONS:
@@ -33,7 +35,7 @@ def check(project: Project, source: Source) -> list[Finding]:
                 findings.append(Finding(CHECK, "error", path, None, f"the constitution has no `## {title}` section"))
     if not source.is_file(AGENTS):
         findings.append(Finding(CHECK, "error", AGENTS, None, f"{AGENTS} is missing; it carries the line that points "
-                                                             f"agents to {path}"))
+                                                             f"agents to {path}; {SHAPE}"))
     elif not any(target_path(AGENTS, target) == path for _, target in links_in(source.read(AGENTS))):
         findings.append(Finding(CHECK, "error", AGENTS, None, f"{AGENTS} does not link to the constitution, {path}"))
     return findings
