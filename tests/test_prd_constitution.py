@@ -8,8 +8,8 @@ from typing import Any
 
 import pytest
 
-from conftest import CONSTITUTION, add_constitution
 from keellay.cli import main
+from tests.helpers import CONSTITUTION, add_constitution
 
 PRD = "docs/product/prd.md"
 

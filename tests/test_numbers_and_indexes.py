@@ -7,8 +7,8 @@ from typing import Any
 
 import pytest
 
-from conftest import add_constitution
 from keellay.cli import main
+from tests.helpers import add_constitution
 
 
 def run_check(root: Path, capsys, monkeypatch):

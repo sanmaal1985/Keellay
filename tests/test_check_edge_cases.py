@@ -6,8 +6,8 @@ from pathlib import Path
 
 import pytest
 
-from conftest import add_constitution
 from keellay.cli import main
+from tests.helpers import add_constitution
 
 ADR = "---\nid: A0001\ntitle: X\nstatus: accepted\ndate: 2026-11-21\ndecided-by: owner\n---\n\n# A0001\n"
 ADR_INDEX = "# Decisions\n\nIn force:\n\n| ADR | Decision |\n|---|---|\n| [A0001](A0001-x.md) | X |\n"

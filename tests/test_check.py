@@ -6,8 +6,8 @@ from pathlib import Path
 
 import pytest
 
-from conftest import CONSTITUTION, add_constitution
 from keellay.cli import EXIT_CONFIG_ERROR, EXIT_FINDINGS, main
+from tests.helpers import CONSTITUTION, add_constitution
 
 
 def run(capsys, *argv):

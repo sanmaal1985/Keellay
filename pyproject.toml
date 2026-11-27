@@ -64,24 +64,10 @@ files = ["src", "tests", ".github/scripts"]
 mypy_path = "src"
 
 # Test functions and their helpers need no annotations: pytest calls them with fixtures, and annotating every one adds
-# little. Their bodies are still checked. mypy matches module names whole (`test_*` is not a pattern), so a new test
-# file is added here; until it is, mypy reports its functions as missing annotations.
+# little. Their bodies are still checked. Any code in `tests` may call an untyped helper, an annotated test too.
+# `tests` is a package (its empty `__init__.py`), so this one pattern covers every test file, a new one included.
 [[tool.mypy.overrides]]
-module = [
-    "check_wheel",
-    "conftest",
-    "test_check",
-    "test_check_edge_cases",
-    "test_cli",
-    "test_deltas_requirements",
-    "test_front_matter",
-    "test_ideas_lessons_adr",
-    "test_numbers_and_indexes",
-    "test_paths",
-    "test_phases",
-    "test_pr_message",
-    "test_prd_constitution",
-]
+module = ["tests.*"]
 disallow_untyped_defs = false
 disallow_incomplete_defs = false
 disallow_untyped_calls = false
