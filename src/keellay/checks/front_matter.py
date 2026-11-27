@@ -13,7 +13,7 @@ CHECK = "front-matter"
 Rule = Callable[[object], str | None]  # returns what is wrong with the value, or None
 
 
-def text(value) -> str | None:
+def text(value: object) -> str | None:
     return None if isinstance(value, str) and value.strip() else "must not be empty"
 
 
@@ -25,7 +25,7 @@ def one_of(*allowed: str) -> Rule:
     return lambda value: None if value in allowed else f"is {value!r}; expected one of {', '.join(allowed)}"
 
 
-def date(value) -> str | None:
+def date(value: object) -> str | None:
     if isinstance(value, str) and re.fullmatch(r"\d{4}-\d{2}-\d{2}", value):
         try:
             datetime.date.fromisoformat(value)
@@ -40,7 +40,7 @@ def date(value) -> str | None:
 DIGITS = r"(?:\d{4}|[1-9]\d{4,})"
 
 
-def _expected(letter: str, value) -> str:
+def _expected(letter: str, value: object) -> str:
     """The form a number should have, from what was written.
 
     `0012` -> `A0012`, `C0004` -> `A0004`, `00012` -> `A0012`.
@@ -52,7 +52,7 @@ def _expected(letter: str, value) -> str:
 def number(letter: str) -> Rule:
     """A number of one kind: its letter and at least four digits (`A0012`, `A10000`)."""
 
-    def rule(value) -> str | None:
+    def rule(value: object) -> str | None:
         return (
             None
             if isinstance(value, str) and re.fullmatch(rf"{letter}{DIGITS}", value)
@@ -66,7 +66,7 @@ def numbers(letter: str) -> Rule:
     """One number of one kind, or a list of them (`supersedes: [A0004, A0007]`)."""
     one = number(letter)
 
-    def rule(value) -> str | None:
+    def rule(value: object) -> str | None:
         values = value if isinstance(value, list) else [value]
         wrong = [item for item in values if one(item) is not None]
         if values and not wrong:
@@ -80,7 +80,7 @@ def numbers(letter: str) -> Rule:
 CHANGE_ID = re.compile(rf"C{DIGITS}-[a-z0-9]+(?:-[a-z0-9]+)*")
 
 
-def change_id(value) -> str | None:
+def change_id(value: object) -> str | None:
     """A change ID: its number and topic, as its folder is named (`C0007-session-expiry`)."""
     if isinstance(value, str) and CHANGE_ID.fullmatch(value):
         return None
@@ -88,11 +88,11 @@ def change_id(value) -> str | None:
     return f"is {value!r}; expected a change ID of the form {_expected('C', head)}-topic"
 
 
-def count(value) -> str | None:
+def count(value: object) -> str | None:
     return None if isinstance(value, str) and re.fullmatch(r"\d+", value) else f"is {value!r}; expected a number"
 
 
-def prd_area(value) -> str | None:
+def prd_area(value: object) -> str | None:
     return (
         None
         if isinstance(value, str) and re.fullmatch(r"PRD-[a-z0-9]+(?:-[a-z0-9]+)*", value)
@@ -100,7 +100,7 @@ def prd_area(value) -> str | None:
     )
 
 
-def anything(value) -> str | None:
+def anything(value: object) -> str | None:
     return None
 
 
@@ -192,10 +192,10 @@ def _delta_only_folders(artifacts: list[Artifact]) -> list[Finding]:
     return findings
 
 
-def _name_has_number(artifact: Artifact, letter: str) -> bool:
-    if artifact.kind == "change":  # the folder name is the change ID
-        return bool(CHANGE_ID.fullmatch(artifact.name_id))
-    return bool(re.fullmatch(rf"{letter}{DIGITS}", artifact.name_id))
+def _name_has_number(kind: str, name_id: str, letter: str) -> bool:
+    if kind == "change":  # the folder name is the change ID
+        return bool(CHANGE_ID.fullmatch(name_id))
+    return bool(re.fullmatch(rf"{letter}{DIGITS}", name_id))
 
 
 def _check_one(artifact: Artifact) -> list[Finding]:
@@ -204,7 +204,7 @@ def _check_one(artifact: Artifact) -> list[Finding]:
 
     if artifact.error is not None:
         return [finding(str(artifact.error), artifact.error.line)]
-    meta, lines = artifact.meta, artifact.meta_lines
+    meta, lines = artifact.meta or {}, artifact.meta_lines  # read, since there is no error
     findings = []
     for name, rule in SCHEMAS[artifact.kind].items():
         if name not in meta:
@@ -219,7 +219,7 @@ def _check_one(artifact: Artifact) -> list[Finding]:
     if name_field is not None:
         if artifact.name_id is None:
             findings.append(finding(f"the file name must start with the number, as `{letter}0007-topic.md`"))
-        elif letter is not None and not _name_has_number(artifact, letter):
+        elif letter is not None and not _name_has_number(artifact.kind, artifact.name_id, letter):
             expected = _expected(letter, artifact.name_id.split("-")[0])
             findings.append(
                 finding(

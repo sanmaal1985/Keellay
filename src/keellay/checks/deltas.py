@@ -85,17 +85,17 @@ def check(project: Project, artifacts: list[Artifact], source: Source) -> list[F
                     f"`prefix` in its front matter",
                 )
             )
-    for requirement, uses in touched.items():
+    for req_id, uses in touched.items():
         changes = sorted({_change(delta) for delta, _ in uses})
         if len(changes) < 2:
             continue
-        for delta, line in uses:
+        for delta, req_line in uses:
             others = ", ".join(change for change in changes if change != _change(delta))
             findings.append(
                 _finding(
                     delta,
-                    line,
-                    f"{requirement} is also touched by open change {others}; one "
+                    req_line,
+                    f"{req_id} is also touched by open change {others}; one "
                     f"requirement is changed by one open change at a time",
                 )
             )

@@ -8,6 +8,7 @@ import subprocess
 import tomllib
 from dataclasses import dataclass
 from pathlib import Path
+from typing import Any
 
 CONFIG_FILE = Path(".keellay") / "config.toml"
 
@@ -42,7 +43,7 @@ class Project:
     root: Path
     level: str
     sections: dict[str, Section]
-    config: dict
+    config: dict[str, Any]
 
 
 def find_root(cwd: Path | None = None) -> Path:
@@ -93,14 +94,14 @@ def load_project(root: Path | None = None, config_text: str | None = None, confi
     return Project(root=root, level=level, sections=sections, config=config)
 
 
-def _read_config(root: Path) -> dict:
+def _read_config(root: Path) -> dict[str, Any]:
     path = root / CONFIG_FILE
     if not path.is_file():
         return {}
     return _parse_config(path.read_bytes().decode("utf-8-sig", errors="replace"))
 
 
-def _parse_config(text: str | None) -> dict:
+def _parse_config(text: str | None) -> dict[str, Any]:
     if text is None:
         return {}
     try:

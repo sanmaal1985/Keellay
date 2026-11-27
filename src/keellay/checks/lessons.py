@@ -9,7 +9,7 @@ change, or a change that is not here or not closed yet, has nothing to check.
 import re
 
 from keellay.checks import Finding
-from keellay.checks.artifacts import Artifact
+from keellay.checks.artifacts import Artifact, FrontMatter
 from keellay.checks.markdown import section
 from keellay.checks.source import Source
 
@@ -18,11 +18,11 @@ _CHANGE_NUMBER = re.compile(r"(?<![A-Za-z0-9])C(\d{4,})(?![0-9])")
 
 
 def check(artifacts: list[Artifact], source: Source) -> list[Finding]:
-    plans = {
-        _number(plan.name_id): plan
-        for plan in artifacts
-        if plan.kind == "change" and plan.name_id and _number(plan.name_id) is not None
-    }
+    plans: dict[int, Artifact] = {}
+    for plan in artifacts:
+        number = _number(plan.name_id) if plan.kind == "change" and plan.name_id else None
+        if number is not None:
+            plans[number] = plan
     findings = []
     for lesson in artifacts:
         if lesson.kind == "lesson" and lesson.meta is not None:
@@ -35,13 +35,13 @@ def _number(change_id: str) -> int | None:
     return int(match.group(1)) if match else None
 
 
-def _value(meta: dict, name: str) -> str:
+def _value(meta: FrontMatter, name: str) -> str:
     value = meta.get(name)
     return value.strip() if isinstance(value, str) else ""
 
 
 def _check_lesson(lesson: Artifact, source: Source, plans: dict[int, Artifact]) -> list[Finding]:
-    meta, lines = lesson.meta, lesson.meta_lines
+    meta, lines = lesson.meta or {}, lesson.meta_lines
 
     def finding(line: int | None, message: str) -> Finding:
         return Finding(CHECK, "error", lesson.file, line, message)

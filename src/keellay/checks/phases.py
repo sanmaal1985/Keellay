@@ -30,7 +30,7 @@ class Phase:
     name: str  # "phase 2", or the heading text when the heading has no number
     number: str | None
     line: int
-    fields: dict = field(default_factory=dict)  # field name -> (value, line)
+    fields: dict[str, tuple[str, int]] = field(default_factory=dict)  # field name -> (value, line)
 
 
 def check(artifacts: list[Artifact], source: Source) -> list[Finding]:
@@ -45,7 +45,7 @@ def check(artifacts: list[Artifact], source: Source) -> list[Finding]:
 def _check_plan(plan: Artifact, text: str) -> list[Finding]:
     found = _phases(text)
     if found is None or not found[1]:
-        status = plan.meta.get("status")
+        status = (plan.meta or {}).get("status")
         if status and status != "draft":
             if found is None:
                 # No section to point at: the status line is what makes the missing phases a finding.

@@ -41,7 +41,7 @@ def _areas(prd: Artifact, text: str, required: tuple[str, ...]) -> tuple[set[str
         return set(), []
     findings: list[Finding] = []
     first: dict[str, int] = {}
-    areas: list[tuple[str, int, dict]] = []  # (ID, line of the heading, field -> (value, line))
+    areas: list[tuple[str, int, dict[str, tuple[str, int]]]] = []  # (ID, line of the heading, field -> (value, line))
     for number, line in found.body:
         if line.startswith("### "):
             heading = _HEADING.match(line)
@@ -75,13 +75,17 @@ def _areas(prd: Artifact, text: str, required: tuple[str, ...]) -> tuple[set[str
                 label = "In / Out" if name == "In" else name
                 findings.append(_finding(prd, number, f"{area} has no `{label}` line"))
         if "Status" in fields:
-            value, line = fields["Status"]
+            value, status_line = fields["Status"]
             # The status is the first word; a reason may follow it (`dropped — no demand`).
             words = value.split()
             status = words[0].strip("`") if words else ""
             if status not in STATUSES:
                 findings.append(
-                    _finding(prd, line, f"{area}: Status is {_quoted(status)}; expected one of {', '.join(STATUSES)}")
+                    _finding(
+                        prd,
+                        status_line,
+                        f"{area}: Status is {_quoted(status)}; expected one of {', '.join(STATUSES)}",
+                    )
                 )
     return set(first), findings
 

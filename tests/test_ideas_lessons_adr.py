@@ -4,6 +4,7 @@ matches its occurrences and a repeated one is mechanized or waived; superseded A
 import json
 import subprocess
 from pathlib import Path
+from typing import Any
 
 import pytest
 
@@ -22,7 +23,7 @@ def write(root: Path, path: str, text: str) -> None:
     target.write_text(text, encoding="utf-8", newline="\n")
 
 
-def of(out: dict, check: str) -> list[dict]:
+def of(out: dict[str, Any], check: str) -> list[dict[str, Any]]:
     return [finding for finding in out["findings"] if finding["check"] == check]
 
 

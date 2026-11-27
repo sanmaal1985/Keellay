@@ -7,14 +7,18 @@ reported on the ADR that should carry it. Values of the wrong form are the front
 import re
 
 from keellay.checks import Finding
-from keellay.checks.artifacts import Artifact
+from keellay.checks.artifacts import Artifact, FrontMatter
 
 CHECK = "adr"
 _ADR = re.compile(r"A(?:\d{4}|[1-9]\d{4,})")
 
 
 def check(artifacts: list[Artifact]) -> list[Finding]:
-    adrs = {_id(adr): adr for adr in artifacts if adr.kind == "adr" and adr.meta is not None and _id(adr)}
+    adrs: dict[str, Artifact] = {}
+    for artifact in artifacts:
+        artifact_id = _id(artifact) if artifact.kind == "adr" else None
+        if artifact_id:
+            adrs[artifact_id] = artifact
     findings = []
     for adr_id, adr in sorted(adrs.items()):
         for name in ("supersedes", "superseded-by"):
@@ -48,7 +52,7 @@ def check(artifacts: list[Artifact]) -> list[Finding]:
                 _finding(adrs[old], "superseded-by", f"`superseded-by` names {new}, which is not an ADR here")
             )
     for adr_id, adr in sorted(adrs.items()):
-        status = adr.meta.get("status")
+        status = (adr.meta or {}).get("status")
         superseded_by = _ids(adr.meta, "superseded-by")
         if status == "superseded" and not superseded_by and not any(old == adr_id for _, old in replaces):
             findings.append(
@@ -68,12 +72,12 @@ def check(artifacts: list[Artifact]) -> list[Finding]:
 
 
 def _id(adr: Artifact) -> str | None:
-    value = adr.meta.get("id")
+    value = (adr.meta or {}).get("id")
     return value if isinstance(value, str) and _ADR.fullmatch(value) else None
 
 
-def _ids(meta: dict, name: str) -> list[str]:
-    value = meta.get(name)
+def _ids(meta: FrontMatter | None, name: str) -> list[str]:
+    value = (meta or {}).get(name)
     values = value if isinstance(value, list) else [value]
     return [item for item in values if isinstance(item, str) and _ADR.fullmatch(item)]
 

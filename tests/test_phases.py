@@ -3,6 +3,7 @@
 import json
 import subprocess
 from pathlib import Path
+from typing import Any
 
 import pytest
 
@@ -43,7 +44,7 @@ def project(tmp_path):
     return tmp_path
 
 
-def phases_findings(out: dict) -> list[dict]:
+def phases_findings(out: dict[str, Any]) -> list[dict[str, Any]]:
     return [finding for finding in out["findings"] if finding["check"] == "phases"]
 
 

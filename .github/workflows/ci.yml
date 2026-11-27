@@ -83,8 +83,8 @@ jobs:
       - name: Check
         run: uv run keellay check
 
-  # The Python code keeps the project's lint rules and format; the tools and their settings come from pyproject.toml
-  # and uv.lock, so a run here matches a run on a developer's machine.
+  # The Python code keeps the project's lint rules, format and types; the tools and their settings come from
+  # pyproject.toml and uv.lock, so a run here matches a run on a developer's machine.
   lint:
     name: lint
     runs-on: ubuntu-latest
@@ -101,6 +101,9 @@ jobs:
 
       - name: Format
         run: uv run ruff format --check
+
+      - name: Types
+        run: uv run mypy
 
   # The one required status check for main: it passes only when every matrix job passed, the PR message is fine and
   # the project's checks and lint pass, so jobs can change without editing the ruleset. `always()` makes it run (and

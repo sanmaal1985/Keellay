@@ -36,6 +36,7 @@ import subprocess
 import sys
 import textwrap
 from dataclasses import dataclass, field
+from typing import Any
 
 TYPES = ("feat", "fix", "docs", "ci", "chore", "refactor", "test")
 BRANCH = re.compile(r"^(?P<type>[a-z]+)/(?P<rest>.+)$")
@@ -170,7 +171,7 @@ def _topic(rest: str) -> str:
 
 def _valid_title(title: str, branch_type: str) -> bool:
     match = TITLE.match(title)
-    return bool(match) and match["type"] == branch_type
+    return match is not None and match["type"] == branch_type
 
 
 def _without_attribution(text: str) -> str:
@@ -263,7 +264,7 @@ def fix_message(title: str, body: str | None, branch: str, commit_messages: list
     return result
 
 
-def changed_meanwhile(read: dict, latest: dict) -> bool:
+def changed_meanwhile(read: dict[str, Any], latest: dict[str, Any]) -> bool:
     """True when the PR's title or description changed after this run read it.
 
     Each edit starts its own run, and runs overlap: a run that read the PR before an edit must not write over it, or

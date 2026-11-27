@@ -7,6 +7,7 @@ and the PRD under `product/`, ADRs, lessons and specs one file each next to thei
 import posixpath
 import re
 from dataclasses import dataclass, field
+from typing import Any
 
 import yaml
 
@@ -22,6 +23,10 @@ LETTERS = {"change": "C", "idea": "I", "adr": "A", "lesson": "L"}
 # should have, instead of as a name without a number.
 _NUMBERED = re.compile(r"^([A-Za-z]*\d{4,})-[a-z0-9]+(?:-[a-z0-9]+)*\.md$")
 
+# Front matter as `BaseLoader` reads it: a field's value is a string, or a list or mapping of strings (`supersedes:
+# [A0004, A0007]`), so its type is only known where a field is read.
+FrontMatter = dict[str, Any]
+
 
 class FrontMatterError(Exception):
     def __init__(self, message: str, line: int | None = 1):
@@ -35,8 +40,8 @@ class Artifact:
     file: str  # relative to the root
     name_id: str | None  # what the file or folder name says the artifact's ID is
     archived: bool = False
-    meta: dict | None = None  # front matter, values as strings; None when it cannot be read
-    meta_lines: dict = field(default_factory=dict)  # field -> line number in the file
+    meta: FrontMatter | None = None  # None when the front matter cannot be read
+    meta_lines: dict[str, int] = field(default_factory=dict)  # field -> line number in the file
     error: FrontMatterError | None = None
     folder: str | None = None  # for a plan or a delta: the change folder (`docs/changes/archive/C0007-x`)
 
@@ -120,7 +125,7 @@ def _read(source: Source, artifact: Artifact) -> None:
         artifact.error = error
 
 
-def parse_front_matter(text: str) -> tuple[dict, dict]:
+def parse_front_matter(text: str) -> tuple[FrontMatter, dict[str, int]]:
     """The front matter as a mapping of strings, and the line of each field.
 
     `BaseLoader` keeps every value a string, so `0012` stays `0012` and dates are not converted.
@@ -142,7 +147,7 @@ def parse_front_matter(text: str) -> tuple[dict, dict]:
         meta = {}
     if not isinstance(meta, dict):
         raise FrontMatterError("front matter must be a mapping of fields")
-    positions = {}
+    positions: dict[str, int] = {}
     for index, line in enumerate(lines[1:end], start=2):
         key = re.match(r"^([A-Za-z][\w-]*)\s*:", line)
         if key:

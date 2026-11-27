@@ -6,6 +6,7 @@ a URL scheme are not the project's files, and links that leave the root cannot b
 
 import posixpath
 import re
+from collections.abc import Iterator
 from urllib.parse import unquote
 
 from keellay.checks import Finding
@@ -32,7 +33,7 @@ def markdown_files(project: Project, source: Source, extra: list[str]) -> list[s
     for section in project.sections.values():
         if section.path is not None:
             roots.append(posixpath.normpath(section.path))
-    files = set()
+    files: set[str] = set()
     for root in roots:
         if root.startswith(".."):
             continue
@@ -40,11 +41,11 @@ def markdown_files(project: Project, source: Source, extra: list[str]) -> list[s
     return sorted(files)
 
 
-def links_in(text: str):
+def links_in(text: str) -> Iterator[tuple[int, str]]:
     """Yield (line number, target) for every link outside code, in the order they appear."""
     # Inline code is blanked with spaces of the same length, so positions and line numbers stay where they were.
     prose = "\n".join(_INLINE_CODE.sub(lambda m: " " * len(m.group(0)), line) for line in without_code_blocks(text))
-    targets = {}
+    targets: dict[int, str] = {}
     for pattern in (_INLINE_LINK, _IMAGE, _DEFINITION):
         for match in pattern.finditer(prose):
             targets.setdefault(match.start(1), match.group(1))
@@ -69,7 +70,7 @@ def target_path(file: str, target: str) -> str | None:
     return "" if path == "." else path
 
 
-def check(project: Project, source: Source, settings: dict) -> list[Finding]:
+def check(project: Project, source: Source, settings: dict[str, list[str]]) -> list[Finding]:
     findings = []
     for file in markdown_files(project, source, settings["links"]):
         for line, target in links_in(source.read(file)):

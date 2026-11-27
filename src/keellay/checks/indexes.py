@@ -85,7 +85,8 @@ def _check_index(
 
     by_file = {item.file: item for item in items}
     other_files = {artifact.file for artifact in every if artifact.kind == rule.kind} - set(by_file)
-    findings, listed = [], {}
+    findings: list[Finding] = []
+    listed: dict[str, int] = {}
     for table in _tables(source.read(index)):
         statuses = _statuses_for(rule, table.label)
         if rule.tables is not None and statuses is None:
@@ -118,6 +119,8 @@ def _check_index(
 
 
 def _all_statuses(rule: IndexRule) -> set[str]:
+    if rule.tables is None:
+        return set()
     return {status for statuses in rule.tables.values() for status in statuses}
 
 

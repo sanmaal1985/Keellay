@@ -2,9 +2,11 @@
 
 import importlib.util
 from pathlib import Path
+from typing import Any
 
 _path = Path(__file__).resolve().parents[1] / ".github" / "scripts" / "pr_message.py"
 _spec = importlib.util.spec_from_file_location("pr_message", _path)
+assert _spec is not None and _spec.loader is not None
 pr_message = importlib.util.module_from_spec(_spec)
 _spec.loader.exec_module(pr_message)
 fix_message = pr_message.fix_message
@@ -146,7 +148,7 @@ def test_other_mentions_of_claude_stay():
 # Wrapping at 72: GitHub wraps the squash commit body there itself
 
 
-def _wrapped(body: str) -> str:
+def _wrapped(body):
     return fix_message("docs: a", body, "docs/13-architecture", []).body
 
 
@@ -220,7 +222,7 @@ Commit = pr_message.Commit
 NOREPLY = "12345+someone@users.noreply.github.com"
 
 
-def _commit(message: str = "ci: a\n\nWhy.", author: str = NOREPLY, committer: str = NOREPLY) -> Commit:
+def _commit(message="ci: a\n\nWhy.", author=NOREPLY, committer=NOREPLY):
     return Commit("0123456789abcdef", message, author, committer)
 
 
@@ -408,7 +410,7 @@ def test_main_keeps_commit_errors_when_the_description_changed_meanwhile(monkeyp
     def gh(*args, stdin=None):
         if args[-1].endswith("/commits"):
             return pr_message.json.dumps(commits)
-        pr = next(reads)
+        pr: dict[str, Any] = next(reads)
         pr["head"] = {"ref": "ci/1-a", "repo": {"full_name": "o/r"}}
         return pr_message.json.dumps(pr)
 
