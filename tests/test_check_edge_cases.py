@@ -120,6 +120,7 @@ def test_image_inside_a_link(capsys, project):
 def test_requirement_headings_in_code_blocks_are_examples(capsys, project):
     write(project, "docs/specs/merge.md", "---\ncapability: merge\nprefix: merge\n---\n\n# Merge\n\n"
           "## Requirements\n\n### REQ-merge-001: Merge\n\nThe CLI shall merge.\n\n"
+          "#### Scenario: merge\n\n- WHEN it merges\n- THEN it is merged\n\n"
           "```markdown\n### REQ-auth-003: Example\n### REQ-merge-001: Example\n```\n")
     write(project, "docs/specs/README.md", "| Capability | Covers |\n|---|---|\n| [merge](merge.md) | Merge |\n")
     code, out = run(capsys, "check")
